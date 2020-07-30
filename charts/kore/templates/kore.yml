@@ -141,6 +141,8 @@ spec:
             value: "{{ .Values.api.enable_metrics }}"
           - name: METRICS_PORT
             value: "{{ .Values.api.metrics_port }}"
+          - name: ENABLE_USER_DB_LOGGING
+            value: "{{ .Values.api.verbose_db }}"
           {{- if .Values.api.tls.enabled }}
           - name: TLS_CERT
             value: /secrets/tls/server.cert
