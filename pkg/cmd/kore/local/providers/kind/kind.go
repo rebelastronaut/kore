@@ -141,6 +141,7 @@ func (p *providerImpl) Create(ctx context.Context, name string, options provider
 
 		return p.ensureRunning(ctx, name)
 	}
+	start := time.Now()
 
 	args := []string{
 		"create",
@@ -171,6 +172,7 @@ func (p *providerImpl) Create(ctx context.Context, name string, options provider
 	if combined, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("%s", combined)
 	}
+	p.Info("Built local kind cluster in %s", time.Since(start).String())
 
 	return p.ensureImages(ctx, name)
 }
