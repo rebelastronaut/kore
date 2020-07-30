@@ -29,8 +29,14 @@ import (
 	"time"
 
 	"github.com/appvia/kore/pkg/apiserver"
+	"github.com/appvia/kore/pkg/apiserver/types"
+	"github.com/appvia/kore/pkg/client"
+	"github.com/appvia/kore/pkg/client/config"
 	restconfig "github.com/appvia/kore/pkg/client/config"
 	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
+	"github.com/appvia/kore/pkg/kore"
+	"github.com/appvia/kore/pkg/utils"
+	"github.com/manifoldco/promptui"
 
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
@@ -48,6 +54,11 @@ $ kore login local -a http://127.0.0.1:8080  # create a profile and login
 `
 )
 
+const (
+	// DefaultKoreURL is the default value for the kore api
+	DefaultKoreURL = "http://localhost:10080"
+)
+
 // LoginOptions are the options for logging in
 type LoginOptions struct {
 	cmdutil.Factory
@@ -58,6 +69,8 @@ type LoginOptions struct {
 	Endpoint string
 	// Force is used to force an operation
 	Force bool
+	// LocalUser indicates we are using local users
+	LocalUser bool
 	// Port is the local port to use for http server
 	Port int
 }
@@ -78,39 +91,26 @@ func NewCmdLogin(factory cmdutil.Factory) *cobra.Command {
 	flags.StringVarP(&o.Endpoint, "api-url", "a", "", "specify the kore api server to login `URL`")
 	flags.BoolVarP(&o.Force, "force", "f", false, "must be set when you want to override the api-server on an existing profile `BOOL`")
 	flags.IntVarP(&o.Port, "port", "p", 3001, "sets the local port used for redirection when authenticating `PORT`")
+	flags.BoolVarP(&o.LocalUser, "local", "l", false, "indicate we are using a local login `BOOL`")
 
 	return command
 }
 
 // Validate is used to validate the parameters
 func (o *LoginOptions) Validate() error {
-	config := o.Config()
 	current := o.Client().CurrentProfile()
 
-	if err := config.HasValidProfile(current); err != nil {
-		if o.Endpoint == "" {
-			return fmt.Errorf("you need to specify an endpoint")
-		}
-		if o.Name == "" {
-			return fmt.Errorf("you need to specify a profile name")
-		}
-	}
 	if o.Name != "" {
-		config.CurrentProfile = o.Name
-		o.Client().OverrideProfile(o.Name)
+		current = o.Name
+		o.Client().OverrideProfile(current)
 	}
 
-	// @step: if the api server and profile name is passed we can create a profile
-	// from the name and add the server - this is effectively a inline `profile configure`
-	if o.Endpoint != "" {
-		switch {
-		case o.Name == "":
-			return fmt.Errorf("you must specify a profile name when using endpoint -a")
+	if o.Name != "" && o.Config().HasProfile(current) && !o.Force {
+		return fmt.Errorf("profile name already used (note: you can use the --force option to force the update)")
+	}
 
-		case config.HasProfile(o.Name) && !o.Force:
-			return fmt.Errorf("profile name already used (note: you can use the --force option to force the update)")
-		}
-		config.CreateProfile(o.Name, o.Endpoint)
+	if o.Client().CurrentProfile() == "" {
+		return fmt.Errorf("please specify a name for the profile")
 	}
 
 	return nil
@@ -122,14 +122,143 @@ func (o *LoginOptions) Run() error {
 
 	current := o.Client().CurrentProfile()
 
-	// @check we have the minimum required for authentication
-	if o.Config().HasProfile(current) {
-		if err := o.Config().HasValidProfile(current); err != nil {
-			o.Println("Unable to authenticate: %s", err.Error())
-			o.Println("You may need to reconfigure your profile via $ kore profile configure")
+	if !o.Config().HasProfile(current) || !o.Config().HasServer(current) {
+		// @step: set the default profile
+		o.Config().CurrentProfile = current
 
-			return errors.New("invalid profile")
+		if o.Endpoint == "" {
+			o.Endpoint = DefaultKoreURL
+
+			if err := (cmdutil.Prompts{
+				&cmdutil.Prompt{
+					Id:     "Please enter the Kore API (e.g https://api.example.com)",
+					Value:  &o.Endpoint,
+					ErrMsg: "invalid endpoint",
+					Validate: func(v string) error {
+						if !utils.IsValidURL(v) {
+							return errors.New("invalid endpoint url")
+						}
+						return nil
+					},
+				},
+			}).Collect(); err != nil {
+				return err
+			}
 		}
+	}
+
+	// @step: do we even have a profile?
+	if !o.Config().HasProfile(current) {
+		o.Config().CreateProfile(current, o.Endpoint)
+	}
+	if !o.Config().HasAuthInfo(current) {
+		o.Config().AddAuthInfo(current, &config.AuthInfo{})
+	}
+
+	method := o.Config().GetProfileAuthMethod(current)
+	if method == "none" {
+		// we need to ask if this is sso or basicauth auth
+		if o.LocalUser {
+			return o.RunIDAuth()
+		}
+		_, method, err = (&promptui.Select{
+			Label:        "Which method are you using to login?",
+			Items:        []string{"sso", "idtoken"},
+			HideHelp:     true,
+			HideSelected: true,
+		}).Run()
+		if err != nil {
+			return err
+		}
+	} else {
+		method = o.Config().GetProfileAuthMethod(current)
+	}
+
+	// @step: else we do have a profile so need see if basicauth or sso
+	switch method {
+	case "idtoken":
+		return o.RunIDAuth()
+	case "sso":
+		return o.RunOAuth()
+	case "token", "basicauth":
+		return errors.New(method + " authentication does not require login")
+	default:
+		return errors.New("unknown authentication method")
+	}
+}
+
+// RunIDAuth performs a identity flow login using basicauth credentials
+func (o *LoginOptions) RunIDAuth() error {
+	// @step: check if we have a token
+	current := o.Client().CurrentProfile()
+
+	auth := o.Config().GetAuthInfo(current)
+	token := utils.StringValue(auth.IdentityToken)
+
+	var username, password string
+
+	if token != "" {
+		claims, err := utils.NewJWTTokenFromBytes([]byte(token))
+		if err == nil {
+			username, _ = claims.GetUserClaim(kore.Userclaim)
+		}
+	}
+
+	if err := (cmdutil.Prompts{
+		&cmdutil.Prompt{
+			Id:     "Please enter your username",
+			Value:  &username,
+			ErrMsg: "invalid username",
+		},
+		&cmdutil.Prompt{
+			Id:     "Please confirm password for " + username,
+			Value:  &password,
+			Mask:   true,
+			ErrMsg: "invalid password",
+		},
+	}).Collect(); err != nil {
+		return err
+	}
+
+	issued := &types.IssuedToken{}
+	auth.BasicAuth = &config.BasicAuth{
+		Username: username,
+		Password: password,
+	}
+
+	// @step: exchange the credentials for idtoken
+	err := o.ClientWithEndpoint("/login/authorize/{user}").
+		Parameters(client.PathParameter("user", username)).
+		Result(issued).
+		Update().
+		Error()
+	if err != nil {
+		if client.IsNotAuthorized(err) {
+			return errors.New("authentication denied, please recheck your credentials")
+		}
+
+		return err
+	}
+
+	// @step: do not save the authentication setting
+	// @note if this probably has been be reviewed as it relys on orders
+	// https://github.com/appvia/kore/blob/master/pkg/client/client.go#L249-L259
+	auth.BasicAuth = nil
+	auth.IdentityToken = utils.StringPtr(string(issued.Token))
+
+	return o.UpdateConfig()
+}
+
+// RunOAuth performs a traditional oauth login
+func (o *LoginOptions) RunOAuth() error {
+	var err error
+
+	current := o.Client().CurrentProfile()
+
+	// @check we have the minimum required for authentication
+	auth := o.Config().GetAuthInfo(current)
+	if auth.OIDC == nil {
+		auth.OIDC = &config.OIDC{}
 	}
 
 	// @step: we make done channels to signal events
@@ -178,7 +307,7 @@ func (o *LoginOptions) Run() error {
 		return errors.New("authorization request timed out waiting to complete")
 	}
 
-	auth := o.Config().GetAuthInfo(current)
+	auth = o.Config().GetAuthInfo(current)
 	auth.OIDC = &restconfig.OIDC{
 		AccessToken:  token.AccessToken,
 		AuthorizeURL: token.AuthorizationURL,
@@ -241,3 +370,4 @@ func handleLoginCallback(req *http.Request, resp http.ResponseWriter) (*apiserve
 
 	return token, nil
 }
+
