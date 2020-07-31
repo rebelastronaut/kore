@@ -146,7 +146,7 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 	}
 	h.tokens = &tokenImpl{ConfigIface: h, CertificateIface: h}
 	h.configs = &configImpl{hubImpl: h}
-	h.costs = costs.New(&config.Costs)
+	h.costs = costs.New(&config.Costs, h.persistenceMgr.TeamAssets(), h.KoreIdentifier)
 	h.features = &koreFeaturesImpl{store: h.store}
 
 	// @step: call the setup code for the kore
@@ -295,6 +295,10 @@ func (h hubImpl) Costs() costs.Costs {
 
 func (h hubImpl) Features() KoreFeatures {
 	return h.features
+}
+
+func (h *hubImpl) setKoreIdentifier(koreIdentifier string) {
+	h.koreIdentifier = koreIdentifier
 }
 
 func (h *hubImpl) KoreIdentifier() string {
