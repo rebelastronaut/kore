@@ -9361,8 +9361,8 @@
     },
     "v1.OptionalSecretKeySelector": {
       "required": [
-        "key",
-        "name"
+        "name",
+        "key"
       ],
       "properties": {
         "key": {
@@ -12576,6 +12576,44 @@
         }
       }
     },
+    "v1beta1.AssetCostSummary": {
+      "required": [
+        "cost"
+      ],
+      "properties": {
+        "assetIdentifier": {
+          "type": "string"
+        },
+        "assetName": {
+          "type": "string"
+        },
+        "assetType": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.AssetCost"
+          }
+        },
+        "provider": {
+          "type": "string"
+        },
+        "teamIdentifier": {
+          "type": "string"
+        },
+        "usageEndTime": {
+          "type": "string"
+        },
+        "usageStartTime": {
+          "type": "string"
+        }
+      }
+    },
     "v1beta1.Continent": {
       "required": [
         "name",
@@ -12742,6 +12780,30 @@
         }
       }
     },
+    "v1beta1.OverallCostSummary": {
+      "required": [
+        "cost",
+        "teamCosts"
+      ],
+      "properties": {
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "teamCosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.TeamCostSummary"
+          }
+        },
+        "usageEndTime": {
+          "type": "string"
+        },
+        "usageStartTime": {
+          "type": "string"
+        }
+      }
+    },
     "v1beta1.Region": {
       "required": [
         "id",
@@ -12752,6 +12814,36 @@
           "type": "string"
         },
         "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1.TeamCostSummary": {
+      "required": [
+        "assetCosts",
+        "cost"
+      ],
+      "properties": {
+        "assetCosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.AssetCostSummary"
+          }
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "teamIdentifier": {
+          "type": "string"
+        },
+        "teamName": {
+          "type": "string"
+        },
+        "usageEndTime": {
+          "type": "string"
+        },
+        "usageStartTime": {
           "type": "string"
         }
       }
