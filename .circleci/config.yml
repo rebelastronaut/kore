@@ -431,6 +431,70 @@ jobs:
       - slack/notify-on-failure:
           only_for_branches: master
 
+  e2e_ui_gke:
+    environment:
+      <<: *SERVICES_ENV
+    machine:
+      docker_layer_caching: true
+      image: ubuntu-1604:202007-01
+    steps:
+      - checkout
+      - kube-orb/install-kubectl:
+          kubectl-version: latest
+      - run:
+          name: Installing Tools
+          command: |
+            sudo apt-get update
+            sudo apt install -y jq
+      - run:
+          name: Docker Login
+          command: |
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} quay.io
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Provisioning Local Cluster
+          command: |
+            mkdir -p bin
+            # copy the cli from build
+            cp -f /tmp/workspace/* bin/
+            # build the cluster
+            test/bin/e2e.sh \
+              --build-cli false \
+              --build-kore-api false \
+              --build-proxy false \
+              --enable-ui true \
+              --version ${CIRCLE_SHA1}
+      - run:
+          name: Kore API Logs
+          background: true
+          command: |
+            make kind-apiserver-logs
+      - run:
+          name: Kore UI Logs
+          background: true
+          command: |
+            make kind-ui-logs
+      - run:
+          name: Setup environment
+          command: |
+            rm -f ${HOME}/.kore/config
+            test/e2e/create-kore-config.sh
+            test/e2e/check-suite.sh \
+              --enable-unit-tests false \
+              --enable-e2e-user ${KORE_E2E_USER}
+            echo -n ${GKE_SA_QA} | base64 -d > ./gke-credentials.yml 2>/dev/null
+            bin/kore apply -f ./gke-credentials.yml -t kore-admin 2>&1 >/dev/null
+      - run:
+          name: Running UI GKE E2E Suite
+          no_output_timeout: 30m
+          command: |
+            cd ui
+            npm install jest puppeteer jest-puppeteer
+            make test-e2e-nightly-gke
+      - slack/notify-on-failure:
+          only_for_branches: master
+
   e2e_eks:
     environment:
       <<: *SERVICES_ENV
@@ -478,6 +542,70 @@ jobs:
             test/e2e/check-suite.sh \
               --enable-e2e-user ${KORE_E2E_USER} \
               --enable-eks true
+      - slack/notify-on-failure:
+          only_for_branches: master
+
+  e2e_ui_eks:
+    environment:
+      <<: *SERVICES_ENV
+    machine:
+      docker_layer_caching: true
+      image: ubuntu-1604:202007-01
+    steps:
+      - checkout
+      - kube-orb/install-kubectl:
+          kubectl-version: latest
+      - run:
+          name: Installing Tools
+          command: |
+            sudo apt-get update
+            sudo apt install -y jq
+      - run:
+          name: Docker Login
+          command: |
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} quay.io
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Provisioning Local Cluster
+          command: |
+            mkdir -p bin
+            # copy the cli from build
+            cp -f /tmp/workspace/* bin/
+            # build the cluster
+            test/bin/e2e.sh \
+              --build-cli false \
+              --build-kore-api false \
+              --build-proxy false \
+              --enable-ui true \
+              --version ${CIRCLE_SHA1}
+      - run:
+          name: Kore API Logs
+          background: true
+          command: |
+            make kind-apiserver-logs
+      - run:
+          name: Kore UI Logs
+          background: true
+          command: |
+            make kind-ui-logs
+      - run:
+          name: Setup environment
+          command: |
+            rm -f ${HOME}/.kore/config
+            test/e2e/create-kore-config.sh
+            test/e2e/check-suite.sh \
+              --enable-unit-tests false \
+              --enable-e2e-user ${KORE_E2E_USER}
+            echo -n ${EKS_SA_QA} | base64 -d > ./eks-credentials.yml 2>/dev/null
+            bin/kore apply -f ./eks-credentials.yml -t kore-admin 2>&1 >/dev/null
+      - run:
+          name: Running UI EKS E2E Suite
+          no_output_timeout: 30m
+          command: |
+            cd ui
+            npm install jest puppeteer jest-puppeteer
+            make test-e2e-nightly-eks
       - slack/notify-on-failure:
           only_for_branches: master
 
@@ -672,7 +800,23 @@ workflows:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)($|-rc([0-9]+)|-beta([0-9]+)|-alpha([0-9]+))$/
           requires:
             - build-api
+      - e2e_ui_gke:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)($|-rc([0-9]+)|-beta([0-9]+)|-alpha([0-9]+))$/
+          requires:
+            - build-api
       - e2e_eks:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)($|-rc([0-9]+)|-beta([0-9]+)|-alpha([0-9]+))$/
+          requires:
+            - build-api
+      - e2e_ui_eks:
           filters:
             branches:
               ignore: /.*/
@@ -688,14 +832,25 @@ workflows:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)($|-rc([0-9]+)|-beta([0-9]+)|-alpha([0-9]+))$/
           requires:
             - build-api
+      - e2e_ui_aks:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)($|-rc([0-9]+)|-beta([0-9]+)|-alpha([0-9]+))$/
+          requires:
+            - build-api
       - publish-release:
           requires:
             - check-release-notes
             - release
             - release-ui
             - e2e_gke
+            - e2e_ui_gke
             - e2e_eks
+            - e2e_ui_eks
             - e2e_aks
+            - e2e_ui_aks
           filters:
             branches:
               ignore: /.*/
@@ -727,12 +882,18 @@ workflows:
       - e2e_gke:
           requires:
             - build-api
+      - e2e_ui_gke:
+          requires:
+            - build-api
 
   e2e_eks:
     when: << pipeline.parameters.enable_eks_e2e >>
     jobs:
       - build-api
       - e2e_eks:
+          requires:
+            - build-api
+      - e2e_ui_eks:
           requires:
             - build-api
 
@@ -762,10 +923,19 @@ workflows:
       - e2e_gke:
           requires:
             - build-api
+      - e2e_ui_gke:
+          requires:
+            - build-api
       - e2e_eks:
           requires:
             - build-api
+      - e2e_ui_eks:
+          requires:
+            - build-api
       - e2e_aks:
+          requires:
+            - build-api
+      - e2e_ui_aks:
           requires:
             - build-api
 

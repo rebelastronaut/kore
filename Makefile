@@ -506,6 +506,9 @@ kind-apiserver-reload: kind-apiserver-stop kind-apiserver kind-apiserver-start
 kind-apiserver-logs:
 	@while true; do kubectl --context=kind-kore -n kore logs -f -l name=kore-apiserver || true; sleep 1; done
 
+kind-ui-logs:
+	@while true; do kubectl --context=kind-kore -n kore logs -f -l name=kore-portal || true; sleep 1; done
+
 kind-admintoken:
 	@echo `kubectl --context kind-kore -n kore get secret kore-api -o json | jq -r ".data.KORE_ADMIN_TOKEN" | base64 --decode`
 
