@@ -23,6 +23,7 @@ import (
 	configv1 "github.com/appvia/kore/pkg/apis/config/v1"
 	costsv1 "github.com/appvia/kore/pkg/apis/costs/v1beta1"
 	servicesv1 "github.com/appvia/kore/pkg/apis/services/v1"
+	"github.com/appvia/kore/pkg/metadata"
 	"github.com/appvia/kore/pkg/utils/validation"
 )
 
@@ -35,24 +36,15 @@ type Estimates interface {
 }
 
 // NewEstimates creates a new instance of the estimates API
-func NewEstimates(metadata Metadata) Estimates {
+func NewEstimates(metadata metadata.Metadata) Estimates {
 	return &estimatesImpl{
 		metadata,
 	}
 }
 
 type estimatesImpl struct {
-	metadata Metadata
+	metadata metadata.Metadata
 }
-
-const (
-	cloudGCP      = "gcp"
-	cloudAWS      = "aws"
-	cloudAzure    = "azure"
-	providerGCP   = "GKE"
-	providerAWS   = "EKS"
-	providerAzure = "AKS"
-)
 
 func (e *estimatesImpl) GetClusterEstimate(planSpec *configv1.PlanSpec) (*costsv1.CostEstimate, error) {
 	// Load costing info for the provider in question
@@ -61,8 +53,8 @@ func (e *estimatesImpl) GetClusterEstimate(planSpec *configv1.PlanSpec) (*costsv
 			WithFieldError("prices", validation.MustExist, "prices metadata not available")
 	}
 
-	cloud := getCloudForClusterProvider(planSpec.Kind)
-	if cloud == "" {
+	cloud, err := e.metadata.MapProviderToCloud(planSpec.Kind)
+	if err != nil {
 		// Cost estimation not supported as it's not provided by a cloud
 		return nil, validation.NewError("plan not valid").WithFieldErrorf("kind", validation.InvalidValue, "cannot determine cloud provider for cluster provider %s", planSpec.Kind)
 	}
@@ -114,7 +106,7 @@ func (e *estimatesImpl) GetClusterEstimate(planSpec *configv1.PlanSpec) (*costsv
 
 	// Add node pool costs
 	zoneMultiplier := int64(1)
-	if planSpec.Kind == providerGCP {
+	if planSpec.Kind == metadata.ProviderGCP {
 		// GKE is hard-coded currently to deploy for all zones in a region, so get the zones for the region
 		// and multiply the node pool size by that to get the estimate.
 		regionAZs, err := e.metadata.RegionZones(cloud, region)
@@ -157,7 +149,7 @@ func (e *estimatesImpl) GetNodePoolEstimate(cloud string, region string, nodePoo
 
 	priceType := costsv1.PriceTypeOnDemand
 	if nodePool.Spot {
-		if cloud == cloudGCP {
+		if cloud == metadata.CloudGCP {
 			priceType = costsv1.PriceTypePreEmptible
 		} else {
 			priceType = costsv1.PriceTypeSpot

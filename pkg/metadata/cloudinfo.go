@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package costs
+package metadata
 
 import (
 	"fmt"
@@ -228,11 +228,11 @@ func (c *cloudinfoImpl) KubernetesVersions(cloud string, region string) ([]strin
 // mapCloud translates our cloud names into cloudinfo cloud names and kubernetes service names
 func mapCloud(cloud string) (string, string, error) {
 	switch cloud {
-	case cloudGCP:
+	case CloudGCP:
 		return "google", "gke", nil
-	case cloudAWS:
+	case CloudAWS:
 		return "amazon", "eks", nil
-	case cloudAzure:
+	case CloudAzure:
 		return "azure", "aks", nil
 	}
 	return "", "", fmt.Errorf("Can't map provided cloud %s to cloudinfo cloud name", cloud)

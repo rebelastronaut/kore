@@ -25,7 +25,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/appvia/kore/pkg/costs"
+	"github.com/appvia/kore/pkg/metadata"
 	"github.com/appvia/kore/pkg/utils/kubernetes"
 
 	"github.com/appvia/kore/pkg/apiserver"
@@ -98,7 +98,7 @@ func invoke(ctx *cli.Context) error {
 				GRPCClientCrt: ctx.String("dex-grpc-client-crt"),
 				GRPCClientKey: ctx.String("dex-grpc-client-key"),
 			},
-			Costs: costs.Config{
+			Metadata: metadata.Config{
 				CloudinfoURL: ctx.String("cloud-info-url"),
 			},
 		},

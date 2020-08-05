@@ -23,6 +23,7 @@ import (
 
 	"github.com/appvia/kore/pkg/costs"
 	"github.com/appvia/kore/pkg/kore/authentication"
+	"github.com/appvia/kore/pkg/metadata"
 	"github.com/appvia/kore/pkg/persistence"
 	"github.com/appvia/kore/pkg/persistence/model"
 	"github.com/appvia/kore/pkg/store"
@@ -112,6 +113,8 @@ type Interface interface {
 	Persist() persistence.Interface
 	// Config returns the config interface
 	Configs() Configs
+	// Metadata provides access to cloud provider metadata such as instance types, prices, regions, etc
+	Metadata() metadata.Metadata
 	// Costs returns the costs business logic layer
 	Costs() costs.Costs
 	// Features returns the kore feature control layer
@@ -177,6 +180,6 @@ type Config struct {
 	PublicAPIURL string `json:"public-api-url,omitempty"`
 	// LocalJWTPublicKey is the public key to use to verify JWTs if using the localjwt auth plugin
 	LocalJWTPublicKey string `json:"local-jwt-public-key,omitempty"`
-	// Costs is the configuration for the costs engine
-	Costs costs.Config `json:"costs,omitempty"`
+	// Metadata is the configuration for the metadata engine
+	Metadata metadata.Config `json:"metadata,omitempty"`
 }

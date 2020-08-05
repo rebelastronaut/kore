@@ -14,18 +14,34 @@
  * limitations under the License.
  */
 
-package costs
+package metadata
 
 import "strings"
 
+const (
+	ProviderGCP = "GKE"
+	CloudGCP    = "gcp"
+
+	ProviderAWS = "EKS"
+	CloudAWS    = "aws"
+
+	ProviderAzure = "AKS"
+	CloudAzure    = "azure"
+
+	ProviderKore = "Kore"
+	CloudUnknown = "unknown"
+)
+
 func getCloudForClusterProvider(provider string) string {
 	switch strings.ToUpper(provider) {
-	case providerGCP:
-		return cloudGCP
-	case providerAWS:
-		return cloudAWS
-	case providerAzure:
-		return cloudAzure
+	case ProviderGCP:
+		return CloudGCP
+	case ProviderAWS:
+		return CloudAWS
+	case ProviderAzure:
+		return CloudAzure
+	case strings.ToUpper(ProviderKore):
+		return CloudUnknown
 	}
 	return ""
 }

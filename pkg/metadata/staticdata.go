@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package costs
+package metadata
 
 import (
 	"encoding/json"
 
 	costsv1 "github.com/appvia/kore/pkg/apis/costs/v1beta1"
-	"github.com/appvia/kore/pkg/costs/staticdata"
+	"github.com/appvia/kore/pkg/metadata/staticdata"
 )
 
 // staticData provides an implementation of the Cloudinfo interface that uses static

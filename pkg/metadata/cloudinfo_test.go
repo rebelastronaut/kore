@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package costs
+package metadata
 
 import (
 	"testing"

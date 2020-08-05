@@ -22,7 +22,7 @@ import (
 	configv1 "github.com/appvia/kore/pkg/apis/config/v1"
 	costsv1 "github.com/appvia/kore/pkg/apis/costs/v1beta1"
 	"github.com/appvia/kore/pkg/costs"
-	"github.com/appvia/kore/pkg/costs/costsfakes"
+	"github.com/appvia/kore/pkg/metadata/metadatafakes"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 
 	. "github.com/onsi/ginkgo"
@@ -70,9 +70,9 @@ func encodePlan(config map[string]interface{}) []byte {
 
 var _ = Describe("Costs - Estimates", func() {
 	var e costs.Estimates
-	var m costsfakes.FakeMetadata
+	var m metadatafakes.FakeMetadata
 	BeforeEach(func() {
-		m = costsfakes.FakeMetadata{}
+		m = metadatafakes.FakeMetadata{}
 		m.PricesAvailableReturns(true)
 		m.KubernetesControlPlaneCostReturns(100000, nil)
 		m.KubernetesExposedServiceCostReturns(25000, nil)

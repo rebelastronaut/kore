@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package costs
+package metadata
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ import (
 	costsv1 "github.com/appvia/kore/pkg/apis/costs/v1beta1"
 )
 
-// Metadata allows access to cloud service metadats such as instance types and prices
+// Metadata allows access to cloud service metadata such as instance types and prices
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Metadata
 type Metadata interface {
 	// Clouds retrieves the list of supported clouds
@@ -50,8 +50,9 @@ type Metadata interface {
 	PricesAvailable() bool
 }
 
-// NewMetadata creates a new instance of the metadata API
-func NewMetadata(cloudinfo Cloudinfo) Metadata {
+// New creates a new instance of the metadata API
+func New(config *Config) Metadata {
+	cloudinfo := NewCloudInfo(config.CloudinfoURL)
 	return &metadataImpl{
 		cloudinfo:          cloudinfo,
 		cloudinfoAvailable: false,
@@ -82,7 +83,7 @@ func (m *metadataImpl) PricesAvailable() bool {
 }
 
 func (m *metadataImpl) Clouds() ([]string, error) {
-	return []string{cloudGCP, cloudAWS, cloudAzure}, nil
+	return []string{CloudGCP, CloudAWS, CloudAzure}, nil
 }
 
 func (m *metadataImpl) MapProviderToCloud(provider string) (string, error) {
@@ -132,11 +133,11 @@ func (m *metadataImpl) KubernetesVersions(cloud string, region string) ([]string
 }
 
 func (m *metadataImpl) KubernetesControlPlaneCost(cloud string, region string) (int64, error) {
-	// @TODO: Determine this from the providers. For now, AWS and GCP both charge 10c/hr worldwide.
+	// @TODO: Determine this from the providers. For now, AWS and GCP both charge 10c/hr worldwide, Azure 0c.
 	switch cloud {
-	case cloudGCP:
+	case CloudGCP:
 		return 100000, nil
-	case cloudAWS:
+	case CloudAWS:
 		return 100000, nil
 	}
 	return 0, nil

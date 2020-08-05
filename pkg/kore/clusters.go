@@ -316,9 +316,10 @@ func (c *clustersImpl) ensureIdentifiers(ctx context.Context, cluster *clustersv
 	}
 
 	// work out the right cloud for the cluster provider so we can tag the asset correctly
-	cloud, mapErr := c.Costs().Metadata().MapProviderToCloud(cluster.Spec.Kind)
+	cloud, mapErr := c.Metadata().MapProviderToCloud(cluster.Spec.Kind)
 	if mapErr != nil {
-		log.WithField("provider", cluster.Spec.Kind).WithError(mapErr).Warn("received error mapping k8s provider to cloud provider for asset identifier, will continue")
+		log.WithField("provider", cluster.Spec.Kind).WithError(mapErr).Error("received error mapping k8s provider to cloud provider for asset identifier")
+		return false, err
 	}
 
 	// @step: For a new cluster if an identifier has been supplied, check valid for re-use and mark it as

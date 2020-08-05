@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package costs
+package metadata
 
-// Config provides the configuration needed by the costs engine.
+// Config provides the configuration needed by the metadata engine.
 type Config struct {
 	CloudinfoURL string
 }
