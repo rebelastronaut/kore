@@ -81,7 +81,7 @@ class KoreApiClient {
   // Users
   ListUsers = () => this.apis.default.ListUsers()
   ListUserTeams = (user) => this.apis.default.ListUserTeams({ user })
-  UpdateUser = (user, userSpec) => this.apis.default.UpdateUser({ user, body: JSON.stringify(userSpec) })
+  UpdateUser = (user, userSpec) => this.apis.default.UpdateUser({ user, body: JSON.stringify(userSpec), identity: 'sso' })
 
   // Config
   ListConfig = () => this.apis.default.ListConfig()
