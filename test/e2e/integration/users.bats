@@ -17,6 +17,10 @@
 load helper
 
 @test "Ensuring the admin user is showing up" {
+  runit "${KORE} profile ls"
+  [[ "$status" -eq 0 ]]
+  runit "${KORE} profile use local"
+  [[ "$status" -eq 0 ]]
   runit "${KORE} get user admin"
   [[ "$status" -eq 0 ]]
 }
