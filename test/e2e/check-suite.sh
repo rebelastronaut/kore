@@ -85,7 +85,7 @@ EOF
     --retry 3 \
     --header "Content-Type: application/json" \
     --header "Authorization: Bearer ${KORE_ADMIN_TOKEN}" \
-    ${KORE_API_URL}/api/v1alpha1/users/${ADMIN_USER} -d @/tmp/e2e.user; then
+    ${KORE_API_URL}/api/v1alpha1/users/${ADMIN_USER}?identity=sso -d @/tmp/e2e.user; then
     error "trying to provision admin user for e2e"
     exit 1
   fi

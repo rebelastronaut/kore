@@ -306,14 +306,6 @@ func (h *usersImpl) Update(ctx context.Context, user *orgv1.User, options Update
 		return nil, valErr
 	}
 
-	// @step: is this a new user?
-	existing, err := h.Persist().Users().Exists(ctx, user.Name)
-	if err != nil {
-		log.WithError(err).Error("trying to check if user exists")
-
-		return nil, err
-	}
-
 	// @step: update the user in the user management service
 	if err := h.Persist().Users().Update(ctx, DefaultConvertor.ToUserModel(user)); err != nil {
 		log.WithError(err).Error("trying to update the user in kore")
@@ -322,7 +314,7 @@ func (h *usersImpl) Update(ctx context.Context, user *orgv1.User, options Update
 	}
 
 	// @step: ensure the user identity
-	if options.ProvisionIdentity != "" && !existing {
+	if options.ProvisionIdentity != "" {
 		u, err := h.Persist().Users().Get(ctx, user.Name)
 		if err != nil {
 			log.WithError(err).Error("trying to retrieve the user")
@@ -346,6 +338,7 @@ func (h *usersImpl) Update(ctx context.Context, user *orgv1.User, options Update
 			return nil, errors.New("unsupported identity creation")
 		}
 	}
+
 	return user, nil
 }
 
