@@ -60,7 +60,7 @@ load helper
 @test "We should be able to use multiple profiles via the switch" {
   runit "${KORE} profiles delete local-admin --force"
   [[ "$status" -eq 0 ]]
-  runit "echo ${KORE_ADMIN_PASS} | ${KORE} profile configure local-admin --account basicauth -a http://localhost:10080 --user admin --password -"
+  runit "echo -n ${KORE_ADMIN_PASS} | ${KORE} profile configure local-admin --account basicauth -a http://localhost:10080 --user admin --password -"
   [[ "$status" -eq 0 ]]
   runit "${KORE} --profile local-admin whoami | grep ^admin"
   [[ "$status" -eq 0 ]]
@@ -79,5 +79,7 @@ load helper
 
 @test "We should be able to switch back to local profile" {
   runit "${KORE} profiles use local"
+  [[ "$status" -eq 0 ]]
+  runit "${KORE} whoami"
   [[ "$status" -eq 0 ]]
 }

@@ -17,7 +17,7 @@
 load helper
 
 @test "Ensuring the admin user is showing up" {
-  retry 3 "${KORE} get user admin"
+  runit "${KORE} get user admin"
   [[ "$status" -eq 0 ]]
 }
 
