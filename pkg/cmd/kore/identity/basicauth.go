@@ -20,6 +20,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	orgv1 "github.com/appvia/kore/pkg/apis/org/v1"
 	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
@@ -106,7 +107,7 @@ func (o *BasicAuthOptions) Run() error {
 		if err != nil {
 			return err
 		}
-		o.Password = string(content)
+		o.Password = strings.TrimSpace(string(content))
 	} else {
 		if err := (cmdutil.Prompts{
 			&cmdutil.Prompt{
@@ -120,20 +121,18 @@ func (o *BasicAuthOptions) Run() error {
 		}
 		var confirm string
 
-		if !o.PassStdin {
-			if err := (cmdutil.Prompts{
-				&cmdutil.Prompt{
-					Id:     "Please confirm password for " + o.Username,
-					Value:  &confirm,
-					Mask:   true,
-					ErrMsg: "invalid password",
-				},
-			}).Collect(); err != nil {
-				return err
-			}
-			if confirm != o.Password {
-				return errors.New("passwords do not match")
-			}
+		if err := (cmdutil.Prompts{
+			&cmdutil.Prompt{
+				Id:     "Please confirm password for " + o.Username,
+				Value:  &confirm,
+				Mask:   true,
+				ErrMsg: "invalid password",
+			},
+		}).Collect(); err != nil {
+			return err
+		}
+		if confirm != o.Password {
+			return errors.New("passwords do not match")
 		}
 	}
 
