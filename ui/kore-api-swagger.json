@@ -7588,6 +7588,12 @@
             "required": true
           },
           {
+            "type": "string",
+            "description": "Indicates we should create an identity for this user of type",
+            "name": "identity",
+            "in": "query"
+          },
+          {
             "description": "The specification for a user in the kore",
             "name": "body",
             "in": "body",
@@ -7897,8 +7903,8 @@
     },
     "kore.ServicePlanDetails": {
       "required": [
-        "summary",
         "kind",
+        "summary",
         "editableParams"
       ],
       "properties": {
@@ -10091,11 +10097,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
+        "clientID",
         "clientSecret",
         "issuer",
         "clientScopes",
-        "userClaims",
-        "clientID"
+        "userClaims"
       ],
       "properties": {
         "clientID": {

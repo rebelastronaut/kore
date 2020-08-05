@@ -254,7 +254,7 @@ func (l *loginHandler) callbackHandler(req *restful.Request, resp *restful.Respo
 		}
 
 		// @step: ensure this matches a user in the kore - else we create him
-		if err := l.Users().EnableUser(req.Request.Context(), username, email); err != nil {
+		if err := l.Users().EnableSSOUser(req.Request.Context(), username, email); err != nil {
 			return http.StatusInternalServerError, err
 		}
 

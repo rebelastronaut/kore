@@ -67,6 +67,11 @@ type UpdateUserParams struct {
 
 	*/
 	Body *models.V1User
+	/*Identity
+	  Indicates we should create an identity for this user of type
+
+	*/
+	Identity *string
 	/*User
 	  The name of the user you are updating or creating in the kore
 
@@ -122,6 +127,17 @@ func (o *UpdateUserParams) SetBody(body *models.V1User) {
 	o.Body = body
 }
 
+// WithIdentity adds the identity to the update user params
+func (o *UpdateUserParams) WithIdentity(identity *string) *UpdateUserParams {
+	o.SetIdentity(identity)
+	return o
+}
+
+// SetIdentity adds the identity to the update user params
+func (o *UpdateUserParams) SetIdentity(identity *string) {
+	o.Identity = identity
+}
+
 // WithUser adds the user to the update user params
 func (o *UpdateUserParams) WithUser(user string) *UpdateUserParams {
 	o.SetUser(user)
@@ -145,6 +161,22 @@ func (o *UpdateUserParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
 		}
+	}
+
+	if o.Identity != nil {
+
+		// query param identity
+		var qrIdentity string
+		if o.Identity != nil {
+			qrIdentity = *o.Identity
+		}
+		qIdentity := qrIdentity
+		if qIdentity != "" {
+			if err := r.SetQueryParam("identity", qIdentity); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	// path param user

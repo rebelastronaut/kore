@@ -18,7 +18,7 @@ LABEL Name=auth-proxy \
 
 RUN apk --no-cache add ca-certificates
 
-COPY --from=0 /go/src/github.com/appvia/kore/bin/auth-proxy /bin/auth-proxy
+COPY --from=0 /go/src/github.com/appvia/kore/bin/* /bin/
 
 USER 65534
 
