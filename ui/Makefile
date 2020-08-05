@@ -47,6 +47,14 @@ test-e2e-nightly-eks-debug:
 	@echo "--> Running nightly E2E Tests for EKS (non-headless)"
 	@export SHOW_BROWSER=true && npm run test-e2e-nightly-eks
 
+test-e2e-nightly-aks:
+	@echo "--> Running nightly E2E Tests for AKS (headless)"
+	@export SHOW_BROWSER=false && npm run test-e2e-nightly-aks
+
+test-e2e-nightly-aks-debug:
+	@echo "--> Running nightly E2E Tests for AKS (non-headless)"
+	@export SHOW_BROWSER=true && npm run test-e2e-nightly-aks
+
 kind-e2e:
 	@export KORE_ADMIN_PASS="$(shell kubectl --context kind-kore -n kore get secret kore-api -o json | jq -r ".data.KORE_ADMIN_PASS" | base64 --decode)" && ${MAKE} test-e2e
 
@@ -64,6 +72,12 @@ kind-e2e-nightly-eks:
 
 kind-e2e-nightly-eks-debug:
 	@export KORE_ADMIN_PASS="$(shell kubectl --context kind-kore -n kore get secret kore-api -o json | jq -r ".data.KORE_ADMIN_PASS" | base64 --decode)" && ${MAKE} test-e2e-nightly-eks-debug
+
+kind-e2e-nightly-aks:
+	@export KORE_ADMIN_PASS="$(shell kubectl --context kind-kore -n kore get secret kore-api -o json | jq -r ".data.KORE_ADMIN_PASS" | base64 --decode)" && ${MAKE} test-e2e-nightly-aks
+
+kind-e2e-nightly-aks-debug:
+	@export KORE_ADMIN_PASS="$(shell kubectl --context kind-kore -n kore get secret kore-api -o json | jq -r ".data.KORE_ADMIN_PASS" | base64 --decode)" && ${MAKE} test-e2e-nightly-aks-debug
 
 update-swagger:
 	@echo "--> Updating unit test / auto-gen swagger (requires API to be running locally)"

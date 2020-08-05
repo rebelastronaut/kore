@@ -21,7 +21,8 @@ export class TeamCluster {
   getCloud(provider) {
     return {
       'GKE': 'GCP',
-      'EKS': 'AWS'
+      'EKS': 'AWS',
+      'AKS': 'Azure'
     }[provider.toUpperCase()]
   }
 
