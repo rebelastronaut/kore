@@ -109,6 +109,7 @@ func Migrations(dbname, driver, databaseURL string) error {
 	if err != nil {
 		return err
 	}
+	defer m.Close()
 
 	if err := m.Up(); err != nil {
 		log.WithError(err).Error("trying to perform database migrations")
