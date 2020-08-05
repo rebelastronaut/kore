@@ -412,7 +412,7 @@ jobs:
             test/bin/e2e.sh \
               --build-cli false \
               --build-kore-api false \
-              --build-proxy false \
+              --build-proxy true \
               --enable-ui false \
               --version ${CIRCLE_SHA1}
       - run:
@@ -462,7 +462,7 @@ jobs:
             test/bin/e2e.sh \
               --build-cli false \
               --build-kore-api false \
-              --build-proxy false \
+              --build-proxy true \
               --enable-ui false \
               --version ${CIRCLE_SHA1}
       - run:
@@ -512,7 +512,7 @@ jobs:
             test/bin/e2e.sh \
               --build-cli false \
               --build-kore-api false \
-              --build-proxy false \
+              --build-proxy true \
               --enable-ui false \
               --version ${CIRCLE_SHA1}
       - run:
