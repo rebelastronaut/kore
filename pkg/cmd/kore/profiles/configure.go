@@ -146,13 +146,13 @@ func (o *ConfigureOptions) Run() error {
 func (o *ConfigureOptions) GetLocalAccountDetails() error {
 	switch o.Account {
 	case kore.AccountLocal:
-		auth := &config.BasicAuth{Username: o.LocalUser}
+		auth := &config.BasicAuth{}
 
 		if o.LocalUser == "" {
 			p := cmdutil.Prompts{
 				&cmdutil.Prompt{
 					Id:     "Please enter your username",
-					Value:  &auth.Username,
+					Value:  &o.LocalUser,
 					ErrMsg: "invalid username",
 				},
 			}
@@ -165,7 +165,7 @@ func (o *ConfigureOptions) GetLocalAccountDetails() error {
 			p := cmdutil.Prompts{
 				&cmdutil.Prompt{
 					Id:     "Please enter your password",
-					Value:  &auth.Password,
+					Value:  &o.LocalPass,
 					ErrMsg: "invalid password",
 				},
 			}
@@ -174,12 +174,15 @@ func (o *ConfigureOptions) GetLocalAccountDetails() error {
 			}
 		}
 		if o.LocalPass != "" && o.LocalPass == "-" {
-			pass, err := utils.ReadFileOrStdin(os.Stdin, o.LocalPass)
+			pass, err := utils.ReadFileOrStdin(os.Stdin, "-")
 			if err != nil {
 				return err
 			}
-			o.LocalPass = string(pass)
+			o.LocalPass = strings.TrimSpace(string(pass))
 		}
+
+		auth.Password = o.LocalPass
+		auth.Username = o.LocalUser
 
 		o.Config().AddAuthInfo(o.Name, &config.AuthInfo{BasicAuth: auth})
 

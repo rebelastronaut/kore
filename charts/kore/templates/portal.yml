@@ -55,6 +55,8 @@ spec:
           hostPort: {{ .Values.ui.hostPort }}
           {{- end }}
         env:
+        - name: AUTH_PLUGINS
+          value: {{ .Values.api.auth_plugins | join "," }}
         {{- if .Values.ui.build }}
         - name: BUILD_ID
           value: {{ .Values.ui.build }}
@@ -94,9 +96,6 @@ spec:
         - name: KORE_FEATURE_GATES
           value: "{{ join "," .Values.ui.feature_gates }}"
         {{- end }}
-        env:
-          - name: AUTH_PLUGINS
-            value: {{ .Values.api.auth_plugins | join "," }}
         envFrom:
         - secretRef:
             name: {{ include "kore.name" . }}-idp

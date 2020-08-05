@@ -39,7 +39,7 @@ load helper
 }
 
 @test "We should be able to create a ${TEAM} team to run test" {
-  if runit "${KORE} get team | grep ^${TEAM}"; then
+  if retry 1 "${KORE} get team | grep ^${TEAM}"; then
     skip
   fi
   runit "${KORE} create team ${TEAM}"
