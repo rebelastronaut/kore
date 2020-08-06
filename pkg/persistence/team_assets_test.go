@@ -210,6 +210,7 @@ var _ = Describe("Team Assets", func() {
 		Describe("StoreAssetCost", func() {
 			It("should store an asset cost", func() {
 				err := store.TeamAssets().StoreAssetCost(ctx, &model.TeamAssetCost{
+					CostIdentifier:  utils.GenerateIdentifier(),
 					TeamIdentifier:  teamIdentifier,
 					AssetIdentifier: assetIdentifier,
 					UsageStartTime:  time.Now(),

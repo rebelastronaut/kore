@@ -75,6 +75,11 @@ type ListCostsParams struct {
 
 	*/
 	From *string
+	/*Invoice
+	  Invoice to return costs for, in the formay YYYYMM
+
+	*/
+	Invoice *string
 	/*Provider
 	  Cloud provider (e.g. gcp, aws, azure) to return costs for
 
@@ -162,6 +167,17 @@ func (o *ListCostsParams) SetFrom(from *string) {
 	o.From = from
 }
 
+// WithInvoice adds the invoice to the list costs params
+func (o *ListCostsParams) WithInvoice(invoice *string) *ListCostsParams {
+	o.SetInvoice(invoice)
+	return o
+}
+
+// SetInvoice adds the invoice to the list costs params
+func (o *ListCostsParams) SetInvoice(invoice *string) {
+	o.Invoice = invoice
+}
+
 // WithProvider adds the provider to the list costs params
 func (o *ListCostsParams) WithProvider(provider *string) *ListCostsParams {
 	o.SetProvider(provider)
@@ -245,6 +261,22 @@ func (o *ListCostsParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		qFrom := qrFrom
 		if qFrom != "" {
 			if err := r.SetQueryParam("from", qFrom); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	if o.Invoice != nil {
+
+		// query param invoice
+		var qrInvoice string
+		if o.Invoice != nil {
+			qrInvoice = *o.Invoice
+		}
+		qInvoice := qrInvoice
+		if qInvoice != "" {
+			if err := r.SetQueryParam("invoice", qInvoice); err != nil {
 				return err
 			}
 		}

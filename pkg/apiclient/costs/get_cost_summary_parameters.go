@@ -65,6 +65,11 @@ type GetCostSummaryParams struct {
 
 	*/
 	From string
+	/*Invoice
+	  Invoice to return costs for, in the formay YYYYMM
+
+	*/
+	Invoice *string
 	/*Provider
 	  Restrict to costs for specified cloud provider (e.g. gcp, aws, azure)
 
@@ -125,6 +130,17 @@ func (o *GetCostSummaryParams) SetFrom(from string) {
 	o.From = from
 }
 
+// WithInvoice adds the invoice to the get cost summary params
+func (o *GetCostSummaryParams) WithInvoice(invoice *string) *GetCostSummaryParams {
+	o.SetInvoice(invoice)
+	return o
+}
+
+// SetInvoice adds the invoice to the get cost summary params
+func (o *GetCostSummaryParams) SetInvoice(invoice *string) {
+	o.Invoice = invoice
+}
+
 // WithProvider adds the provider to the get cost summary params
 func (o *GetCostSummaryParams) WithProvider(provider *string) *GetCostSummaryParams {
 	o.SetProvider(provider)
@@ -158,6 +174,22 @@ func (o *GetCostSummaryParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	// path param from
 	if err := r.SetPathParam("from", o.From); err != nil {
 		return err
+	}
+
+	if o.Invoice != nil {
+
+		// query param invoice
+		var qrInvoice string
+		if o.Invoice != nil {
+			qrInvoice = *o.Invoice
+		}
+		qInvoice := qrInvoice
+		if qInvoice != "" {
+			if err := r.SetQueryParam("invoice", qInvoice); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if o.Provider != nil {

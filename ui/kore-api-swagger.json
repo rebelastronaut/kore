@@ -573,6 +573,12 @@
             "description": "Account/project/subscription to return costs for",
             "name": "account",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Invoice to return costs for, in the formay YYYYMM",
+            "name": "invoice",
+            "in": "query"
           }
         ],
         "responses": {
@@ -10384,11 +10390,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
-        "issuer",
         "clientScopes",
         "userClaims",
         "clientID",
-        "clientSecret"
+        "clientSecret",
+        "issuer"
       ],
       "properties": {
         "clientID": {

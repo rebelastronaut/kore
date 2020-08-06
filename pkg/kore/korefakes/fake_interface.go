@@ -9,6 +9,7 @@ import (
 	"github.com/appvia/kore/pkg/costs"
 	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/kore/authentication"
+	"github.com/appvia/kore/pkg/metadata"
 	"github.com/appvia/kore/pkg/persistence"
 	"github.com/appvia/kore/pkg/persistence/model"
 	"github.com/appvia/kore/pkg/store"
@@ -168,6 +169,16 @@ type FakeInterface struct {
 	}
 	koreIdentifierReturnsOnCall map[int]struct {
 		result1 string
+	}
+	MetadataStub        func() metadata.Metadata
+	metadataMutex       sync.RWMutex
+	metadataArgsForCall []struct {
+	}
+	metadataReturns struct {
+		result1 metadata.Metadata
+	}
+	metadataReturnsOnCall map[int]struct {
+		result1 metadata.Metadata
 	}
 	PersistStub        func() persistence.Interface
 	persistMutex       sync.RWMutex
@@ -1065,6 +1076,58 @@ func (fake *FakeInterface) KoreIdentifierReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
+func (fake *FakeInterface) Metadata() metadata.Metadata {
+	fake.metadataMutex.Lock()
+	ret, specificReturn := fake.metadataReturnsOnCall[len(fake.metadataArgsForCall)]
+	fake.metadataArgsForCall = append(fake.metadataArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Metadata", []interface{}{})
+	fake.metadataMutex.Unlock()
+	if fake.MetadataStub != nil {
+		return fake.MetadataStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.metadataReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeInterface) MetadataCallCount() int {
+	fake.metadataMutex.RLock()
+	defer fake.metadataMutex.RUnlock()
+	return len(fake.metadataArgsForCall)
+}
+
+func (fake *FakeInterface) MetadataCalls(stub func() metadata.Metadata) {
+	fake.metadataMutex.Lock()
+	defer fake.metadataMutex.Unlock()
+	fake.MetadataStub = stub
+}
+
+func (fake *FakeInterface) MetadataReturns(result1 metadata.Metadata) {
+	fake.metadataMutex.Lock()
+	defer fake.metadataMutex.Unlock()
+	fake.MetadataStub = nil
+	fake.metadataReturns = struct {
+		result1 metadata.Metadata
+	}{result1}
+}
+
+func (fake *FakeInterface) MetadataReturnsOnCall(i int, result1 metadata.Metadata) {
+	fake.metadataMutex.Lock()
+	defer fake.metadataMutex.Unlock()
+	fake.MetadataStub = nil
+	if fake.metadataReturnsOnCall == nil {
+		fake.metadataReturnsOnCall = make(map[int]struct {
+			result1 metadata.Metadata
+		})
+	}
+	fake.metadataReturnsOnCall[i] = struct {
+		result1 metadata.Metadata
+	}{result1}
+}
+
 func (fake *FakeInterface) Persist() persistence.Interface {
 	fake.persistMutex.Lock()
 	ret, specificReturn := fake.persistReturnsOnCall[len(fake.persistArgsForCall)]
@@ -1755,6 +1818,8 @@ func (fake *FakeInterface) Invocations() map[string][][]interface{} {
 	defer fake.invitationsMutex.RUnlock()
 	fake.koreIdentifierMutex.RLock()
 	defer fake.koreIdentifierMutex.RUnlock()
+	fake.metadataMutex.RLock()
+	defer fake.metadataMutex.RUnlock()
 	fake.persistMutex.RLock()
 	defer fake.persistMutex.RUnlock()
 	fake.planPoliciesMutex.RLock()

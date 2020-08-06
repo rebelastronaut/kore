@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/appvia/kore/pkg/apis/costs/v1beta1"
-	"github.com/appvia/kore/pkg/costs"
+	"github.com/appvia/kore/pkg/metadata"
 )
 
 type FakeMetadata struct {
@@ -806,4 +806,4 @@ func (fake *FakeMetadata) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ costs.Metadata = new(FakeMetadata)
+var _ metadata.Metadata = new(FakeMetadata)
