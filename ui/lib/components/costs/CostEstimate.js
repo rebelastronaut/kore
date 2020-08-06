@@ -1,7 +1,7 @@
 import * as React from 'react'
 import PropTypes from 'prop-types'
 import { Alert } from 'antd'
-import { debounce } from 'lodash'
+import { debounce, isEqual } from 'lodash'
 
 import KoreApi from '../../kore-api'
 import CostBreakdown from './CostBreakdown'
@@ -40,7 +40,7 @@ export default class CostEstimate extends React.Component {
     }
 
     // Update the estimate (with a debounce) when the plan values change
-    if (!prevProps || prevProps.planValues !== this.props.planValues) {
+    if (!prevProps || !isEqual(prevProps.planValues, this.props.planValues)) {
       if (!this.state.estimating) {
         this.setState({ estimating: true })
       }
