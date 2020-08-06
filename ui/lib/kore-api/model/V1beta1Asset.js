@@ -14,18 +14,18 @@
 import ApiClient from '../ApiClient';
 
 /**
- * The V1beta1CostAsset model module.
- * @module model/V1beta1CostAsset
+ * The V1beta1Asset model module.
+ * @module model/V1beta1Asset
  * @version 0.0.1
  */
-class V1beta1CostAsset {
+class V1beta1Asset {
     /**
-     * Constructs a new <code>V1beta1CostAsset</code>.
-     * @alias module:model/V1beta1CostAsset
+     * Constructs a new <code>V1beta1Asset</code>.
+     * @alias module:model/V1beta1Asset
      */
     constructor() { 
         
-        V1beta1CostAsset.initialize(this);
+        V1beta1Asset.initialize(this);
     }
 
     /**
@@ -37,15 +37,15 @@ class V1beta1CostAsset {
     }
 
     /**
-     * Constructs a <code>V1beta1CostAsset</code> from a plain JavaScript object, optionally creating a new instance.
+     * Constructs a <code>V1beta1Asset</code> from a plain JavaScript object, optionally creating a new instance.
      * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @param {module:model/V1beta1CostAsset} obj Optional instance to populate.
-     * @return {module:model/V1beta1CostAsset} The populated <code>V1beta1CostAsset</code> instance.
+     * @param {module:model/V1beta1Asset} obj Optional instance to populate.
+     * @return {module:model/V1beta1Asset} The populated <code>V1beta1Asset</code> instance.
      */
     static constructFromObject(data, obj) {
         if (data) {
-            obj = obj || new V1beta1CostAsset();
+            obj = obj || new V1beta1Asset();
 
             if (data.hasOwnProperty('assetIdentifier')) {
                 obj['assetIdentifier'] = ApiClient.convertToType(data['assetIdentifier'], 'String');
@@ -153,37 +153,37 @@ class V1beta1CostAsset {
 /**
  * @member {String} assetIdentifier
  */
-V1beta1CostAsset.prototype['assetIdentifier'] = undefined;
+V1beta1Asset.prototype['assetIdentifier'] = undefined;
 
 /**
  * @member {String} koreIdentifier
  */
-V1beta1CostAsset.prototype['koreIdentifier'] = undefined;
+V1beta1Asset.prototype['koreIdentifier'] = undefined;
 
 /**
  * @member {String} name
  */
-V1beta1CostAsset.prototype['name'] = undefined;
+V1beta1Asset.prototype['name'] = undefined;
 
 /**
  * @member {String} provider
  */
-V1beta1CostAsset.prototype['provider'] = undefined;
+V1beta1Asset.prototype['provider'] = undefined;
 
 /**
  * @member {Object.<String, String>} tags
  */
-V1beta1CostAsset.prototype['tags'] = undefined;
+V1beta1Asset.prototype['tags'] = undefined;
 
 /**
  * @member {String} teamIdentifier
  */
-V1beta1CostAsset.prototype['teamIdentifier'] = undefined;
+V1beta1Asset.prototype['teamIdentifier'] = undefined;
 
 
 
 
 
 
-export default V1beta1CostAsset;
+export default V1beta1Asset;
 

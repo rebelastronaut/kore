@@ -12,22 +12,22 @@
  */
 
 import ApiClient from '../ApiClient';
-import V1beta1CostAsset from './V1beta1CostAsset';
+import V1beta1Asset from './V1beta1Asset';
 
 /**
- * The V1beta1CostAssetList model module.
- * @module model/V1beta1CostAssetList
+ * The V1beta1AssetList model module.
+ * @module model/V1beta1AssetList
  * @version 0.0.1
  */
-class V1beta1CostAssetList {
+class V1beta1AssetList {
     /**
-     * Constructs a new <code>V1beta1CostAssetList</code>.
-     * @alias module:model/V1beta1CostAssetList
-     * @param items {Array.<module:model/V1beta1CostAsset>} 
+     * Constructs a new <code>V1beta1AssetList</code>.
+     * @alias module:model/V1beta1AssetList
+     * @param items {Array.<module:model/V1beta1Asset>} 
      */
     constructor(items) { 
         
-        V1beta1CostAssetList.initialize(this, items);
+        V1beta1AssetList.initialize(this, items);
     }
 
     /**
@@ -40,32 +40,32 @@ class V1beta1CostAssetList {
     }
 
     /**
-     * Constructs a <code>V1beta1CostAssetList</code> from a plain JavaScript object, optionally creating a new instance.
+     * Constructs a <code>V1beta1AssetList</code> from a plain JavaScript object, optionally creating a new instance.
      * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
      * @param {Object} data The plain JavaScript object bearing properties of interest.
-     * @param {module:model/V1beta1CostAssetList} obj Optional instance to populate.
-     * @return {module:model/V1beta1CostAssetList} The populated <code>V1beta1CostAssetList</code> instance.
+     * @param {module:model/V1beta1AssetList} obj Optional instance to populate.
+     * @return {module:model/V1beta1AssetList} The populated <code>V1beta1AssetList</code> instance.
      */
     static constructFromObject(data, obj) {
         if (data) {
-            obj = obj || new V1beta1CostAssetList();
+            obj = obj || new V1beta1AssetList();
 
             if (data.hasOwnProperty('items')) {
-                obj['items'] = ApiClient.convertToType(data['items'], [V1beta1CostAsset]);
+                obj['items'] = ApiClient.convertToType(data['items'], [V1beta1Asset]);
             }
         }
         return obj;
     }
 
 /**
-     * @return {Array.<module:model/V1beta1CostAsset>}
+     * @return {Array.<module:model/V1beta1Asset>}
      */
     getItems() {
         return this.items;
     }
 
     /**
-     * @param {Array.<module:model/V1beta1CostAsset>} items
+     * @param {Array.<module:model/V1beta1Asset>} items
      */
     setItems(items) {
         this['items'] = items;
@@ -74,14 +74,14 @@ class V1beta1CostAssetList {
 }
 
 /**
- * @member {Array.<module:model/V1beta1CostAsset>} items
+ * @member {Array.<module:model/V1beta1Asset>} items
  */
-V1beta1CostAssetList.prototype['items'] = undefined;
+V1beta1AssetList.prototype['items'] = undefined;
 
 
 
 
 
 
-export default V1beta1CostAssetList;
+export default V1beta1AssetList;
 

@@ -687,7 +687,7 @@
           "200": {
             "description": "Metadata describing the assets for the cloud provider in question",
             "schema": {
-              "$ref": "#/definitions/v1beta1.CostAssetList"
+              "$ref": "#/definitions/v1beta1.AssetList"
             }
           },
           "401": {
@@ -12515,6 +12515,31 @@
         }
       }
     },
+    "v1beta1.Asset": {
+      "properties": {
+        "assetIdentifier": {
+          "type": "string"
+        },
+        "koreIdentifier": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "teamIdentifier": {
+          "type": "string"
+        }
+      }
+    },
     "v1beta1.AssetCost": {
       "properties": {
         "account": {
@@ -12523,18 +12548,17 @@
         "assetIdentifier": {
           "type": "string"
         },
-        "billingMonth": {
-          "type": "integer",
-          "format": "byte"
-        },
-        "billingYear": {
-          "type": "integer"
-        },
         "cost": {
           "type": "integer",
           "format": "int64"
         },
+        "costIdentifier": {
+          "type": "string"
+        },
         "description": {
+          "type": "string"
+        },
+        "invoice": {
           "type": "string"
         },
         "provider": {
@@ -12614,6 +12638,19 @@
         }
       }
     },
+    "v1beta1.AssetList": {
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.Asset"
+          }
+        }
+      }
+    },
     "v1beta1.Continent": {
       "required": [
         "name",
@@ -12640,44 +12677,6 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1beta1.Continent"
-          }
-        }
-      }
-    },
-    "v1beta1.CostAsset": {
-      "properties": {
-        "assetIdentifier": {
-          "type": "string"
-        },
-        "koreIdentifier": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "provider": {
-          "type": "string"
-        },
-        "tags": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "teamIdentifier": {
-          "type": "string"
-        }
-      }
-    },
-    "v1beta1.CostAssetList": {
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1beta1.CostAsset"
           }
         }
       }

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Icon, Table, Typography, Alert, Row, Col, Checkbox } from 'antd'
 import moment from 'moment'
 
-import { formatCost } from '../../utils/cost-formatters'
+import { formatCost, costNonZero } from '../../utils/cost-formatters'
 import IconTooltip from '../utils/IconTooltip'
 import { getCloudInfo } from '../../utils/cloud'
 
@@ -73,17 +73,6 @@ export default class TeamCostSummary extends React.Component {
             <Col span={12}>
               <Typography.Paragraph style={{ fontSize: '14px', marginBottom: 0 }} type="secondary">Projected Team Costs for {month} <IconTooltip icon="info-circle" text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." /></Typography.Paragraph>
               <Typography.Text strong style={{ fontSize: '50px' }}>{summary.cost ? formatCost(this.projectMonthlyCost(fromMoment, toActual, summary.cost)) : '$0.00' }</Typography.Text>
-
-              {/* TODO: 
-              <Statistic
-                title="compared to May 2020"
-                value={predictedCostChangePercent}
-                precision={1}
-                prefix={predictedCostChangePercent >= 0 ? <Icon type="arrow-up" /> : <Icon type="arrow-down" />}
-                suffix="%"
-                style={{ display: 'inline-block', marginLeft: '20px' }}
-              /> 
-              */}
             </Col>
           )}
         </Row>
@@ -98,7 +87,7 @@ export default class TeamCostSummary extends React.Component {
             { title: 'Asset', dataIndex: 'assetName', width: '30%' },
             { title: 'Type', dataIndex: 'assetType', width: '15%' },
             { title: 'Provider', dataIndex: 'provider', width: '15%', render: (v) => v && v.length > 0 ? getCloudInfo(v).cloud : 'n/a' },
-            { title: 'Cost', dataIndex: 'cost', render: (v) => v ? formatCost(v) : '$0.00', width: '20%' },
+            { title: 'Cost', dataIndex: 'cost', render: (v) => <b>{formatCost(v)}</b>, width: '20%' },
             { 
               title: 'Projected', 
               key: 'costproj', 
@@ -134,8 +123,12 @@ export default class TeamCostSummary extends React.Component {
                   sorter: (a, b) => a.cost && b.cost ? a.cost - b.cost : a.cost ? 1 : -1
                 },
               ]}
-              dataSource={selectedAsset.details.filter((detail) => showZeroCostLineItems || detail.cost > 0)}
-              footer={() => <><Checkbox onChange={(e) => this.setState({ showZeroCostLineItems: e.target.checked })} checked={showZeroCostLineItems} />&nbsp;&nbsp;Show zero-cost line items</>}
+              dataSource={selectedAsset.details.filter((detail) => showZeroCostLineItems || costNonZero(detail.cost))}
+              footer={() => <>
+                <Checkbox onChange={(e) => this.setState({ showZeroCostLineItems: e.target.checked })} checked={showZeroCostLineItems} />&nbsp;&nbsp;Show zero-cost line items
+                &nbsp;
+                <IconTooltip icon="info-circle" text="For clarity, line items costing less than $0.01 are not shown - check this box to see all line items" />
+              </>}
             />
           </>          
         )}

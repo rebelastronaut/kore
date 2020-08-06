@@ -60,17 +60,6 @@ export default class OverallCostSummary extends React.Component {
             <Col span={12}>
               <Typography.Paragraph style={{ fontSize: '14px', marginBottom: 0 }} type="secondary">Projected Costs for {month} <IconTooltip icon="info-circle" text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." /></Typography.Paragraph>
               <Typography.Text strong style={{ fontSize: '50px' }}>{summary.cost ? formatCost(this.projectMonthlyCost(fromMoment, toActual, summary.cost)) : '$0.00' }</Typography.Text>
-
-              {/* TODO: 
-              <Statistic
-                title="compared to May 2020"
-                value={predictedCostChangePercent}
-                precision={1}
-                prefix={predictedCostChangePercent >= 0 ? <Icon type="arrow-up" /> : <Icon type="arrow-down" />}
-                suffix="%"
-                style={{ display: 'inline-block', marginLeft: '20px' }}
-              /> 
-              */}
             </Col>
           )}
         </Row>
@@ -83,7 +72,7 @@ export default class OverallCostSummary extends React.Component {
           rowSelection={{ type: 'radio', onSelect: (r) => onTeamDetail && onTeamDetail(r.teamIdentifier) }}
           columns={[
             { title: 'Team', dataIndex: 'teamName', width: '40%' },
-            { title: 'Accrued Costs', dataIndex: 'cost', render: (v) => v ? formatCost(v) : '$0.00', width: '30%',
+            { title: 'Accrued Costs', dataIndex: 'cost', render: (v) => <b>{formatCost(v)}</b>, width: '30%',
               sortDirections: ['descend', 'ascend'], 
               defaultSortOrder: 'descend',
               sorter: (a, b) => a.cost && b.cost ? a.cost - b.cost : a.cost ? 1 : -1

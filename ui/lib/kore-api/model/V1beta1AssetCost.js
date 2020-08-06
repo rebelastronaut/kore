@@ -53,17 +53,17 @@ class V1beta1AssetCost {
             if (data.hasOwnProperty('assetIdentifier')) {
                 obj['assetIdentifier'] = ApiClient.convertToType(data['assetIdentifier'], 'String');
             }
-            if (data.hasOwnProperty('billingMonth')) {
-                obj['billingMonth'] = ApiClient.convertToType(data['billingMonth'], 'Number');
-            }
-            if (data.hasOwnProperty('billingYear')) {
-                obj['billingYear'] = ApiClient.convertToType(data['billingYear'], 'Number');
-            }
             if (data.hasOwnProperty('cost')) {
                 obj['cost'] = ApiClient.convertToType(data['cost'], 'Number');
             }
+            if (data.hasOwnProperty('costIdentifier')) {
+                obj['costIdentifier'] = ApiClient.convertToType(data['costIdentifier'], 'String');
+            }
             if (data.hasOwnProperty('description')) {
                 obj['description'] = ApiClient.convertToType(data['description'], 'String');
+            }
+            if (data.hasOwnProperty('invoice')) {
+                obj['invoice'] = ApiClient.convertToType(data['invoice'], 'String');
             }
             if (data.hasOwnProperty('provider')) {
                 obj['provider'] = ApiClient.convertToType(data['provider'], 'String');
@@ -122,32 +122,6 @@ class V1beta1AssetCost {
 /**
      * @return {Number}
      */
-    getBillingMonth() {
-        return this.billingMonth;
-    }
-
-    /**
-     * @param {Number} billingMonth
-     */
-    setBillingMonth(billingMonth) {
-        this['billingMonth'] = billingMonth;
-    }
-/**
-     * @return {Number}
-     */
-    getBillingYear() {
-        return this.billingYear;
-    }
-
-    /**
-     * @param {Number} billingYear
-     */
-    setBillingYear(billingYear) {
-        this['billingYear'] = billingYear;
-    }
-/**
-     * @return {Number}
-     */
     getCost() {
         return this.cost;
     }
@@ -161,6 +135,19 @@ class V1beta1AssetCost {
 /**
      * @return {String}
      */
+    getCostIdentifier() {
+        return this.costIdentifier;
+    }
+
+    /**
+     * @param {String} costIdentifier
+     */
+    setCostIdentifier(costIdentifier) {
+        this['costIdentifier'] = costIdentifier;
+    }
+/**
+     * @return {String}
+     */
     getDescription() {
         return this.description;
     }
@@ -170,6 +157,19 @@ class V1beta1AssetCost {
      */
     setDescription(description) {
         this['description'] = description;
+    }
+/**
+     * @return {String}
+     */
+    getInvoice() {
+        return this.invoice;
+    }
+
+    /**
+     * @param {String} invoice
+     */
+    setInvoice(invoice) {
+        this['invoice'] = invoice;
     }
 /**
      * @return {String}
@@ -289,24 +289,24 @@ V1beta1AssetCost.prototype['account'] = undefined;
 V1beta1AssetCost.prototype['assetIdentifier'] = undefined;
 
 /**
- * @member {Number} billingMonth
- */
-V1beta1AssetCost.prototype['billingMonth'] = undefined;
-
-/**
- * @member {Number} billingYear
- */
-V1beta1AssetCost.prototype['billingYear'] = undefined;
-
-/**
  * @member {Number} cost
  */
 V1beta1AssetCost.prototype['cost'] = undefined;
 
 /**
+ * @member {String} costIdentifier
+ */
+V1beta1AssetCost.prototype['costIdentifier'] = undefined;
+
+/**
  * @member {String} description
  */
 V1beta1AssetCost.prototype['description'] = undefined;
+
+/**
+ * @member {String} invoice
+ */
+V1beta1AssetCost.prototype['invoice'] = undefined;
 
 /**
  * @member {String} provider
