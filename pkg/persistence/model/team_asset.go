@@ -43,7 +43,9 @@ type TeamAsset struct {
 	AssetIdentifier string `sql:"type:char(20)" gorm:"primary_key"`
 	// TeamIdentifier is the identity of the owning team
 	TeamIdentifier string `sql:"type:char(20)"`
-	// TeamAssetType is the type of the asset (e.g. Cluster, CloudService, etc)
+	// Team is the identity record for the team who owns this asset
+	Team TeamIdentity `gorm:"foreignkey:TeamIdentifier;association_foreignkey:TeamIdentifier"`
+	// AssetType is the type of the asset (e.g. Cluster, CloudService, etc)
 	// @note: IMPORTANT - ensure you add any new asset types to the const above as well
 	// as here:
 	AssetType TeamAssetType `sql:"type:enum('Cluster','NodePool','Namespace','CloudService')"`

@@ -21,17 +21,17 @@ type V1beta1AssetCost struct {
 	// asset identifier
 	AssetIdentifier string `json:"assetIdentifier,omitempty"`
 
-	// billing month
-	BillingMonth int64 `json:"billingMonth,omitempty"`
-
-	// billing year
-	BillingYear int64 `json:"billingYear,omitempty"`
-
 	// cost
 	Cost int64 `json:"cost,omitempty"`
 
+	// cost identifier
+	CostIdentifier string `json:"costIdentifier,omitempty"`
+
 	// description
 	Description string `json:"description,omitempty"`
+
+	// invoice
+	Invoice string `json:"invoice,omitempty"`
 
 	// provider
 	Provider string `json:"provider,omitempty"`

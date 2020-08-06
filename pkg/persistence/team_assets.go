@@ -45,6 +45,8 @@ type TeamAssets interface {
 	ListAssets(ctx context.Context, filters ...TeamAssetFilterFunc) ([]*model.TeamAsset, error)
 	// StoreAssetCost persists a new asset cost record
 	StoreAssetCost(ctx context.Context, cost *model.TeamAssetCost) error
+	// StoreAssetCosts persists a set of new asset cost records in a single transaction
+	StoreAssetCosts(ctx context.Context, costs []*model.TeamAssetCost) error
 	// ListCosts returns a list asset costs filtered bythe supplied filters
 	ListCosts(ctx context.Context, filters ...TeamAssetFilterFunc) ([]*model.TeamAssetCost, error)
 }
@@ -142,7 +144,7 @@ func (t teamAssetsImpl) ListAssets(ctx context.Context, filters ...TeamAssetFilt
 	timed := prometheus.NewTimer(listLatency)
 	defer timed.ObserveDuration()
 
-	q := t.conn.Model(&model.TeamAsset{})
+	q := t.conn.Model(&model.TeamAsset{}).Preload("Team")
 	q = t.applyAssetListFilters(q, filters)
 
 	var list []*model.TeamAsset
@@ -156,11 +158,26 @@ func (t teamAssetsImpl) StoreAssetCost(ctx context.Context, cost *model.TeamAsse
 	return t.conn.Create(cost).Error
 }
 
+func (t teamAssetsImpl) StoreAssetCosts(ctx context.Context, costs []*model.TeamAssetCost) error {
+	timed := prometheus.NewTimer(setLatency)
+	defer timed.ObserveDuration()
+
+	return t.conn.Transaction(func(tx *gorm.DB) error {
+		for _, cost := range costs {
+			err := tx.Create(cost).Error
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func (t teamAssetsImpl) ListCosts(ctx context.Context, filters ...TeamAssetFilterFunc) ([]*model.TeamAssetCost, error) {
 	timed := prometheus.NewTimer(listLatency)
 	defer timed.ObserveDuration()
 
-	q := t.conn.Preload("Team").Preload("Asset")
+	q := t.conn.Model(model.TeamAssetCost{}).Preload("Team").Preload("Asset")
 	q = t.applyCostListFilters(q, filters)
 
 	var list []*model.TeamAssetCost
@@ -180,8 +197,8 @@ func (t teamAssetsImpl) applyCostListFilters(q *gorm.DB, filters []TeamAssetFilt
 		q = q.Where("usage_start_time <= ?", filter.To)
 	}
 
-	if filter.BillingYear != nil && filter.BillingMonth != nil {
-		q = q.Where("billing_year = ? and billing_month = ?", filter.BillingYear, filter.BillingMonth)
+	if filter.Invoice != "" {
+		q = q.Where("invoice = ?", filter.Invoice)
 	}
 
 	if filter.Account != "" {

@@ -92,12 +92,15 @@ func Migrations(db *gorm.DB) error {
 
 	db.AutoMigrate(TeamAsset{}).
 		AddIndex("idx_team", "team_identifier").
-		AddIndex("idx_assettype", "asset_type")
+		AddIndex("idx_assettype", "asset_type").
+		AddForeignKey("team_identifier", "team_identities(team_identifier)", "RESTRICT", "RESTRICT")
 
 	db.AutoMigrate(TeamAssetCost{}).
 		AddIndex("idx_asset", "asset_identifier").
 		AddIndex("idx_team", "team_identifier").
-		AddIndex("idx_date_range", "usage_start_time", "usage_end_time")
+		AddIndex("idx_date_range", "usage_start_time", "usage_end_time").
+		AddForeignKey("team_identifier", "team_identities(team_identifier)", "RESTRICT", "RESTRICT").
+		AddForeignKey("asset_identifier", "team_assets(asset_identifier)", "RESTRICT", "RESTRICT")
 
 	return nil
 }

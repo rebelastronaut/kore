@@ -25,6 +25,7 @@ import (
 	costsv1 "github.com/appvia/kore/pkg/apis/costs/v1beta1"
 	"github.com/appvia/kore/pkg/persistence"
 	"github.com/appvia/kore/pkg/persistence/model"
+	"github.com/appvia/kore/pkg/utils"
 	"github.com/appvia/kore/pkg/utils/validation"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +34,7 @@ import (
 // Assets provides management over which assets/resources are known to kore, and the known costs
 // for those assets provided by a cost provider
 type Assets interface {
-	ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) ([]costsv1.CostAsset, error)
+	ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) ([]costsv1.Asset, error)
 	ListCosts(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) (*costsv1.AssetCostList, error)
 	OverallCostsSummary(ctx context.Context, from time.Time, to time.Time, filters ...persistence.TeamAssetFilterFunc) (*costsv1.OverallCostSummary, error)
 	TeamCostsSummary(ctx context.Context, teamIdentifier string, from time.Time, to time.Time, filters ...persistence.TeamAssetFilterFunc) (*costsv1.TeamCostSummary, error)
@@ -53,12 +54,12 @@ type assetsImpl struct {
 	persistence       persistence.TeamAssets
 }
 
-func (a *assetsImpl) ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) ([]costsv1.CostAsset, error) {
+func (a *assetsImpl) ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) ([]costsv1.Asset, error) {
 	assets, err := a.persistence.ListAssets(ctx, filters...)
 	if err != nil {
 		return nil, err
 	}
-	results := make([]costsv1.CostAsset, len(assets))
+	results := make([]costsv1.Asset, len(assets))
 	for ind, asset := range assets {
 		results[ind] = a.fromTeamAssetModel(asset)
 	}
@@ -217,19 +218,21 @@ func (a *assetsImpl) StoreAssetCosts(ctx context.Context, costs *costsv1.AssetCo
 		if err != nil {
 			return err
 		}
-	}
-	for ind, modelCost := range modelCosts {
-		err := a.persistence.StoreAssetCost(ctx, modelCost)
-		if err != nil {
-			return fmt.Errorf("error persisting cost index %d: %w", ind, err)
+		if modelCosts[ind].CostIdentifier == "" {
+			// Assign a unique identifier if one hasn't been provided
+			modelCosts[ind].CostIdentifier = utils.GenerateIdentifier()
 		}
+	}
+	err := a.persistence.StoreAssetCosts(ctx, modelCosts)
+	if err != nil {
+		return fmt.Errorf("error persisting costs: %w", err)
 	}
 	return nil
 }
 
 // fromTeamAssetModel returns a cost asset from the model
-func (a *assetsImpl) fromTeamAssetModel(asset *model.TeamAsset) costsv1.CostAsset {
-	return costsv1.CostAsset{
+func (a *assetsImpl) fromTeamAssetModel(asset *model.TeamAsset) costsv1.Asset {
+	return costsv1.Asset{
 		Name:            asset.AssetName,
 		AssetIdentifier: asset.AssetIdentifier,
 		TeamIdentifier:  asset.TeamIdentifier,
@@ -245,9 +248,11 @@ func (a *assetsImpl) fromTeamAssetModel(asset *model.TeamAsset) costsv1.CostAsse
 // fromTeamAssetCostModel returns a asset cost from the model
 func (a *assetsImpl) fromTeamAssetCostModel(cost *model.TeamAssetCost) costsv1.AssetCost {
 	return costsv1.AssetCost{
+		CostIdentifier:  cost.CostIdentifier,
 		AssetIdentifier: cost.AssetIdentifier,
 		TeamIdentifier:  cost.TeamIdentifier,
 		Provider:        cost.Provider,
+		Account:         cost.Account,
 		UsageType:       cost.UsageType,
 		Description:     cost.Description,
 		UsageStartTime:  metav1.NewTime(cost.UsageStartTime),
@@ -255,6 +260,8 @@ func (a *assetsImpl) fromTeamAssetCostModel(cost *model.TeamAssetCost) costsv1.A
 		UsageAmount:     fmt.Sprintf("%f", cost.UsageAmount),
 		UsageUnit:       cost.UsageUnit,
 		Cost:            cost.Cost,
+		Invoice:         cost.Invoice,
+		RetrievedAt:     metav1.NewTime(cost.RetrievedAt),
 	}
 }
 
@@ -265,9 +272,11 @@ func (a *assetsImpl) toTeamAssetCostModel(cost costsv1.AssetCost) (*model.TeamAs
 		return nil, validation.NewError("invalid usage amount").WithFieldError("usageAmount", validation.InvalidValue, "cannot parse 'usageAmount' into float")
 	}
 	return &model.TeamAssetCost{
+		CostIdentifier:  cost.CostIdentifier,
 		AssetIdentifier: cost.AssetIdentifier,
 		TeamIdentifier:  cost.TeamIdentifier,
 		Provider:        cost.Provider,
+		Account:         cost.Account,
 		UsageType:       cost.UsageType,
 		Description:     cost.Description,
 		UsageStartTime:  cost.UsageStartTime.Time,
@@ -275,5 +284,7 @@ func (a *assetsImpl) toTeamAssetCostModel(cost costsv1.AssetCost) (*model.TeamAs
 		UsageAmount:     usageAmount,
 		UsageUnit:       cost.UsageUnit,
 		Cost:            cost.Cost,
+		Invoice:         cost.Invoice,
+		RetrievedAt:     cost.RetrievedAt.Time,
 	}, nil
 }

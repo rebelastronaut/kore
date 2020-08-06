@@ -30,8 +30,7 @@ type TeamAssetFilterFunc func(*TeamAssetListOptions)
 type TeamAssetListOptions struct {
 	From            *time.Time
 	To              *time.Time
-	BillingMonth    *uint8
-	BillingYear     *uint16
+	Invoice         string
 	Provider        string
 	Account         string
 	TeamIdentifier  string
@@ -88,12 +87,11 @@ func (q TeamAssetFilterFuncs) ToTime(time time.Time) TeamAssetFilterFunc {
 	}
 }
 
-// WithBillingPeriod limits the returned costs to those accrued within the specified year/month
-// billing period. month = 1 (Jan) to 12 (Dec), year = 4-digit year (e.g. 2020)
-func (q TeamAssetFilterFuncs) WithBillingPeriod(year uint16, month uint8) TeamAssetFilterFunc {
+// WithInvoice limits the returned costs to those invoiced on the specified invoice,
+// in the format YYYYMM, e.g. August 2020 = 202008
+func (q TeamAssetFilterFuncs) WithInvoice(invoice string) TeamAssetFilterFunc {
 	return func(o *TeamAssetListOptions) {
-		o.BillingMonth = &month
-		o.BillingYear = &year
+		o.Invoice = invoice
 	}
 }
 

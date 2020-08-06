@@ -63,20 +63,20 @@ func NewGetAssetsOK() *GetAssetsOK {
 Metadata describing the assets for the cloud provider in question
 */
 type GetAssetsOK struct {
-	Payload *models.V1beta1CostAssetList
+	Payload *models.V1beta1AssetList
 }
 
 func (o *GetAssetsOK) Error() string {
 	return fmt.Sprintf("[GET /api/v1alpha1/costs/assets/{provider}][%d] getAssetsOK  %+v", 200, o.Payload)
 }
 
-func (o *GetAssetsOK) GetPayload() *models.V1beta1CostAssetList {
+func (o *GetAssetsOK) GetPayload() *models.V1beta1AssetList {
 	return o.Payload
 }
 
 func (o *GetAssetsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.V1beta1CostAssetList)
+	o.Payload = new(models.V1beta1AssetList)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

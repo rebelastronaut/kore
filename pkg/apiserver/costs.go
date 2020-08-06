@@ -79,6 +79,7 @@ func (c *costHandler) Register(i kore.Interface, builder utils.PathBuilder) (*re
 			Param(ws.QueryParameter("to", "End of time range to return costs for")).
 			Param(ws.QueryParameter("provider", "Cloud provider (e.g. gcp, aws, azure) to return costs for")).
 			Param(ws.QueryParameter("account", "Account/project/subscription to return costs for")).
+			Param(ws.QueryParameter("invoice", "Invoice to return costs for, in the formay YYYYMM")).
 			Returns(http.StatusOK, "A list of costs known to the system, filtered by the above parameters", costsv1.AssetCostList{}),
 	)
 
@@ -90,6 +91,7 @@ func (c *costHandler) Register(i kore.Interface, builder utils.PathBuilder) (*re
 			Param(ws.PathParameter("from", "Start of time range to return summary for")).
 			Param(ws.PathParameter("to", "End of time range to return summary for")).
 			Param(ws.QueryParameter("provider", "Restrict to costs for specified cloud provider (e.g. gcp, aws, azure)")).
+			Param(ws.QueryParameter("invoice", "Invoice to return costs for, in the formay YYYYMM")).
 			Returns(http.StatusOK, "A summary of costs known to the system", costsv1.OverallCostSummary{}),
 	)
 
@@ -102,6 +104,7 @@ func (c *costHandler) Register(i kore.Interface, builder utils.PathBuilder) (*re
 			Param(ws.PathParameter("from", "Start of time range to return summary for")).
 			Param(ws.PathParameter("to", "End of time range to return summary for")).
 			Param(ws.QueryParameter("provider", "Restrict to costs for specified cloud provider (e.g. gcp, aws, azure)")).
+			Param(ws.QueryParameter("invoice", "Invoice to return costs for, in the formay YYYYMM")).
 			Returns(http.StatusOK, "A summary of costs known to the system for the team", costsv1.TeamCostSummary{}),
 	)
 
@@ -114,7 +117,7 @@ func (c *costHandler) Register(i kore.Interface, builder utils.PathBuilder) (*re
 			Param(ws.QueryParameter("team", "Identifier of a team to filter assets for")).
 			Param(ws.QueryParameter("asset", "Identifier of an asset to filter assets for")).
 			Param(ws.QueryParameter("with_deleted", "Set to true to include deleted assets")).
-			Returns(http.StatusOK, "Metadata describing the assets for the cloud provider in question", costsv1.CostAssetList{}),
+			Returns(http.StatusOK, "Metadata describing the assets for the cloud provider in question", costsv1.AssetList{}),
 	)
 
 	return ws, nil
@@ -152,9 +155,6 @@ func (c costHandler) listCosts(req *restful.Request, resp *restful.Response) {
 			}
 			filters = append(filters, persistence.TeamAssetFilters.ToTime(toTime))
 		}
-		if req.QueryParameter("provider") != "" {
-			filters = append(filters, persistence.TeamAssetFilters.WithProvider(req.QueryParameter("provider")))
-		}
 		if req.QueryParameter("team") != "" {
 			filters = append(filters, persistence.TeamAssetFilters.WithTeam(req.QueryParameter("team")))
 		}
@@ -166,6 +166,9 @@ func (c costHandler) listCosts(req *restful.Request, resp *restful.Response) {
 		}
 		if req.QueryParameter("account") != "" {
 			filters = append(filters, persistence.TeamAssetFilters.WithAccount(req.QueryParameter("account")))
+		}
+		if req.QueryParameter("invoice") != "" {
+			filters = append(filters, persistence.TeamAssetFilters.WithInvoice(req.QueryParameter("invoice")))
 		}
 		assets, err := c.Costs().Assets().ListCosts(req.Request.Context(), filters...)
 		if err != nil {
@@ -189,6 +192,9 @@ func (c costHandler) getCostSummary(req *restful.Request, resp *restful.Response
 		if req.QueryParameter("provider") != "" {
 			filters = append(filters, persistence.TeamAssetFilters.WithProvider(req.QueryParameter("provider")))
 		}
+		if req.QueryParameter("invoice") != "" {
+			filters = append(filters, persistence.TeamAssetFilters.WithInvoice(req.QueryParameter("invoice")))
+		}
 		summary, err := c.Costs().Assets().OverallCostsSummary(req.Request.Context(), fromTime, toTime, filters...)
 		if err != nil {
 			return err
@@ -211,6 +217,9 @@ func (c costHandler) getTeamCostSummary(req *restful.Request, resp *restful.Resp
 		filters := []persistence.TeamAssetFilterFunc{}
 		if req.QueryParameter("provider") != "" {
 			filters = append(filters, persistence.TeamAssetFilters.WithProvider(req.QueryParameter("provider")))
+		}
+		if req.QueryParameter("invoice") != "" {
+			filters = append(filters, persistence.TeamAssetFilters.WithInvoice(req.QueryParameter("invoice")))
 		}
 		summary, err := c.Costs().Assets().TeamCostsSummary(req.Request.Context(), teamIdentifier, fromTime, toTime, filters...)
 		if err != nil {

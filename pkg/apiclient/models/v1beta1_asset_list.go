@@ -14,18 +14,18 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// V1beta1CostAssetList v1beta1 cost asset list
+// V1beta1AssetList v1beta1 asset list
 //
-// swagger:model v1beta1.CostAssetList
-type V1beta1CostAssetList struct {
+// swagger:model v1beta1.AssetList
+type V1beta1AssetList struct {
 
 	// items
 	// Required: true
-	Items []*V1beta1CostAsset `json:"items"`
+	Items []*V1beta1Asset `json:"items"`
 }
 
-// Validate validates this v1beta1 cost asset list
-func (m *V1beta1CostAssetList) Validate(formats strfmt.Registry) error {
+// Validate validates this v1beta1 asset list
+func (m *V1beta1AssetList) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateItems(formats); err != nil {
@@ -38,7 +38,7 @@ func (m *V1beta1CostAssetList) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *V1beta1CostAssetList) validateItems(formats strfmt.Registry) error {
+func (m *V1beta1AssetList) validateItems(formats strfmt.Registry) error {
 
 	if err := validate.Required("items", "body", m.Items); err != nil {
 		return err
@@ -64,7 +64,7 @@ func (m *V1beta1CostAssetList) validateItems(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *V1beta1CostAssetList) MarshalBinary() ([]byte, error) {
+func (m *V1beta1AssetList) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -72,8 +72,8 @@ func (m *V1beta1CostAssetList) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *V1beta1CostAssetList) UnmarshalBinary(b []byte) error {
-	var res V1beta1CostAssetList
+func (m *V1beta1AssetList) UnmarshalBinary(b []byte) error {
+	var res V1beta1AssetList
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

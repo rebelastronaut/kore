@@ -22,10 +22,17 @@ import (
 
 // TeamAssetCost represents an individual line item of cost data for a team asset
 type TeamAssetCost struct {
+	// CostIdentifier is the unique identifer for this line of cost data - cost providers must ensure that if a
+	// cost line item is updated, it has the same identifier
+	CostIdentifier string `sql:"type:varchar(255)" gorm:"PRIMARY_KEY"`
 	// AssetIdentifier is the identity of the asset in question
-	AssetIdentifier string `sql:"type:char(20)"`
+	AssetIdentifier string `sql:"type:char(20)" gorm:"PRIMARY_KEY"`
+	// Asset is the asset record this cost relates to
+	Asset TeamAsset `gorm:"foreignkey:AssetIdentifier;association_foreignkey:AssetIdentifier"`
 	// TeamIdentifier is the identity of the owning team
 	TeamIdentifier string `sql:"type:char(20)"`
+	// Team is the identity record for the team who owns this asset
+	Team TeamIdentity `gorm:"foreignkey:TeamIdentifier;association_foreignkey:TeamIdentifier"`
 	// UsageType is the provider-specific code or title for this type of usage (e.g. a SKU or similar)
 	UsageType string
 	// Description identifies the type of cost this line item refers to
@@ -44,12 +51,8 @@ type TeamAssetCost struct {
 	Provider string
 	// Account indicates which account / project / subscription this cost relates to
 	Account string
-	// BillingYear is the (4-digit) year in which this cost was billed (e.g. 2020)
-	BillingYear uint16
-	// BillingMonth is the month in which this cost was billed (1 = Jan to 12 = Dec)
-	BillingMonth uint8
-	// Team is the identity record for the team who owns this asset
-	Team TeamIdentity `gorm:"foreignkey:TeamIdentifier"`
-	// Asset is the asset record this cost relates to
-	Asset TeamAsset `gorm:"foreignkey:AssetIdentifier"`
+	// Invoice identifies which invoice this cost is related to, in the format YYYYMM (e.g. 202008 for August 2020)
+	Invoice string
+	// RetrievedAt is the time at which this cost item was retrieved/refreshed from the provider
+	RetrievedAt time.Time
 }

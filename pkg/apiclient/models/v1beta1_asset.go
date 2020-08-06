@@ -10,10 +10,10 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// V1beta1CostAsset v1beta1 cost asset
+// V1beta1Asset v1beta1 asset
 //
-// swagger:model v1beta1.CostAsset
-type V1beta1CostAsset struct {
+// swagger:model v1beta1.Asset
+type V1beta1Asset struct {
 
 	// asset identifier
 	AssetIdentifier string `json:"assetIdentifier,omitempty"`
@@ -34,13 +34,13 @@ type V1beta1CostAsset struct {
 	TeamIdentifier string `json:"teamIdentifier,omitempty"`
 }
 
-// Validate validates this v1beta1 cost asset
-func (m *V1beta1CostAsset) Validate(formats strfmt.Registry) error {
+// Validate validates this v1beta1 asset
+func (m *V1beta1Asset) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *V1beta1CostAsset) MarshalBinary() ([]byte, error) {
+func (m *V1beta1Asset) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -48,8 +48,8 @@ func (m *V1beta1CostAsset) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *V1beta1CostAsset) UnmarshalBinary(b []byte) error {
-	var res V1beta1CostAsset
+func (m *V1beta1Asset) UnmarshalBinary(b []byte) error {
+	var res V1beta1Asset
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

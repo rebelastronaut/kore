@@ -20,9 +20,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// CostAsset represents a resource known to Kore which a cost provider should provide costs data for
+// Asset represents a resource known to Kore which a cost provider should provide costs data for
 // +k8s:openapi-gen=false
-type CostAsset struct {
+type Asset struct {
 	// Tags are a set of tags which can be used to identify this asset
 	Tags map[string]string `json:"tags,omitempty"`
 	// KoreIdentifier is the unique identifier for this instance of kore
@@ -37,11 +37,11 @@ type CostAsset struct {
 	Provider string `json:"provider,omitempty"`
 }
 
-// CostAssetList is a list of cost assets known to kore for which costs can be provided by a cost
+// AssetList is a list of cost assets known to kore for which costs can be provided by a cost
 // provider
 // +k8s:openapi-gen=false
-type CostAssetList struct {
-	Items []CostAsset `json:"items"`
+type AssetList struct {
+	Items []Asset `json:"items"`
 }
 
 // AssetCostList represents a collection of costs about one or more assets
@@ -106,6 +106,11 @@ type AssetCostSummary struct {
 // to represent the different charges levied by the provider for that piece of infrastructure.
 // +k8s:openapi-gen=false
 type AssetCost struct {
+	// CostIdentifier is the unique identifer for this line of cost data - cost providers must ensure that if a
+	// cost line item is updated, it has the same identifier, and that different line items have unique cost
+	// identifiers for a given AssetIdentifier. If a cost provider provides immutable cost entries, i.e. they will
+	// never be updated, then this can be left blank and Kore will assign a unique identifier.
+	CostIdentifier string `json:"costIdentifier,omitempty"`
 	// AssetIdentifier is the unique identifier assigned to the resource this cost applies to, e.g. the
 	// unique cluster ID, etc.
 	AssetIdentifier string `json:"assetIdentifier,omitempty"`
@@ -130,23 +135,8 @@ type AssetCost struct {
 	Provider string `json:"provider,omitempty"`
 	// Account indicates which account / project / subscription this cost relates to
 	Account string `json:"account,omitempty"`
-	// BillingYear is the (4-digit) year in which this cost was billed (e.g. 2020)
-	BillingYear uint16 `json:"billingYear,omitempty"`
-	// BillingMonth is the month in which this cost was billed (1 = Jan to 12 = Dec)
-	BillingMonth uint8 `json:"billingMonth,omitempty"`
+	// Invoice is the invoice on which this cost was billed (in the format YYYYMM, e.g. 202008 for August 2020)
+	Invoice string `json:"invoice,omitempty"`
 	// RetrievedAt is the time at which this cost item was retrieved/refreshed from the provider
 	RetrievedAt metav1.Time `json:"retrievedAt,omitempty"`
 }
-
-// // CostElement represents a logical component which has an associated cost
-// // +k8s:openapi-gen=false
-// type CostElement struct {
-// 	// ResourceIdentifier is the unique identifier assigned to the component this cost applies to,
-// 	// if available. May be nil where the component has no ResourceID or it is not possible
-// 	// to determine it from the cloud provider.
-// 	ResourceIdentifier string `json:"resourceIdentifier,omitempty"`
-// 	// Name is the name of this component
-// 	Name string `json:"name,omitempty"`
-// 	// Cost is the actual incurred cost in microdollars
-// 	Cost int64 `json:"cost,omitempty"`
-// }
