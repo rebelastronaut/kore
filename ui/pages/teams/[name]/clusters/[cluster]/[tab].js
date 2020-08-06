@@ -3,14 +3,14 @@ import PropTypes from 'prop-types'
 import Router from 'next/router'
 import moment from 'moment'
 import {
-  Typography,
-  Collapse,
-  Row,
-  Col,
-  List,
   Button,
+  Col,
+  Collapse,
   Form,
-  Tabs
+  List,
+  Row,
+  Tabs,
+  Typography,
 } from 'antd'
 const { Text } = Typography
 const { TabPane } = Tabs
@@ -30,6 +30,7 @@ import { isReadOnlyCRD } from '../../../../../lib/utils/crd-helpers'
 import ServicesTab from '../../../../../lib/components/teams/service/ServicesTab'
 import NamespacesTab from '../../../../../lib/components/teams/namespace/NamespacesTab'
 import TextWithCount from '../../../../../lib/components/utils/TextWithCount'
+import CostEstimate from '../../../../../lib/components/costs/CostEstimate'
 
 class ClusterPage extends React.Component {
   static propTypes = {
@@ -67,20 +68,8 @@ class ClusterPage extends React.Component {
     return { team, cluster, tabActiveKey }
   }
 
-  fetchCommonData = async () => {
-    if (featureEnabled(KoreFeatures.SERVICES)) {
-      const serviceKinds = await (await KoreApi.client()).ListServiceKinds()
-      return { serviceKinds: serviceKinds.items }
-    }
-
-    return {}
-  }
-
   componentDidMount() {
     this.startRefreshing()
-    this.fetchCommonData().then(data => {
-      this.setState({ ...data })
-    })
   }
 
   componentDidUpdate() {
@@ -230,6 +219,16 @@ class ClusterPage extends React.Component {
           )}
 
           <TabPane key="settings" tab="Settings" forceRender={true}>
+            <Collapse style={{ marginBottom: '20px' }}>
+              <Collapse.Panel header="Cost Estimate">
+                <CostEstimate
+                  planValues={this.state.clusterParams}
+                  resourceType="cluster"
+                  kind={cluster.spec.kind}
+                />
+              </Collapse.Panel>
+            </Collapse>
+
             <Form {...editClusterFormConfig} onSubmit={(e) => this.onSubmit(e)}>
               <FormErrorMessage message={this.state.formErrorMessage} />
               <Form.Item label="" colon={false}>

@@ -64,7 +64,6 @@ export default class PlanOptionVersion extends PlanOptionBase {
         minorVersions.push(v.split('.').filter((e, i) => i <= 2).join('.').replace(/[^0-9.]+/g, ''))
       }
     })
-    console.log('expanding versions', minorVersions)
     return uniq([ ...minorVersions, ...versions ]).sort()
   }
 
