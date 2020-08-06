@@ -71,7 +71,7 @@ spec:
           value: {{ .Values.ui.endpoint.url }}
           {{- end }}
         - name: KORE_API_URL
-          value: http://{{ include "kore.name" . }}-apiserver:10080/api/v1alpha1
+          value: {{ if .Values.api.tls.enabled }}https{{ else }}http{{ end }}://{{ include "kore.name" . }}-apiserver:{{ .Values.api.port }}/api/v1alpha1
         {{- if .Values.ui.show_prototypes }}
         - name: KORE_UI_SHOW_PROTOTYPES
           value: "{{ .Values.ui.show_prototypes }}"
@@ -98,21 +98,38 @@ spec:
         - name: KORE_FEATURE_GATES
           value: "{{ join "," .Values.ui.feature_gates }}"
         {{- end }}
+        {{- if .Values.api.tls.enabled }}
+        - name: NODE_EXTRA_CA_CERTS
+          value: /secrets/tls/ca.cert
+        {{- end }}
         envFrom:
         - secretRef:
             name: {{ include "kore.name" . }}-idp
-        {{ if eq .Values.ui.version "dev" -}}
         volumeMounts:
+        {{ if eq .Values.ui.version "dev" -}}
         - name: kore
           mountPath: /go/src/github.com/appvia/kore
         {{- end }}
-      {{ if eq .Values.ui.version "dev" -}}
+        {{- if .Values.api.tls.enabled }}
+        - name: tls
+          readOnly: true
+          mountPath: /secrets/tls
+        {{- end }}
       volumes:
+      {{ if eq .Values.ui.version "dev" -}}
       - name: kore
         hostPath:
           path: /go/src/github.com/appvia/kore
           type: Directory
       {{- end }}
+      {{- if .Values.api.tls.enabled }}
+      - name: tls
+        secret:
+          secretName: {{ default .Values.api.tls.secretName (printf "%s-%s" (include "kore.name" . ) "api-tls") }}
+          items:
+            - key: ca.cert
+              path: ca.cert
+      {{- end}}
 
 ---
 apiVersion: v1

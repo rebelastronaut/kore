@@ -78,11 +78,13 @@ spec:
           httpGet:
             path: /healthz
             port: 10080
+            scheme: {{ if .Values.api.tls.enabled }}HTTPS{{ else }}HTTP{{ end}}
           initialDelaySeconds: 30
         readinessProbe:
           httpGet:
             path: /healthz
             port: 10080
+            scheme: {{ if .Values.api.tls.enabled }}HTTPS{{ else }}HTTP{{ end}}
           initialDelaySeconds: 30
         env:
           {{- if .Values.api.images.auth_proxy }}
@@ -98,9 +100,9 @@ spec:
           - name: KUBE_IN_CLUSTER
             value: "true"
           - name: KORE_CERTIFICATE_AUTHORITY
-            value: /ca/ca.pem
+            value: /secrets/ca/ca.pem
           - name: KORE_CERTIFICATE_AUTHORITY_KEY
-            value: /ca/ca-key.pem
+            value: /secrets/ca/ca-key.pem
           - name: KORE_API_PUBLIC_URL
             {{- if and (eq .Values.api.serviceType "LoadBalancer") .Values.api.endpoint.detect}}
             valueFrom:
@@ -139,10 +141,21 @@ spec:
             value: "{{ .Values.api.enable_metrics }}"
           - name: METRICS_PORT
             value: "{{ .Values.api.metrics_port }}"
+          {{- if .Values.api.tls.enabled }}
+          - name: TLS_CERT
+            value: /secrets/tls/server.cert
+          - name: TLS_KEY
+            value: /secrets/tls/server.key
+          {{- end }}
         volumeMounts:
         - name: ca
           readOnly: true
-          mountPath: /ca
+          mountPath: /secrets/ca
+        {{- if .Values.api.tls.enabled }}
+        - name: tls
+          readOnly: true
+          mountPath: /secrets/tls
+        {{- end }}
         {{ if eq .Values.api.version "dev" -}}
         - name: kore
           mountPath: /go/src/github.com/appvia/kore
@@ -153,6 +166,11 @@ spec:
       - name: ca
         secret:
           secretName: {{ .Values.ca.secretName }}
+      {{- if .Values.api.tls.enabled }}
+      - name: tls
+        secret:
+          secretName: {{ default .Values.api.tls.secretName (printf "%s-%s" (include "kore.name" . ) "api-tls") }}
+      {{- end}}
       {{ if eq .Values.api.version "dev" -}}
       - name: kore
         hostPath:

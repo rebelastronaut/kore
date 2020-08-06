@@ -42,6 +42,9 @@ nodes:
       - containerPort: 10080
         hostPort: 10080
         protocol: TCP
+      - containerPort: 10443
+        hostPort: 10443
+        protocol: TCP
     extraMounts:
       - hostPath: $PROJECT_DIR
         containerPath: /go/src/github.com/appvia/kore

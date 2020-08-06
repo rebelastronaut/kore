@@ -62,6 +62,8 @@ func invoke(ctx *cli.Context) error {
 			MetricsPort:     ctx.Int("metrics-port"),
 			ProfilingPort:   ctx.Int("profiling-port"),
 			SwaggerUIPath:   "./swagger-ui",
+			TLSCert:         ctx.String("tls-cert"),
+			TLSKey:          ctx.String("tls-key"),
 		},
 		Kubernetes: kubernetes.KubernetesAPI{
 			InCluster:    ctx.Bool("in-cluster"),

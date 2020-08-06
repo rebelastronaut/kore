@@ -24,8 +24,6 @@ import (
 
 // Interface is the api client interface
 type Interface interface {
-	// HTTPClient sets the http client
-	HTTPClient(*http.Client) Interface
 	// Request creates a request instance
 	Request() RestInterface
 	// CurrentProfile returns the current profile

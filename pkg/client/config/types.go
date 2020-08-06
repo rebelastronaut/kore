@@ -94,7 +94,8 @@ type Profile struct {
 // Server defines an endpoint for the api server
 type Server struct {
 	// Endpoint the url for the api endpoint of kore
-	Endpoint string `json:"server,omitempty" yaml:"server,omitempty"`
+	Endpoint      string `json:"server,omitempty" yaml:"server,omitempty"`
+	CACertificate string `json:"caCertificate,omitempty" yaml:"caCertificate,omitempty"`
 }
 
 // RefreshResponse is the response returned when a token is refreshed

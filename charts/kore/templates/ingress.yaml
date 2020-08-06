@@ -15,7 +15,7 @@ spec:
       paths:
       - backend:
           serviceName: {{ include "kore.name" . }}-apiserver
-          servicePort: 10080
+          servicePort: {{ .Values.api.port }}
         path: /
   {{- if .Values.api.ingress.tls_secret }}
   tls:

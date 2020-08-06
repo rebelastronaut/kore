@@ -147,6 +147,9 @@ func DefaultHelmValues() map[string]interface{} {
 
 	return map[string]interface{}{
 		"api": map[string]interface{}{
+			"endpoint": map[string]interface{}{
+				"url": "http://localhost:10080",
+			},
 			"feature_gates": features,
 			"hostPort":      10080,
 			"replicas":      1,
