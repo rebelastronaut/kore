@@ -69,7 +69,7 @@ build: golang
 	@mkdir -p bin
 	@for binary in kore kore-apiserver auth-proxy; do \
 		echo "--> Building $${binary} binary" ; \
-		CGO_ENABLED=0 go build -ldflags "${LFLAGS}" -tags=jsoniter -tags='mysql' -o bin/$${binary} cmd/$${binary}/*.go || exit 1; \
+		CGO_ENABLED=0 go build -ldflags "${LFLAGS}" -tags=jsoniter -o bin/$${binary} cmd/$${binary}/*.go || exit 1; \
 	done
 
 kore: golang

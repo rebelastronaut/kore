@@ -151,7 +151,7 @@ func (l *loginHandler) authorizerHandler(req *restful.Request, resp *restful.Res
 
 	// @step: we either taken the public url or the host header
 	if l.Config().PublicAPIURL == "" {
-		l.oidcConfig.RedirectURL = fmt.Sprintf("%s/%s/oauth/callback", l.Path(), l.makeHostURL(req))
+		l.oidcConfig.RedirectURL = fmt.Sprintf("%s/oauth/callback", l.makeHostURL(req))
 	}
 
 	// @step: redirect the user to perform the login flow
