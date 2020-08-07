@@ -249,6 +249,7 @@ class ClusterPage extends React.Component {
                 kind={cluster.spec.kind}
                 plan={cluster.spec.plan}
                 planValues={this.state.clusterParams}
+                originalPlanValues={cluster.spec.configuration}
                 mode={this.state.editMode ? 'edit' : 'view'}
                 validationErrors={this.state.validationErrors}
                 onPlanValuesChange={this.onClusterConfigChanged}

@@ -15,6 +15,7 @@ export default class PlanViewEdit extends React.Component {
     team: PropTypes.object,
     kind: PropTypes.string.isRequired,
     plan: PropTypes.object.isRequired,
+    originalPlan: PropTypes.object,
     schema: PropTypes.object.isRequired,
     editableParams: PropTypes.array.isRequired,
     onPlanValueChange: PropTypes.func,
@@ -39,7 +40,7 @@ export default class PlanViewEdit extends React.Component {
   }
 
   render() {
-    const { resourceType, mode, manage, team, kind, plan, schema, editableParams, onPlanValueChange, validationErrors } = this.props
+    const { resourceType, mode, manage, team, kind, plan, originalPlan, schema, editableParams, onPlanValueChange, validationErrors } = this.props
     const { showReadOnly } = this.state
     return (
       <>
@@ -63,6 +64,7 @@ export default class PlanViewEdit extends React.Component {
               resourceType={resourceType}
               kind={kind}
               plan={plan}
+              originalPlan={originalPlan}
               key={name}
               name={name}
               property={schema.properties[name]}

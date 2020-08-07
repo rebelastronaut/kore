@@ -9,6 +9,7 @@ export default class PlanOptionBase extends React.Component {
     kind: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     plan: PropTypes.object.isRequired,
+    originalPlan: PropTypes.object,
     property: PropTypes.object.isRequired,
     value: PropTypes.any,
     editable: PropTypes.bool,

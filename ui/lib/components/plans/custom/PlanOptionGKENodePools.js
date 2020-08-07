@@ -112,15 +112,11 @@ export default class PlanOptionGKENodePools extends PlanOptionBase {
   }
 
   isEditable = (name) => {
-    // quick return if the whole nodePool property is not editable
-    if (!this.props.editable) {
-      return false
+    // always allow editing if the node pool is not part of the original pre-edited plan
+    if (this.props.originalPlan && !this.props.originalPlan.nodePools[this.state.selectedIndex]) {
+      return true
     }
-    const property = this.props.property.items.properties[name]
-    const { manage, mode } = this.props
-    return mode !== 'view' &&
-      (property.const === undefined || property.const === null) &&
-      (mode === 'create' || manage || !property.immutable)
+    return super.isEditable(name)
   }
 
   render() {
@@ -196,7 +192,7 @@ export default class PlanOptionGKENodePools extends PlanOptionBase {
                         <Checkbox id={`${id_prefix}_versionFollowMaster`} checked={versionFollowMaster} onChange={(e) => this.setNodePoolProperty(selectedIndex, 'version', e.target.checked ? '' : plan.version)} disabled={!this.isEditable('version')} /> Same as master (recommended)
                         {versionFollowMaster ? null : (
                           <>
-                            <Input id={`${id_prefix}_version`} pattern={property.items.properties.version.pattern} value={selected.version} readOnly={!this.isEditable('version')} disabled={!this.isEditable('version')} onChange={(e) => this.setNodePoolProperty(selectedIndex, 'version', e.target.value)} />
+                            <Input id={`${id_prefix}_version`} pattern={property.items.properties.version.pattern} value={selected.version} disabled={!this.isEditable('version')} onChange={(e) => this.setNodePoolProperty(selectedIndex, 'version', e.target.value)} />
                           </>
                         )}
                       </Form.Item>
@@ -206,15 +202,15 @@ export default class PlanOptionGKENodePools extends PlanOptionBase {
                   <Form.Item label="Pool size per zone">
                     <Descriptions layout="horizontal" size="small">
                       {!selected.enableAutoscaler ? null : <Descriptions.Item label="Minimum">
-                        <InputNumber id={`${id_prefix}_minSize`} value={selected.minSize} size="small" min={property.items.properties.minSize.minimum} max={selected.maxSize} readOnly={!this.isEditable('minSize')} disabled={!this.isEditable('minSize')} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'minSize', v)} />
+                        <InputNumber id={`${id_prefix}_minSize`} value={selected.minSize} size="small" min={property.items.properties.minSize.minimum} max={selected.maxSize} disabled={!this.isEditable('minSize')} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'minSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].minSize`)}
                       </Descriptions.Item>}
                       <Descriptions.Item label={selected.enableAutoscaler ? 'Initial size' : null}>
-                        <InputNumber id={`${id_prefix}_size`} value={selected.size} size="small" min={selected.enableAutoscaler ? selected.minSize : 1} max={selected.enableAutoscaler ? selected.maxSize : 99999} readOnly={!this.isEditable('size')} disabled={!this.isEditable('size')} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'size', v)} />
+                        <InputNumber id={`${id_prefix}_size`} value={selected.size} size="small" min={selected.enableAutoscaler ? selected.minSize : 1} max={selected.enableAutoscaler ? selected.maxSize : 99999} disabled={!this.isEditable('size')} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'size', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].size`)}
                       </Descriptions.Item>
                       {!selected.enableAutoscaler ? null : <Descriptions.Item label="Maximum">
-                        <InputNumber id={`${id_prefix}_maxSize`} value={selected.maxSize} size="small" min={selected.minSize} readOnly={!this.isEditable('maxSize')} disabled={!this.isEditable('maxSize')} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'maxSize', v)} />
+                        <InputNumber id={`${id_prefix}_maxSize`} value={selected.maxSize} size="small" min={selected.minSize} disabled={!this.isEditable('maxSize')} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'maxSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].maxSize`)}
                       </Descriptions.Item>}
                     </Descriptions>

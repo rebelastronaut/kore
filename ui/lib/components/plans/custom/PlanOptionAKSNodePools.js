@@ -111,6 +111,14 @@ export default class PlanOptionAKSNodePools extends PlanOptionBase {
     return actions
   }
 
+  isEditable = (name) => {
+    // always allow editing if the node pool is not part of the original pre-edited plan
+    if (this.props.originalPlan && !this.props.originalPlan.nodePools[this.state.selectedIndex]) {
+      return true
+    }
+    return super.isEditable(name)
+  }
+
   render() {
     const { name, editable, property, plan } = this.props
     const { displayName, valueOrDefault } = this.prepCommonProps(this.props, [])
