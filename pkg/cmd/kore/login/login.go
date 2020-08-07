@@ -85,6 +85,20 @@ func NewCmdLogin(factory cmdutil.Factory) *cobra.Command {
 // Validate is used to validate the parameters
 func (o *LoginOptions) Validate() error {
 	config := o.Config()
+	current := o.Client().CurrentProfile()
+
+	if err := config.HasValidProfile(current); err != nil {
+		if o.Endpoint == "" {
+			return fmt.Errorf("you need to specify an endpoint")
+		}
+		if o.Name == "" {
+			return fmt.Errorf("you need to specify a profile name")
+		}
+	}
+	if o.Name != "" {
+		config.CurrentProfile = o.Name
+		o.Client().OverrideProfile(o.Name)
+	}
 
 	// @step: if the api server and profile name is passed we can create a profile
 	// from the name and add the server - this is effectively a inline `profile configure`
@@ -96,9 +110,7 @@ func (o *LoginOptions) Validate() error {
 		case config.HasProfile(o.Name) && !o.Force:
 			return fmt.Errorf("profile name already used (note: you can use the --force option to force the update)")
 		}
-
 		config.CreateProfile(o.Name, o.Endpoint)
-		config.CurrentProfile = o.Name
 	}
 
 	return nil
@@ -111,11 +123,13 @@ func (o *LoginOptions) Run() error {
 	current := o.Client().CurrentProfile()
 
 	// @check we have the minimum required for authentication
-	if err := o.Config().HasValidProfile(current); err != nil {
-		o.Println("Unable to authenticate: %s", err.Error())
-		o.Println("You may need to reconfigure your profile via $ kore profile configure")
+	if o.Config().HasProfile(current) {
+		if err := o.Config().HasValidProfile(current); err != nil {
+			o.Println("Unable to authenticate: %s", err.Error())
+			o.Println("You may need to reconfigure your profile via $ kore profile configure")
 
-		return errors.New("invalid profile")
+			return errors.New("invalid profile")
+		}
 	}
 
 	// @step: we make done channels to signal events

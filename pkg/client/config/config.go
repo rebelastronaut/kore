@@ -17,7 +17,6 @@
 package config
 
 import (
-	"errors"
 	"io"
 
 	"github.com/appvia/kore/pkg/kore"
@@ -148,10 +147,10 @@ func (c *Config) AddAuthInfo(name string, auth *AuthInfo) {
 // HasValidProfile checks we have a current context
 func (c *Config) HasValidProfile(name string) error {
 	if name == "" {
-		return errors.New("no profile selected")
+		return ErrNoProfileSelected
 	}
 	if !c.HasServer(c.Profiles[name].Server) {
-		return errors.New("profile does not have a server endpoint")
+		return ErrNoProfileEndpoint
 	}
 
 	return nil
