@@ -129,6 +129,14 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
     return actions
   }
 
+  isEditable = (name) => {
+    // always allow editing if the node pool is not part of the original pre-edited plan
+    if (this.props.originalPlan && !this.props.originalPlan.nodeGroups[this.state.selectedIndex]) {
+      return true
+    }
+    return super.isEditable(name)
+  }
+
   render() {
     const { name, editable, property, plan } = this.props
     const { displayName, valueOrDefault } = this.prepCommonProps(this.props, [])
@@ -208,27 +216,27 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
                 </Collapse.Panel>
                 <Collapse.Panel key="compute" header="Compute Configuration (instance type, GPU or regular workload)">
                   <Form.Item label={property.items.properties.amiType.title} help={property.items.properties.amiType.description}>
-                    <Radio.Group id={`${id_prefix}_amiType`} value={amiType} onChange={(v) => this.setAmiType(selectedIndex, v.target.value)}>
+                    <Radio.Group id={`${id_prefix}_amiType`} value={amiType} onChange={(v) => this.setAmiType(selectedIndex, v.target.value)} disabled={!this.isEditable('amiType')}>
                       <Radio value={PlanOptionEKSNodeGroups.AMI_TYPE_GENERAL}>General Purpose</Radio>
                       <Radio value={PlanOptionEKSNodeGroups.AMI_TYPE_GPU}>GPU</Radio>
                     </Radio.Group>
                     {this.validationErrors(`${name}[${selectedIndex}].amiType`)}
                   </Form.Item>
                   <Form.Item label="AWS AMI Version" help={!releaseVersionSet ? undefined : <><b>Must</b> be for Kubernetes <b>{plan.version}</b> and <b>{amiType === PlanOptionEKSNodeGroups.AMI_TYPE_GPU ? 'GPU' : 'general'}</b> workloads. Find <a target="_blank" rel="noopener noreferrer" href="https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html">supported versions</a> in AWS documentation.</>}>
-                    <Checkbox id={`${id_prefix}_releaseVersion_latest`} disabled={!editable} checked={!releaseVersionSet} onChange={(v) => this.onReleaseVersionChecked(selectedIndex, v.target.checked)}/> Use latest (<b>recommended</b>)
-                    {!releaseVersionSet ? null : <Input id={`${id_prefix}_releaseVersion_custom`} value={selected.releaseVersion} placeholder={this.describe(property.items.properties.releaseVersion)} readOnly={!editable} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'releaseVersion', e.target.value)} />}
+                    <Checkbox id={`${id_prefix}_releaseVersion_latest`} checked={!releaseVersionSet} disabled={!this.isEditable('releaseVersion')} onChange={(v) => this.onReleaseVersionChecked(selectedIndex, v.target.checked)}/> Use latest (<b>recommended</b>)
+                    {!releaseVersionSet ? null : <Input id={`${id_prefix}_releaseVersion_custom`} value={selected.releaseVersion} placeholder={this.describe(property.items.properties.releaseVersion)} disabled={!this.isEditable('releaseVersion')} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'releaseVersion', e.target.value)} />}
                     {this.validationErrors(`${name}[${selectedIndex}].releaseVersion`)}
                   </Form.Item>
-                  <PlanOptionClusterMachineType filterCategories={instanceTypeFilter} id={`${id_prefix}_instanceType`} {...this.props} displayName="AWS Instance Type" name={`${name}[${selectedIndex}].instanceType`} property={property.items.properties.instanceType} value={selected.instanceType} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'instanceType', v )} nodePriceSet={(prices) => this.setState({ prices })} />
-                  <PlanOption {...this.props} id={`${id_prefix}_diskSize`} displayName="Instance Root Disk Size (GiB)" name={`${name}[${selectedIndex}].diskSize`} property={property.items.properties.diskSize} value={selected.diskSize} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'diskSize', v)} />
+                  <PlanOptionClusterMachineType filterCategories={instanceTypeFilter} id={`${id_prefix}_instanceType`} {...this.props} editable={this.isEditable('instanceType')} displayName="AWS Instance Type" name={`${name}[${selectedIndex}].instanceType`} property={property.items.properties.instanceType} value={selected.instanceType} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'instanceType', v )} nodePriceSet={(prices) => this.setState({ prices })} />
+                  <PlanOption {...this.props} hideNonEditable={false} id={`${id_prefix}_diskSize`} displayName="Instance Root Disk Size (GiB)" name={`${name}[${selectedIndex}].diskSize`} property={property.items.properties.diskSize} value={selected.diskSize} editable={this.isEditable('diskSize')} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'diskSize', v)} />
                 </Collapse.Panel>
                 <Collapse.Panel key="metadata" header="Metadata (labels, tags, etc)">
-                  <PlanOption {...this.props} id={`${id_prefix}_labels`} displayName="Labels" help="Labels help kubernetes workloads find this group" name={`${name}[${selectedIndex}].labels`} property={property.items.properties.labels} value={selected.labels} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'labels', v)} />
-                  <PlanOption {...this.props} id={`${id_prefix}_tags`} displayName="Tags" help="AWS tags to apply to the node group" name={`${name}[${selectedIndex}].tags`} property={property.items.properties.tags} value={selected.tags} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'tags', v)} />
+                  <PlanOption {...this.props} hideNonEditable={false} id={`${id_prefix}_labels`} displayName="Labels" help="Labels help kubernetes workloads find this group" name={`${name}[${selectedIndex}].labels`} property={property.items.properties.labels} value={selected.labels} editable={this.isEditable('labels')} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'labels', v)} />
+                  <PlanOption {...this.props} hideNonEditable={false} id={`${id_prefix}_tags`} displayName="Tags" help="AWS tags to apply to the node group" name={`${name}[${selectedIndex}].tags`} property={property.items.properties.tags} value={selected.tags} editable={this.isEditable('tags')} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'tags', v)} />
                 </Collapse.Panel>
                 <Collapse.Panel key="ssh" header="SSH Connectivity (keys, security groups)">
-                  <PlanOption {...this.props} id={`${id_prefix}_eC2SSHKey`} displayName="EC2 SSH Key" name={`${name}[${selectedIndex}].eC2SSHKey`} property={property.items.properties.eC2SSHKey} value={selected.eC2SSHKey} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'eC2SSHKey', v)} />
-                  <PlanOption {...this.props} id={`${id_prefix}_sshSourceSecurityGroups`} displayName="SSH Security Groups" name={`${name}[${selectedIndex}].sshSourceSecurityGroups`} property={property.items.properties.sshSourceSecurityGroups} value={selected.sshSourceSecurityGroups} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'sshSourceSecurityGroups', v)} />
+                  <PlanOption {...this.props} hideNonEditable={false} id={`${id_prefix}_eC2SSHKey`} displayName="EC2 SSH Key" name={`${name}[${selectedIndex}].eC2SSHKey`} property={property.items.properties.eC2SSHKey} value={selected.eC2SSHKey} editable={this.isEditable('eC2SSHKey')} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'eC2SSHKey', v)} />
+                  <PlanOption {...this.props} hideNonEditable={false} id={`${id_prefix}_sshSourceSecurityGroups`} displayName="SSH Security Groups" name={`${name}[${selectedIndex}].sshSourceSecurityGroups`} property={property.items.properties.sshSourceSecurityGroups} value={selected.sshSourceSecurityGroups} editable={this.isEditable('sshSourceSecurityGroups')} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'sshSourceSecurityGroups', v)} />
                 </Collapse.Panel>
               </Collapse>
               <Form.Item>
