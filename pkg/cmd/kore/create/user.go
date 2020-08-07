@@ -73,7 +73,7 @@ func NewCmdCreateUser(factory cmdutils.Factory) *cobra.Command {
 
 	command := &cobra.Command{
 		Use:     "user",
-		Short:   "Creates a managed user to kore",
+		Short:   "Creates a managed user in kore",
 		Long:    userLongDesciption,
 		Example: userExamples,
 		PreRunE: cmdutils.RequireName,

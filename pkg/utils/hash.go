@@ -21,11 +21,12 @@ import (
 	"encoding/hex"
 )
 
-// HashString returns a sha256 of the string
+// HashString returns a md5 of the string
 func HashString(v string) string {
 	return string(HashBytes([]byte(v)))
 }
 
+// HashBytes returns a md5 of the bytes
 func HashBytes(v []byte) []byte {
 	w := md5.New()
 	_, _ = w.Write(v)

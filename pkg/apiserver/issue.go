@@ -61,7 +61,7 @@ func (l *issueHandler) Register(i kore.Interface, builder utils.PathBuilder) (*r
 	ws.Route(
 		ws.PUT("/authorize").To(l.issueHandler).
 			Filter(filters.NewRateLimiter(filters.RateConfig{Period: 60 * time.Second, Limit: 5})).
-			Doc("Used to auhorize and swap tokens for a locally minted token").
+			Doc("Used to authorize and swap tokens for a locally minted token").
 			Operation("LocalAuthorize").
 			Param(ws.QueryParameter("method", "The type of token being swapped, i.e basicauth, openid").Required(true)).
 			DefaultReturns("A generic API error containing the cause of the error", Error{}),
