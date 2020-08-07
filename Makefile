@@ -33,9 +33,8 @@ ifeq ($(USE_GIT_VERSION),true)
 	VERSION ?= $(CURRENT_TAG)
 	endif
 else
-	# case of local build - must find upstream images
-	# - note the version reported by --version always includes the git SHA
-	VERSION ?= $(GIT_LAST_TAG)
+	# else you have to specify the tag
+	VERSION ?= latest
 endif
 LFLAGS ?= -X github.com/appvia/kore/pkg/version.Tag=${GIT_LAST_TAG} -X github.com/appvia/kore/pkg/version.GitSHA=${GIT_SHA} -X github.com/appvia/kore/pkg/version.Compiled=${BUILD_TIME} -X github.com/appvia/kore/pkg/version.Release=${VERSION}
 CLI_PLATFORMS=darwin linux windows
