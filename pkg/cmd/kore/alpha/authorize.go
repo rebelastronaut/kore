@@ -39,6 +39,9 @@ Authorize is a kubectl credentials plugin used to retrieve an authentication
 token from Kore in order to gain access to your Kubernetes infrastructure.
 The command swaps the authentication methods in the currently selected profile
 for a authentication token for access to the clusters.
+
+This command isn't supposed to be used directly but is used a Exec plugin by
+kubectl.
 `
 )
 
@@ -95,7 +98,7 @@ func (o *AuthorizeOptions) Run() error {
 
 			return o.RenderKubectlCredentials(claims)
 		}
-		log.Debug("issues token has expired, retrieving a new one")
+		log.Debug("issued token has expired, retrieving a new one")
 	}
 
 	// @step: retrieve a token from kore

@@ -434,20 +434,20 @@ deepcopy-gen:
 schema-gen:
 	@echo "--> Generating the CRD definitions"
 	@go run github.com/go-bindata/go-bindata/go-bindata \
-		-nocompress \
-		-pkg register \
-	  -nometadata \
-		-o pkg/register/assets.go \
-		-prefix deploy deploy/crds
+    -nocompress \
+    -pkg register \
+    -nometadata \
+    -o pkg/register/assets.go \
+    -prefix deploy deploy/crds
 	@gofmt -s -w pkg/register/assets.go
 
 db-migrations-gen:
 	@echo "--> Generating the Database Migrations"
 	@go run github.com/go-bindata/go-bindata/go-bindata \
 		-pkg migrations \
-	  -nometadata \
-		-o pkg/persistence/migrations/zz_migrations.go \
-		-prefix "pkg/persistence/migrations/files" pkg/persistence/migrations/files/...
+    -nometadata \
+    -o pkg/persistence/migrations/zz_migrations.go \
+    -prefix "pkg/persistence/migrations/files" pkg/persistence/migrations/files/...
 	@gofmt -s -w pkg/persistence/migrations/zz_migrations.go
 
 register-gen:

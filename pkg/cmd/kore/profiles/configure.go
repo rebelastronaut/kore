@@ -43,7 +43,7 @@ type ConfigureOptions struct {
 	Account string
 	// LocalUser is an optional local username (used by basicauth)
 	LocalUser string
-	// LocalPass is an optional local password (user by basicauth)
+	// LocalPass is an optional local password (used by basicauth)
 	LocalPass string
 }
 
