@@ -105,4 +105,16 @@ export default class PlanOptionBase extends React.Component {
     const id = props.id || `plan_input_${name}`
     return { onChange, displayName, help, defaultValue, valueOrDefault, id }
   }
+
+  isEditable(name) {
+    // quick return if the property is not editable
+    if (!this.props.editable) {
+      return false
+    }
+    const property = this.props.property.items.properties[name]
+    const { manage, mode } = this.props
+    return mode !== 'view' &&
+      (property.const === undefined || property.const === null) &&
+      (mode === 'create' || manage || !property.immutable)
+  }
 }
