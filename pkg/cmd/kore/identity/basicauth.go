@@ -109,6 +109,8 @@ func (o *BasicAuthOptions) Run() error {
 		}
 		o.Password = strings.TrimSpace(string(content))
 	} else {
+		var confirm string
+
 		if err := (cmdutil.Prompts{
 			&cmdutil.Prompt{
 				Id:     "Please enter the password for " + o.Username,
@@ -116,12 +118,6 @@ func (o *BasicAuthOptions) Run() error {
 				Mask:   true,
 				ErrMsg: "invalid password",
 			},
-		}).Collect(); err != nil {
-			return err
-		}
-		var confirm string
-
-		if err := (cmdutil.Prompts{
 			&cmdutil.Prompt{
 				Id:     "Please confirm password for " + o.Username,
 				Value:  &confirm,

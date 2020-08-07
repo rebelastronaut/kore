@@ -166,6 +166,7 @@ func (o *ConfigureOptions) GetLocalAccountDetails() error {
 				&cmdutil.Prompt{
 					Id:     "Please enter your password",
 					Value:  &o.LocalPass,
+					Mask:   true,
 					ErrMsg: "invalid password",
 				},
 			}
