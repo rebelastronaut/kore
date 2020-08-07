@@ -182,24 +182,24 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
               <Collapse defaultActiveKey={['basics','compute','metadata']}>
                 <Collapse.Panel key="basics" header="Basic Configuration (name, sizing)">
                   <Form.Item label="Name" help="Unique name for this group within the cluster">
-                    <Input id={`${id_prefix}_name`} value={selected.name} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'name', e.target.value)} readOnly={!editable} />
+                    <Input id={`${id_prefix}_name`} value={selected.name} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'name', e.target.value)} disabled={!this.isEditable('name')} />
                     {this.validationErrors(`${name}[${selectedIndex}].name`)}
                     {!ngNameClash ? null : <Alert type="error" message="This name is already used by another node group, it must be changed." />}
                     {selected.name && selected.name.length > 0 ? null : <Alert type="error" message="Name must be set" />}
                   </Form.Item>
-                  <PlanOption id={`${id_prefix}_enableAutoscaler`} {...this.props} displayName="Auto-scale" name={`${name}[${selectedIndex}].enableAutoscaler`} property={property.items.properties.enableAutoscaler} value={selected.enableAutoscaler} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'enableAutoscaler', v)} />
+                  <PlanOption id={`${id_prefix}_enableAutoscaler`} {...this.props} hideNonEditable={false} displayName="Auto-scale" name={`${name}[${selectedIndex}].enableAutoscaler`} property={property.items.properties.enableAutoscaler} value={selected.enableAutoscaler} editable={this.isEditable('enableAutoscaler')} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'enableAutoscaler', v)} />
                   <Form.Item label="Group Size">
                     <Descriptions layout="horizontal" size="small">
                       {!selected.enableAutoscaler ? null : <Descriptions.Item label="Minimum">
-                        <InputNumber id={`${id_prefix}_minSize`} value={selected.minSize} size="small" min={property.items.properties.minSize.minimum} max={selected.maxSize} readOnly={!editable} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'minSize', v)} />
+                        <InputNumber id={`${id_prefix}_minSize`} value={selected.minSize} size="small" min={property.items.properties.minSize.minimum} max={selected.maxSize} disabled={!this.isEditable('minSize')} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'minSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].minSize`)}
                       </Descriptions.Item>}
                       <Descriptions.Item label={selected.enableAutoscaler ? 'Initial size' : null}>
-                        <InputNumber id={`${id_prefix}_desiredSize`} value={selected.desiredSize} size="small" min={selected.enableAutoscaler ? selected.minSize : 1} max={selected.enableAutoscaler ? selected.maxSize : undefined} readOnly={!editable} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'desiredSize', v)} />
+                        <InputNumber id={`${id_prefix}_desiredSize`} value={selected.desiredSize} size="small" min={selected.enableAutoscaler ? selected.minSize : 1} max={selected.enableAutoscaler ? selected.maxSize : undefined} disabled={!this.isEditable('desiredSize')} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'desiredSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].desiredSize`)}
                       </Descriptions.Item>
                       {!selected.enableAutoscaler ? null : <Descriptions.Item label="Maximum">
-                        <InputNumber id={`${id_prefix}_maxSize`} value={selected.maxSize} size="small" min={selected.minSize} readOnly={!editable} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'maxSize', v)} />
+                        <InputNumber id={`${id_prefix}_maxSize`} value={selected.maxSize} size="small" min={selected.minSize} editable={this.isEditable('maxSize')} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'maxSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].maxSize`)}
                       </Descriptions.Item>}
                     </Descriptions>
