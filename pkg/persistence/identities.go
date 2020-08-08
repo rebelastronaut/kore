@@ -19,10 +19,8 @@ package persistence
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/appvia/kore/pkg/persistence/model"
-	"github.com/appvia/kore/pkg/utils"
 
 	"github.com/jinzhu/gorm"
 	"github.com/prometheus/client_golang/prometheus"
@@ -130,11 +128,6 @@ func (i *idImpl) Update(ctx context.Context, id *model.Identity) error {
 	}
 	if id.Provider == "" {
 		return errors.New("provider is not defined")
-	}
-	if id.ProviderToken != "" && !strings.HasPrefix("md5", id.ProviderToken) {
-		//encoded, err := bcrypt.GenerateFromPassword([]byte(id.ProviderToken), 9)
-		// 38ms vs 1us
-		id.ProviderToken = "md5:" + utils.HashString(id.ProviderToken)
 	}
 
 	return i.conn.

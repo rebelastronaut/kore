@@ -62,8 +62,12 @@ func makeAuthenticators(hubcc kore.Interface, config Config) error {
 				})
 			case "localjwt":
 				return localjwt.New(hubcc, localjwt.Config{
-					PublicKey:  config.Kore.LocalJWTPublicKey,
-					UserClaims: config.Kore.IDPUserClaims,
+					PublicKey: config.Kore.LocalJWTPublicKey,
+				})
+			case "jwt":
+				return localjwt.New(hubcc, localjwt.Config{
+					Audience:      "kore",
+					PublicKeyPath: config.Kore.CertificateAuthority,
 				})
 			default:
 				return nil, errors.New("unknown plugin")

@@ -57,6 +57,8 @@ type Config struct {
 type AuthInfo struct {
 	// BasicAuth defines a basic auth user/pass credential
 	BasicAuth *BasicAuth `json:"basic-auth,omitempty" yaml:"basic-auth,omitempty"`
+	// IdentityToken is represent a kore managed token issued by the kore service
+	IdentityToken *string `json:"identity_token,omitempty" yaml:"identity-token,omitempty"`
 	// Token is a static token to use
 	Token *string `json:"token,omitempty" yaml:"token,omitempty"`
 	// OIDC is credentials from an oauth2 provider

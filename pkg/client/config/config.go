@@ -69,7 +69,6 @@ func (c *Config) CreateProfile(name, endpoint string) {
 		AuthInfo: name,
 	})
 	c.AddServer(name, &Server{Endpoint: endpoint})
-	c.AddAuthInfo(name, &AuthInfo{OIDC: &OIDC{}})
 }
 
 // ListProfiles returns a list of profile names
@@ -106,11 +105,13 @@ func (c *Config) GetProfileAuthMethod(name string) string {
 	auth := c.AuthInfos[c.Profiles[name].AuthInfo]
 	switch {
 	case auth.BasicAuth != nil:
-		return "basic"
+		return "basicauth"
 	case auth.OIDC != nil:
 		return "sso"
 	case auth.Token != nil:
 		return "token"
+	case auth.IdentityToken != nil:
+		return "idtoken"
 	}
 
 	return "none"

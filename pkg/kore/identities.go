@@ -26,9 +26,14 @@ import (
 	"github.com/appvia/kore/pkg/persistence/model"
 	"github.com/appvia/kore/pkg/utils"
 	"github.com/appvia/kore/pkg/utils/validation"
-	jwt "github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	// DefaultCostFactor is the cost factor for bcrypt
+	DefaultCostFactor = 9
 )
 
 var (
@@ -60,8 +65,8 @@ type Identities interface {
 	AssociateIDPUser(ctx context.Context, update *orgv1.UpdateIDPIdentity) error
 	// Delete is called to delete an associated identity of a user
 	Delete(ctx context.Context, user string, identity string) error
-	// IssueToken is used to issue a token for a identity in kore
-	IssueToken(ctx context.Context, audience string, scopes []string) ([]byte, error)
+	// IssueIDToken is used to issue a token for a identity in kore
+	IssueIDToken(ctx context.Context, audience string) ([]byte, error)
 	// List returns a list of all the identities managed in kore
 	List(ctx context.Context, options IdentitiesListOptions) (*orgv1.IdentityList, error)
 	// UpdateUserBasicAuth is used to update a basic auth profile in kore
@@ -74,32 +79,22 @@ type idImpl struct {
 
 // AssociateIDPUser is used to associate an internal user to an idp user
 func (h *idImpl) AssociateIDPUser(ctx context.Context, update *orgv1.UpdateIDPIdentity) error {
-
 	return nil
 }
 
 // IssueToken is used to issue a token for a identity in kore
-func (h *idImpl) IssueToken(ctx context.Context, audience string, scopes []string) ([]byte, error) {
+func (h *idImpl) IssueIDToken(ctx context.Context, audience string) ([]byte, error) {
 	user := authentication.MustGetIdentity(ctx)
 
-	if user.AuthMethod() != AccountLocal {
-		return nil, NewErrNotAllowed("only basicauth identities can be issues at present")
-	}
-
-	usercl := "preferred_username"
-	claims := utils.NewClaims(jwt.MapClaims{
-		"aud":    audience,
-		"email":  user.Email(),
-		"exp":    float64(time.Now().UTC().Add(24 * time.Hour).Unix()),
-		"iss":    h.Config().PublicAPIURL,
-		"nbf":    time.Now().UTC().Add(-60 * time.Second).Unix(),
-		"scopes": scopes,
-		usercl:   user.Username(),
+	minted, err := h.Tokens().Issue(ctx, IssueOptions{
+		Audience: audience,
+		Scopes:   []string{},
+		Duration: 24 * time.Hour * 14,
+		Email:    user.Email(),
+		Username: user.Username(),
 	})
-
-	minted, err := claims.Sign(h.CertificateAuthorityKey())
 	if err != nil {
-		log.WithField("user", user.Username()).WithError(err).Error("trying to mint local token")
+		log.WithField("user", user.Username()).WithError(err).Error("trying to mint id token")
 
 		return nil, err
 	}
@@ -128,6 +123,11 @@ func (h *idImpl) Delete(ctx context.Context, username string, identity string) e
 	if !UsernameRegex.MatchString(username) {
 		return validation.NewError("invalid username").
 			WithFieldError("username", validation.InvalidValue, "username is invalid")
+	}
+
+	// @step: cannot delete the admin user
+	if username == HubAdminUser && identity == AccountLocal {
+		return NewErrNotAllowed("cannot delete the admin user identity")
 	}
 
 	// @step: check the user exists
@@ -232,7 +232,15 @@ func (h *idImpl) UpdateUserBasicAuth(ctx context.Context, update *orgv1.UpdateBa
 			UserID:   u.ID,
 		}
 	}
-	identity.ProviderToken = update.Password
+
+	// @step: encrypt the token
+	hashed, err := bcrypt.GenerateFromPassword([]byte(update.Password), DefaultCostFactor)
+	if err != nil {
+		log.WithError(err).Error("trying to hash the password")
+
+		return err
+	}
+	identity.ProviderToken = string(hashed)
 
 	// @step: update the credentials
 	if err := h.Persist().Identities().Update(ctx, identity); err != nil {

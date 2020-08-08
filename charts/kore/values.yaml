@@ -48,9 +48,10 @@ api:
   image: quay.io/appvia/kore-apiserver
   version: v0.2.0-rc1
   auth_plugins:
-    - basicauth
     - admintoken
+    - jwt
     - openid
+    - basicauth
   auth_plugin_config: {}
   replicas: 2
 ui:

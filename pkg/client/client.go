@@ -31,7 +31,7 @@ import (
 
 	"github.com/appvia/kore/pkg/apiserver"
 	"github.com/appvia/kore/pkg/client/config"
-	cerrors "github.com/appvia/kore/pkg/cmd/errors"
+	cmderr "github.com/appvia/kore/pkg/cmd/errors"
 	"github.com/appvia/kore/pkg/utils/validation"
 	"github.com/appvia/kore/pkg/version"
 
@@ -132,16 +132,16 @@ func (a *apiClient) HandleRequest(method string) RestInterface {
 		// @step: check we have the endpoint
 		profile, found := a.cfg.Profiles[a.Profile()]
 		if !found {
-			return cerrors.ErrMissingProfile
+			return cmderr.ErrMissingProfile
 		}
 		server, found := a.cfg.Servers[profile.Server]
 		if !found {
-			return cerrors.NewProfileInvalidError("missing profile server", a.Profile())
+			return cmderr.NewProfileInvalidError("missing profile server", a.Profile())
 		}
 		endpoint := server.Endpoint
 
 		if endpoint == "" {
-			return cerrors.NewProfileInvalidError("missing endpoint", a.Profile())
+			return cmderr.NewProfileInvalidError("missing endpoint", a.Profile())
 		}
 
 		// @step: we generate the uri from the parameter
@@ -247,13 +247,15 @@ func (a *apiClient) MakeRequest(method, url string) (*http.Response, error) {
 	auth := a.cfg.AuthInfos[a.Profile()]
 	switch {
 	case auth == nil:
-		return nil, cerrors.NewProfileInvalidError("missing authenication profile", a.Profile())
+		return nil, cmderr.NewProfileInvalidError("missing authentication profile", a.Profile())
 	case auth.OIDC != nil:
 		request.Header.Set("Authorization", "Bearer "+auth.OIDC.IDToken)
 	case auth.Token != nil:
 		request.Header.Set("Authorization", "Bearer "+*auth.Token)
 	case auth.BasicAuth != nil:
 		request.SetBasicAuth(auth.BasicAuth.Username, auth.BasicAuth.Password)
+	case auth.IdentityToken != nil:
+		request.Header.Set("Authorization", "Bearer "+*auth.IdentityToken)
 	}
 
 	return a.hc.Do(request)

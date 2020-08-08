@@ -31,6 +31,8 @@ type ClientService interface {
 
 	AssociateIDPIdentity(params *AssociateIDPIdentityParams, authInfo runtime.ClientAuthInfoWriter) (*AssociateIDPIdentityOK, error)
 
+	AuthorizeUser(params *AuthorizeUserParams, authInfo runtime.ClientAuthInfoWriter) (*AuthorizeUserOK, error)
+
 	DeleteAKSCredentials(params *DeleteAKSCredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAKSCredentialsOK, error)
 
 	DeleteAWSOrganization(params *DeleteAWSOrganizationParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAWSOrganizationOK, error)
@@ -52,6 +54,8 @@ type ClientService interface {
 	DeleteServiceProvider(params *DeleteServiceProviderParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteServiceProviderOK, error)
 
 	DeleteTeamSecret(params *DeleteTeamSecretParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteTeamSecretOK, error)
+
+	DeleteUserBasicauth(params *DeleteUserBasicauthParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteUserBasicauthOK, error)
 
 	GenerateInviteLink(params *GenerateInviteLinkParams, authInfo runtime.ClientAuthInfoWriter) (*GenerateInviteLinkOK, error)
 
@@ -358,6 +362,40 @@ func (a *Client) AssociateIDPIdentity(params *AssociateIDPIdentityParams, authIn
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for AssociateIDPIdentity: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
+}
+
+/*
+  AuthorizeUser useds login and authorize an account in kore
+*/
+func (a *Client) AuthorizeUser(params *AuthorizeUserParams, authInfo runtime.ClientAuthInfoWriter) (*AuthorizeUserOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAuthorizeUserParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "AuthorizeUser",
+		Method:             "PUT",
+		PathPattern:        "/api/v1alpha1/login/authorize/{user}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &AuthorizeUserReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AuthorizeUserOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AuthorizeUserDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -738,6 +776,41 @@ func (a *Client) DeleteTeamSecret(params *DeleteTeamSecretParams, authInfo runti
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for DeleteTeamSecret: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  DeleteUserBasicauth useds to delete a basicauth identity from kore
+*/
+func (a *Client) DeleteUserBasicauth(params *DeleteUserBasicauthParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteUserBasicauthOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteUserBasicauthParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "DeleteUserBasicauth",
+		Method:             "DELETE",
+		PathPattern:        "/api/v1alpha1/identities/{user}/basicauth",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &DeleteUserBasicauthReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DeleteUserBasicauthOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for DeleteUserBasicauth: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -3004,7 +3077,7 @@ func (a *Client) ListUsers(params *ListUsersParams, authInfo runtime.ClientAuthI
 }
 
 /*
-  LocalAuthorize useds to auhorize and swap tokens for a locally minted token
+  LocalAuthorize useds to authorize and swap tokens for a locally minted token
 */
 func (a *Client) LocalAuthorize(params *LocalAuthorizeParams, authInfo runtime.ClientAuthInfoWriter) (*LocalAuthorizeOK, error) {
 	// TODO: Validate the params before sending

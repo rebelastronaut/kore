@@ -53,21 +53,31 @@ var (
 	ResourceAPIFilter = regexp.MustCompile(`^[a-z\/].*\/v[a-z0-9].*$`)
 )
 
+// CertificateIface is the certificates interface
+type CertificateIface interface {
+	// CertificateAuthority returns the CA
+	CertificateAuthority() []byte
+	// CertificateAuthorityKey is the private key for the CA
+	CertificateAuthorityKey() []byte
+}
+
+// ConfigIface provides access to the configuration
+type ConfigIface interface {
+	// Config returns the kore configure
+	Config() *Config
+}
+
 // Interface is the contract between the api and store
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Interface
 type Interface interface {
+	CertificateIface
+	ConfigIface
 	// Accounts is the accounting interface
 	Accounts() Accounts
 	// AlertRules() AlertRules
 	AlertRules() AlertRules
 	// Audit returns the audit interface
 	Audit() Audit
-	// Config returns the kore configure
-	Config() *Config
-	// CertificateAuthority returns the CA
-	CertificateAuthority() []byte
-	// CertificateAuthorityKey is the private key for the CA
-	CertificateAuthorityKey() []byte
 	// Invitations returns the invitations interface
 	Invitations() Invitations
 	// GetUserIdenity returns the idenity if any of the a user

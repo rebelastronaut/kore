@@ -175,6 +175,8 @@ func (o *AuthorizeOptions) RequestKubeToken() (*utils.JWTToken, error) {
 		method = "basicauth"
 	case auth.OIDC != nil:
 		method = "openid"
+	case auth.IdentityToken != nil:
+		method = "idtoken"
 	case auth.Token != nil:
 		return nil, cmderr.NewProfileInvalidError("token authentication cannot be used to authorize", current)
 	default:

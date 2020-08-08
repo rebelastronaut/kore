@@ -72,6 +72,8 @@ type hubImpl struct {
 	serviceProviders ServiceProviders
 	// security provides the ability to scan kore objects for security compliance
 	security Security
+	// tokens is the tokens interface
+	tokens Tokens
 	// configs provides the ability to store key value pairs
 	configs Configs
 	// costs is the costs implementation
@@ -140,6 +142,7 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 		scanner:         security.New(),
 		securityPersist: persistenceMgr.Security(),
 	}
+	h.tokens = &tokenImpl{ConfigIface: h, CertificateIface: h}
 	h.configs = &configImpl{hubImpl: h}
 	h.costs = costs.New(&config.Costs)
 	h.features = &koreFeaturesImpl{store: h.store}
@@ -236,6 +239,11 @@ func (h hubImpl) Invitations() Invitations {
 // Teams returns the team implementation
 func (h hubImpl) Teams() Teams {
 	return h.teams
+}
+
+// Tokens returns the token implementation
+func (h hubImpl) Tokens() Tokens {
+	return h.tokens
 }
 
 // Auth returns the authentication interface

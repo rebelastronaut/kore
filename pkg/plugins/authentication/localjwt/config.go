@@ -22,11 +22,14 @@ import (
 
 // IsValid checks the configuration is valid
 func (c Config) IsValid() error {
-	if c.PublicKey == "" {
+	if c.PublicKey == "" && c.PublicKeyPath == "" {
 		return errors.New("no public key configured")
 	}
-	if len(c.UserClaims) <= 0 {
-		c.UserClaims = append(c.UserClaims, []string{"preferred_username"}...)
-	}
+
 	return nil
+}
+
+// HasAudience checks if we have a audience requiremnt
+func (c *Config) HasAudience() bool {
+	return c.Audience != ""
 }

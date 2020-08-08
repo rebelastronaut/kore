@@ -52,7 +52,6 @@ func New(options Options) (verifiers.Interface, error) {
 
 // Admit checks the token is valid
 func (o *provider) Admit(request *http.Request) (bool, error) {
-	// @step: extract the token from the request
 	bearer, found := utils.GetBearerToken(request.Header.Get("Authorization"))
 	if !found {
 		return false, errors.New("no authorization token")
@@ -65,12 +64,10 @@ func (o *provider) Admit(request *http.Request) (bool, error) {
 	token, err := djwt.ParseWithClaims(bearer, &c, func(token *djwt.Token) (interface{}, error) {
 		return o.PublicKey, nil
 	})
-	switch err.(type) {
-	case nil:
-		if !token.Valid {
-			return false, nil
-		}
-	default:
+	if err != nil {
+		return false, nil
+	}
+	if !token.Valid {
 		return false, nil
 	}
 
