@@ -6,7 +6,7 @@ OPENAPIGEN_VERSION=v4.3.1
 
 default: build
 
-deps: 
+deps:
 	@echo "--> Preparing"
 	npm install
 
@@ -113,6 +113,7 @@ check-kore-models:
 
 docker-release:
 	@echo "--> Building a release image"
+	@../hack/verify-release-images.sh
 	@$(MAKE) docker
 	@docker push ${REGISTRY}/${AUTHOR}/${NAME}:${VERSION}
 

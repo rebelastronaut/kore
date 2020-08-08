@@ -87,6 +87,7 @@ auth-proxy-image: golang
 
 auth-proxy-image-release: auth-proxy-image
 	@echo "--> Pushing auth image"
+	@hack/verify-release-images.sh
 	docker push ${REGISTRY}/${AUTHOR}/auth-proxy:${VERSION}
 
 kore-apiserver: golang
@@ -133,6 +134,7 @@ kind-image-dev:
 
 push-images:
 	@echo "--> Pushing docker images"
+	@hack/verify-release-images.sh
 	@for name in ${DOCKER_IMAGES}; do \
 		echo "--> Pushing docker image $${name}" ; \
 		docker push ${REGISTRY}/${AUTHOR}/$${name}:${VERSION} ; \
