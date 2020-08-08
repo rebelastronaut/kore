@@ -18,8 +18,10 @@ package localjwt
 
 // Config is the configuration for the openid provider
 type Config struct {
+	// PublicKeyPath is a location for a certificate
+	PublicKeyPath string
 	// PublicKey is the key used to verify JWTs.
 	PublicKey string
-	// UserClaims is the claim fields which specifies the username
-	UserClaims []string `json:"user-claim,omitempty"`
+	// Audience is the expected audience for the token
+	Audience string
 }

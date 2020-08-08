@@ -233,9 +233,7 @@ func (h hubImpl) ensureHubAdminMembership(ctx context.Context, name, team string
 
 // ensureHubAdminUser ensures the user is there
 func (h hubImpl) ensureHubAdminUser(ctx context.Context, name, email string) error {
-	logger := log.WithFields(log.Fields{
-		"username": name,
-	})
+	logger := log.WithFields(log.Fields{"username": name})
 
 	found, err := h.Users().Exists(ctx, name)
 	if err != nil {
@@ -252,6 +250,7 @@ func (h hubImpl) ensureHubAdminUser(ctx context.Context, name, email string) err
 			return err
 		}
 	}
+
 	// Add or update user to IDP broker:
 	if h.Config().DEX.EnabledDex {
 		if err = h.idp.UpdateUser(ctx, name, h.Config().AdminPass); err != nil {
@@ -262,17 +261,14 @@ func (h hubImpl) ensureHubAdminUser(ctx context.Context, name, email string) err
 	}
 
 	if h.Config().AdminPass != "" {
-		user, err := h.persistenceMgr.Users().Get(ctx, name)
-		if err != nil {
+		if err := h.Users().Identities().UpdateUserBasicAuth(getAdminContext(ctx),
+			&orgv1.UpdateBasicAuthIdentity{
+				Username: name,
+				Password: h.Config().AdminPass,
+			},
+		); err != nil {
 			return err
 		}
-
-		return h.persistenceMgr.Identities().Update(ctx, &model.Identity{
-			Provider:      "basicauth",
-			ProviderEmail: email,
-			ProviderToken: h.Config().AdminPass,
-			UserID:        user.ID,
-		})
 	}
 
 	return nil

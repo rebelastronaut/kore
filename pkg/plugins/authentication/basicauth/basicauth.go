@@ -18,12 +18,13 @@ package basicauth
 
 import (
 	"context"
-	"strings"
 
 	"github.com/appvia/kore/pkg/apiserver/plugins/identity"
 	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/kore/authentication"
 	"github.com/appvia/kore/pkg/utils"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type authImpl struct {
@@ -51,16 +52,8 @@ func (o *authImpl) Admit(ctx context.Context, req identity.Requestor) (authentic
 	// @TODO we rework this when i do the rbac piece as it will involve moving the
 	// authentication piece around alot - as we'd to wrap in some form of encryption service
 	current := id.ProviderToken
-	switch {
-	case strings.HasPrefix(current, "md5:"):
-		hash := strings.TrimPrefix(current, "md5:")
-		if utils.HashString(password) != hash {
-			return nil, false
-		}
-	default:
-		if current != password {
-			return nil, false
-		}
+	if err := bcrypt.CompareHashAndPassword([]byte(current), []byte(password)); err != nil {
+		return nil, false
 	}
 
 	user, found, err := o.GetUserIdentity(ctx, username, kore.WithAuthMethod("basicauth"))

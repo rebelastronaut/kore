@@ -370,4 +370,3 @@ func handleLoginCallback(req *http.Request, resp http.ResponseWriter) (*apiserve
 
 	return token, nil
 }
-

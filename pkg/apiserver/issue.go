@@ -73,21 +73,12 @@ func (l *issueHandler) Register(i kore.Interface, builder utils.PathBuilder) (*r
 // issueHandler is responsible for issuing a local token for local users
 func (l *issueHandler) issueHandler(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
-		// @step: get the token type being swapped
-		method := req.QueryParameter("method")
-		switch method {
-		case "basicauth":
-			issued, err := l.Users().Identities().IssueToken(req.Request.Context(), "kubernetes", []string{"impersonate"})
-			if err != nil {
-				return err
-			}
-			return resp.WriteHeaderAndEntity(http.StatusOK, &types.IssuedToken{Token: issued})
-
-		default:
-			resp.WriteHeader(http.StatusNotImplemented)
+		issued, err := l.Users().Identities().IssueIDToken(req.Request.Context(), "kubernetes")
+		if err != nil {
+			return err
 		}
 
-		return nil
+		return resp.WriteHeaderAndEntity(http.StatusOK, &types.IssuedToken{Token: issued})
 	})
 }
 

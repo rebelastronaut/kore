@@ -147,11 +147,13 @@ func (c *Config) GetProfileAuthMethod(name string) string {
 	auth := c.AuthInfos[c.Profiles[name].AuthInfo]
 	switch {
 	case auth.BasicAuth != nil:
-		return "basic"
+		return "basicauth"
 	case auth.OIDC != nil:
 		return "sso"
 	case auth.Token != nil:
 		return "token"
+	case auth.IdentityToken != nil:
+		return "idtoken"
 	}
 
 	return "none"

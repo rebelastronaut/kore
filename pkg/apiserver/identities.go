@@ -87,6 +87,15 @@ func (u *identitiesHandler) Register(i kore.Interface, builder utils.PathBuilder
 	)
 
 	ws.Route(
+		withAllNonValidationErrors(ws.DELETE("/{user}/basicauth")).To(u.deleteUserBasicAuth).
+			Doc("Used to delete a basicauth identity from kore").
+			Operation("DeleteUserBasicauth").
+			Param(ws.PathParameter("user", "The name of the user we are deletingg")).
+			Returns(http.StatusOK, "Contains the identities definitions from the kore", nil).
+			Returns(http.StatusNotFound, "User does not exist", nil),
+	)
+
+	ws.Route(
 		withAllNonValidationErrors(ws.GET("/{user}/associate")).To(u.associateUserIdentity).
 			Doc("Used to associate an external IDP identity with a user in kore").
 			Operation("AssociateIDPIdentity").
@@ -97,6 +106,15 @@ func (u *identitiesHandler) Register(i kore.Interface, builder utils.PathBuilder
 	)
 
 	return ws, nil
+}
+
+// deleteUserBasicAuth to update the basicauth identity in kore
+func (u identitiesHandler) deleteUserBasicAuth(req *restful.Request, resp *restful.Response) {
+	handleErrors(req, resp, func() error {
+		user := req.PathParameter("user")
+
+		return u.Users().Identities().Delete(req.Request.Context(), user, kore.AccountLocal)
+	})
 }
 
 // updateUserBasicAuth to update the basicauth identity in kore

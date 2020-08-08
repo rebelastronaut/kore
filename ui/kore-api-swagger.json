@@ -787,6 +787,45 @@
             }
           }
         }
+      },
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Used to delete a basicauth identity from kore",
+        "operationId": "DeleteUserBasicauth",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of the user we are deletingg",
+            "name": "user",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contains the identities definitions from the kore"
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "404": {
+            "description": "User does not exist"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
       }
     },
     "/api/v1alpha1/idp/clients/{name}": {
@@ -1008,7 +1047,7 @@
         "produces": [
           "application/json"
         ],
-        "summary": "Used to auhorize and swap tokens for a locally minted token",
+        "summary": "Used to authorize and swap tokens for a locally minted token",
         "operationId": "LocalAuthorize",
         "parameters": [
           {
@@ -1214,6 +1253,47 @@
             "description": "the feature with the given name doesn't exist"
           },
           "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1alpha1/login/authorize/{user}": {
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Used login and authorize an account in kore",
+        "operationId": "AuthorizeUser",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The username you are trying to authorize",
+            "name": "user",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "A list of requested scopes being request",
+            "name": "scopes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contains the access token on successfully authentication",
+            "schema": {
+              "$ref": "#/definitions/types.IssuedToken"
+            }
+          },
+          "default": {
             "description": "A generic API error containing the cause of the error",
             "schema": {
               "$ref": "#/definitions/apiserver.Error"
@@ -7589,7 +7669,7 @@
           },
           {
             "type": "string",
-            "description": "Indicates we should create an identity for this user of type",
+            "description": "Indicates we should create the identity for the user",
             "name": "identity",
             "in": "query"
           },
@@ -7956,6 +8036,21 @@
       "properties": {
         "healthy": {
           "type": "boolean"
+        }
+      }
+    },
+    "types.IssuedToken": {
+      "required": [
+        "Token",
+        "Expires"
+      ],
+      "properties": {
+        "Expires": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "Token": {
+          "type": "string"
         }
       }
     },

@@ -68,7 +68,7 @@ type UpdateUserParams struct {
 	*/
 	Body *models.V1User
 	/*Identity
-	  Indicates we should create an identity for this user of type
+	  Indicates we should create the identity for the user
 
 	*/
 	Identity *string
