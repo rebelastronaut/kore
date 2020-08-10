@@ -77,7 +77,7 @@ class KoreApiClient {
   UpdateIDPClient = (name, idpClient) => this.apis.default.UpdateIDPClient({ name, body: JSON.stringify(idpClient) })
 
   // Login
-  Login = (username, password) => this.apis.default.Login({ body: JSON.stringify({ username: username, password: password }) })
+  Login = (username, password) => this.apis.default.Login({ body: JSON.stringify({ username, password }) })
   GetToken = (refreshToken) => this.apis.default.GetToken({ refresh: refreshToken })
   WhoAmI = () => this.apis.default.WhoAmI()
 
