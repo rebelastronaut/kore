@@ -21,10 +21,10 @@ export default class PlanOption extends PlanOptionBase {
   }
 
   render() {
-    const { resourceType, kind, name, property, value, editable, hideNonEditable, disableCustom } = this.props
+    const { resourceType, kind, name, property, value, editable, forceShow, disableCustom } = this.props
     const { onChange, displayName, help, valueOrDefault, id } = this.prepCommonProps(this.props)
 
-    if (!editable && hideNonEditable) {
+    if (!editable && !forceShow) {
       return null
     }
 

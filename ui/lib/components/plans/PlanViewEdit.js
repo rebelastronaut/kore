@@ -1,6 +1,7 @@
 import * as React from 'react'
 import PropTypes from 'prop-types'
-import { Form, Checkbox } from 'antd'
+import { Switch, Typography } from 'antd'
+const { Paragraph, Text } = Typography
 import PlanOption from './PlanOption'
 
 /**
@@ -10,7 +11,7 @@ import PlanOption from './PlanOption'
 export default class PlanViewEdit extends React.Component {
   static propTypes = {
     resourceType: PropTypes.oneOf(['cluster', 'service', 'servicecredential', 'monitoring']).isRequired,
-    mode: PropTypes.oneOf(['create','edit','view']).isRequired,
+    mode: PropTypes.oneOf(['create', 'edit', 'view']).isRequired,
     manage: PropTypes.bool,
     team: PropTypes.object,
     kind: PropTypes.string.isRequired,
@@ -22,39 +23,38 @@ export default class PlanViewEdit extends React.Component {
     validationErrors: PropTypes.array
   }
 
-  state = {
-    showReadOnly: false
-  }
-
   constructor(props) {
     super(props)
-    this.state = {
-      showReadOnly: props.mode === 'view' || props.manage === true
-    }
+    this.state = { showAll: props.manage === true }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.mode !== prevProps.mode) {
-      this.setState({ showReadOnly: this.props.mode === 'view' || this.props.manage === true })
+      this.setState({ showAll: this.props.manage === true })
     }
   }
 
   render() {
     const { resourceType, mode, manage, team, kind, plan, originalPlan, schema, editableParams, onPlanValueChange, validationErrors } = this.props
-    const { showReadOnly } = this.state
+    const showAll = this.state.showAll
+
     return (
       <>
-        {mode !== 'view' && !editableParams.includes('*') ? (
-          <Form.Item label="Show read-only parameters">
-            <Checkbox onChange={(v) => this.setState({ showReadOnly: v.target.checked })} checked={showReadOnly} />
-          </Form.Item>
-        ): null}
+        {manage ? null : (
+          <Paragraph>
+            <Text strong style={{ marginRight: '10px' }}>Show all parameters</Text>
+            <Switch checked={showAll} onChange={(showAll) => this.setState({ showAll })} />
+          </Paragraph>
+        )}
 
         {Object.keys(schema.properties).map((name) => {
           const editable = mode !== 'view' &&
             (editableParams.includes('*') || editableParams.includes(name)) &&
             (schema.properties[name].const === undefined || schema.properties[name].const === null) &&
             (mode === 'create' || manage || !schema.properties[name].immutable) // Disallow editing of params which can only be set at create time when in 'use' mode
+          // always show properties that are editable according to the policy, even when in view mode
+          // properties not editable by the policy can be shown by enabling showAll
+          const forceShow = showAll || (mode === 'view' && (editableParams.includes('*') || editableParams.includes(name)))
 
           return (
             <PlanOption
@@ -69,7 +69,7 @@ export default class PlanViewEdit extends React.Component {
               name={name}
               property={schema.properties[name]}
               value={plan[name]}
-              hideNonEditable={!showReadOnly}
+              forceShow={forceShow}
               editable={editable}
               onChange={(n, v) => onPlanValueChange(n, v)}
               validationErrors={validationErrors} />

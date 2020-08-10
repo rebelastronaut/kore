@@ -13,7 +13,7 @@ export default class PlanOptionBase extends React.Component {
     property: PropTypes.object.isRequired,
     value: PropTypes.any,
     editable: PropTypes.bool,
-    hideNonEditable: PropTypes.bool,
+    forceShow: PropTypes.bool,
     onChange: PropTypes.func,
     displayName: PropTypes.string,
     validationErrors: PropTypes.array,
