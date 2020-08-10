@@ -6,10 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // TypesIssuedToken types issued token
@@ -18,64 +16,17 @@ import (
 type TypesIssuedToken struct {
 
 	// expires
-	// Required: true
-	Expires *int64 `json:"Expires"`
+	Expires int64 `json:"expires,omitempty"`
 
 	// refresh token
-	// Required: true
-	RefreshToken *string `json:"RefreshToken"`
+	RefreshToken string `json:"refreshToken,omitempty"`
 
 	// token
-	// Required: true
-	Token *string `json:"Token"`
+	Token string `json:"token,omitempty"`
 }
 
 // Validate validates this types issued token
 func (m *TypesIssuedToken) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateExpires(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRefreshToken(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateToken(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *TypesIssuedToken) validateExpires(formats strfmt.Registry) error {
-
-	if err := validate.Required("Expires", "body", m.Expires); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *TypesIssuedToken) validateRefreshToken(formats strfmt.Registry) error {
-
-	if err := validate.Required("RefreshToken", "body", m.RefreshToken); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *TypesIssuedToken) validateToken(formats strfmt.Registry) error {
-
-	if err := validate.Required("Token", "body", m.Token); err != nil {
-		return err
-	}
-
 	return nil
 }
 

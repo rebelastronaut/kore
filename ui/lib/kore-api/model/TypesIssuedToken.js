@@ -22,13 +22,10 @@ class TypesIssuedToken {
     /**
      * Constructs a new <code>TypesIssuedToken</code>.
      * @alias module:model/TypesIssuedToken
-     * @param expires {Number} 
-     * @param refreshToken {String} 
-     * @param token {String} 
      */
-    constructor(expires, refreshToken, token) { 
+    constructor() { 
         
-        TypesIssuedToken.initialize(this, expires, refreshToken, token);
+        TypesIssuedToken.initialize(this);
     }
 
     /**
@@ -36,10 +33,7 @@ class TypesIssuedToken {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, expires, refreshToken, token) { 
-        obj['Expires'] = expires;
-        obj['RefreshToken'] = refreshToken;
-        obj['Token'] = token;
+    static initialize(obj) { 
     }
 
     /**
@@ -53,14 +47,14 @@ class TypesIssuedToken {
         if (data) {
             obj = obj || new TypesIssuedToken();
 
-            if (data.hasOwnProperty('Expires')) {
-                obj['Expires'] = ApiClient.convertToType(data['Expires'], 'Number');
+            if (data.hasOwnProperty('expires')) {
+                obj['expires'] = ApiClient.convertToType(data['expires'], 'Number');
             }
-            if (data.hasOwnProperty('RefreshToken')) {
-                obj['RefreshToken'] = ApiClient.convertToType(data['RefreshToken'], 'String');
+            if (data.hasOwnProperty('refreshToken')) {
+                obj['refreshToken'] = ApiClient.convertToType(data['refreshToken'], 'String');
             }
-            if (data.hasOwnProperty('Token')) {
-                obj['Token'] = ApiClient.convertToType(data['Token'], 'String');
+            if (data.hasOwnProperty('token')) {
+                obj['token'] = ApiClient.convertToType(data['token'], 'String');
             }
         }
         return obj;
@@ -70,58 +64,58 @@ class TypesIssuedToken {
      * @return {Number}
      */
     getExpires() {
-        return this.Expires;
+        return this.expires;
     }
 
     /**
      * @param {Number} expires
      */
     setExpires(expires) {
-        this['Expires'] = expires;
+        this['expires'] = expires;
     }
 /**
      * @return {String}
      */
     getRefreshToken() {
-        return this.RefreshToken;
+        return this.refreshToken;
     }
 
     /**
      * @param {String} refreshToken
      */
     setRefreshToken(refreshToken) {
-        this['RefreshToken'] = refreshToken;
+        this['refreshToken'] = refreshToken;
     }
 /**
      * @return {String}
      */
     getToken() {
-        return this.Token;
+        return this.token;
     }
 
     /**
      * @param {String} token
      */
     setToken(token) {
-        this['Token'] = token;
+        this['token'] = token;
     }
 
 }
 
 /**
- * @member {Number} Expires
+ * @member {Number} expires
  */
-TypesIssuedToken.prototype['Expires'] = undefined;
+TypesIssuedToken.prototype['expires'] = undefined;
 
 /**
- * @member {String} RefreshToken
+ * @member {String} refreshToken
  */
-TypesIssuedToken.prototype['RefreshToken'] = undefined;
+TypesIssuedToken.prototype['refreshToken'] = undefined;
 
 /**
- * @member {String} Token
+ * @member {String} token
  */
-TypesIssuedToken.prototype['Token'] = undefined;
+TypesIssuedToken.prototype['token'] = undefined;
 
 
 
