@@ -203,7 +203,7 @@ func (o *LoginOptions) Run() error {
 
 	// @step: else we do have a profile so need see if basicauth or sso
 	switch method {
-	case "idtoken", "Kore Username and Password":
+	case "idtoken", "Kore Username + Password":
 		return o.RunIDAuth()
 	case "sso", "Single Sign-On":
 		return o.RunOAuth()

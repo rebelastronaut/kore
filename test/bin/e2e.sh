@@ -129,9 +129,9 @@ build-cluster() {
     --set=api.auth_plugin_config.local_jwt_publickey=${KORE_LOCAL_JWT_PUBLIC_KEY} \
     --set=api.auth_plugins.0=admintoken \
     --set=api.auth_plugins.1=jwt \
-    --set=api.auth_plugins.2=localjwt \
-    --set=api.auth_plugins.3=basicauth \
-    --set=api.auth_plugins.4=openid \
+    --set=api.auth_plugins.2=basicauth \
+    --set=api.auth_plugins.3=openid \
+    --set=api.auth_plugins.4=localjwt \
     --set=api.verbose=true \
     --set=idp.client_id=${KORE_IDP_CLIENT_ID} \
     --set=idp.client_secret=${KORE_IDP_CLIENT_SECRET} \
