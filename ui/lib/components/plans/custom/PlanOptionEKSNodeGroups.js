@@ -220,7 +220,7 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
                     {this.validationErrors(`${name}[${selectedIndex}].releaseVersion`)}
                   </Form.Item>
                   <PlanOptionClusterMachineType filterCategories={instanceTypeFilter} id={`${id_prefix}_instanceType`} {...this.props} displayName="AWS Instance Type" name={`${name}[${selectedIndex}].instanceType`} property={property.items.properties.instanceType} value={selected.instanceType} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'instanceType', v )} nodePriceSet={(prices) => this.setState({ prices })} />
-                  <PlanOption {...this.props} id={`${id_prefix}_instanceType`} displayName="Instance Root Disk Size (GiB)" name={`${name}[${selectedIndex}].diskSize`} property={property.items.properties.diskSize} value={selected.diskSize} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'diskSize', v)} />
+                  <PlanOption {...this.props} id={`${id_prefix}_diskSize`} displayName="Instance Root Disk Size (GiB)" name={`${name}[${selectedIndex}].diskSize`} property={property.items.properties.diskSize} value={selected.diskSize} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'diskSize', v)} />
                 </Collapse.Panel>
                 <Collapse.Panel key="metadata" header="Metadata (labels, tags, etc)">
                   <PlanOption {...this.props} id={`${id_prefix}_labels`} displayName="Labels" help="Labels help kubernetes workloads find this group" name={`${name}[${selectedIndex}].labels`} property={property.items.properties.labels} value={selected.labels} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'labels', v)} />
