@@ -38,8 +38,25 @@ class Credentials extends AutoRefreshComponent {
     }
   }
 
+  actions = () => {
+    const { provider, credentials, editCredential, deleteCredential } = this.props
+    return [
+      <ResourceVerificationStatus key="verification_status" resourceStatus={credentials.status} />,
+      <Text key="delete_creds">
+        <Tooltip title="Delete this credential">
+          <a id={`${provider.toLowerCase()}creds_del_${credentials.metadata.name}`} onClick={deleteCredential(credentials)}><Icon type="delete" /></a>
+        </Tooltip>
+      </Text>,
+      <Text key="show_creds">
+        <Tooltip title="Edit this credential">
+          <a id={`${provider.toLowerCase()}creds_edit_${credentials.metadata.name}`} onClick={editCredential(credentials)}><Icon type="edit" /></a>
+        </Tooltip>
+      </Text>
+    ]
+  }
+
   render() {
-    const { provider, identifierKey, credentials, editCredential, deleteCredential, allTeams } = this.props
+    const { provider, identifierKey, credentials, allTeams } = this.props
     const created = moment(credentials.metadata.creationTimestamp).fromNow()
 
     const displayAllocations = () => {
@@ -51,11 +68,7 @@ class Credentials extends AutoRefreshComponent {
     }
 
     return (
-      <List.Item id={`${provider.toLowerCase()}creds_${credentials.metadata.name}`} key={credentials.metadata.name} actions={[
-        <ResourceVerificationStatus key="verification_status" resourceStatus={credentials.status} />,
-        <Text key="delete_creds"><a id={`${provider.toLowerCase()}creds_del_${credentials.metadata.name}`} onClick={deleteCredential(credentials)}><Icon type="delete" theme="filled"/> Delete</a></Text>,
-        <Text key="show_creds"><a id={`${provider.toLowerCase()}creds_edit_${credentials.metadata.name}`} onClick={editCredential(credentials)}><Icon type="edit" theme="filled"/> Edit</a></Text>
-      ]}>
+      <List.Item id={`${provider.toLowerCase()}creds_${credentials.metadata.name}`} key={credentials.metadata.name} actions={this.actions()}>
         <List.Item.Meta
           avatar={<Avatar icon="project" />}
           title={

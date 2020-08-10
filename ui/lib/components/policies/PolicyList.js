@@ -65,15 +65,19 @@ class PolicyList extends ResourceList {
     const readonly = isReadOnlyCRD(policy)
     return (
       <List.Item key={policy.metadata.name} actions={[
-        <Text key="view_policy"><a id={`policy_view_${policy.metadata.name}`} onClick={this.view(policy)}><Icon type="eye" theme="filled"/> View</a></Text>,
+        <Text key="view_policy">
+          <Tooltip title="Edit this policy">
+            <a id={`policy_view_${policy.metadata.name}`} onClick={this.view(policy)}><Icon type="eye" /></a>
+          </Tooltip>
+        </Text>,
         <Text key="edit_policy">
           <Tooltip title="Edit this policy">
-            <a id={`policy_edit_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only. Create a new policy to further restrict or allow changes.' }) : this.edit(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="edit" theme="filled"/> Edit</a>
+            <a id={`policy_edit_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only. Create a new policy to further restrict or allow changes.' }) : this.edit(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="edit" /></a>
           </Tooltip>
         </Text>,
         <Text key="delete_policy">
           <Tooltip title="Delete this policy">
-            <a id={`policy_delete_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only and cannot be deleted. Create a new policy to further restrict or allow changes.' }) : this.delete(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="delete" theme="filled"/> Delete</a>
+            <a id={`policy_delete_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only and cannot be deleted. Create a new policy to further restrict or allow changes.' }) : this.delete(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="delete" /></a>
           </Tooltip>
         </Text>
       ]}>

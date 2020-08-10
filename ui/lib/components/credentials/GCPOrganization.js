@@ -33,8 +33,25 @@ class GCPOrganization extends AutoRefreshComponent {
     }
   }
 
+  actions = () => {
+    const { organization, editOrganization, deleteOrganization } = this.props
+    return [
+      <ResourceVerificationStatus key="verification_status" resourceStatus={organization.status} />,
+      <Text key="delete_org">
+        <Tooltip title="Delete this organization">
+          <a id={`gcporg_del_${organization.metadata.name}`}  onClick={deleteOrganization(organization)}><Icon type="delete" /></a>
+        </Tooltip>
+      </Text>,
+      <Text key="edit">
+        <Tooltip title="Edit this organization">
+          <a id={`gcporg_edit_${organization.metadata.name}`} onClick={editOrganization(organization)}><Icon type="edit" /></a>
+        </Tooltip>
+      </Text>
+    ]
+  }
+
   render() {
-    const { organization, editOrganization, deleteOrganization, allTeams } = this.props
+    const { organization, allTeams } = this.props
     const created = moment(organization.metadata.creationTimestamp).fromNow()
 
     const displayAllocations = () => {
@@ -46,11 +63,7 @@ class GCPOrganization extends AutoRefreshComponent {
     }
 
     return (
-      <List.Item id={`gcporg_${organization.metadata.name}`} key={organization.metadata.name} actions={[
-        <ResourceVerificationStatus key="verification_status" resourceStatus={organization.status} />,
-        <Text key="delete_org"><a id={`gcporg_del_${organization.metadata.name}`}  onClick={deleteOrganization(organization)}><Icon type="delete" theme="filled"/> Delete</a></Text>,
-        <Text key="edit"><a id={`gcporg_edit_${organization.metadata.name}`} onClick={editOrganization(organization)}><Icon type="edit" theme="filled"/> Edit</a></Text>
-      ]}>
+      <List.Item id={`gcporg_${organization.metadata.name}`} key={organization.metadata.name} actions={this.actions()}>
         <List.Item.Meta
           avatar={<Avatar icon="cloud" />}
           title={
