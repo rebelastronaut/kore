@@ -20,19 +20,19 @@ package types
 type IssuedToken struct {
 	// RefreshToken is a token to retrieve new tokens, populated only on
 	// initial login
-	RefreshToken string
+	RefreshToken string `json:"refreshToken,omitempty"`
 	// Token is the actual token for accessing the API
-	Token string
+	Token string `json:"token,omitempty"`
 	// Expires is the time token will expire
-	Expires int64
+	Expires int64 `json:"expires,omitempty"`
 }
 
 // LocalUser represents a local user for login purposes
 type LocalUser struct {
 	// Username is the user's username
-	Username string
+	Username string `json:"username,omitempty"`
 	// Password used to identify the local user
-	Password string
+	Password string `json:"password,omitempty"`
 }
 
 // WhoAmI provides a description to who you are

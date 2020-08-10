@@ -76,7 +76,11 @@ func (l *loginHandler) Register(i kore.Interface, builder utils.PathBuilder) (*r
 
 	ws.Route(
 		withAllNonValidationErrors(ws.GET("/token")).To(l.getToken).
-			Filter(filters.NewRateLimiter(filters.RateConfig{Period: 60 * time.Second, Limit: 5})).
+			// higher rate limit as multiple in-flight API requests at the same time may all cause a token refresh,
+			// lower risk as only accepts a token, so no possibility of credential stuffing. For UI token login,
+			// all requests will come from the same server, so this is in effect a global limit not a per client
+			// limit. @TODO: Consider changing or possibly removing these limits for this endpoint.
+			Filter(filters.NewRateLimiter(filters.RateConfig{Period: 30 * time.Second, Limit: 30})).
 			Doc("Retrieve a new token for the user identified by the specified refresh token").
 			Param(ws.QueryParameter("refresh", "The refresh token to exchange")).
 			Operation("GetToken").

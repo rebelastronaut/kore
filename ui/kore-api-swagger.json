@@ -8122,34 +8122,25 @@
       }
     },
     "types.IssuedToken": {
-      "required": [
-        "RefreshToken",
-        "Token",
-        "Expires"
-      ],
       "properties": {
-        "Expires": {
+        "expires": {
           "type": "integer",
           "format": "int64"
         },
-        "RefreshToken": {
+        "refreshToken": {
           "type": "string"
         },
-        "Token": {
+        "token": {
           "type": "string"
         }
       }
     },
     "types.LocalUser": {
-      "required": [
-        "Username",
-        "Password"
-      ],
       "properties": {
-        "Password": {
+        "password": {
           "type": "string"
         },
-        "Username": {
+        "username": {
           "type": "string"
         }
       }
@@ -9269,8 +9260,8 @@
     },
     "v1.OptionalSecretKeySelector": {
       "required": [
-        "key",
-        "name"
+        "name",
+        "key"
       ],
       "properties": {
         "key": {
@@ -10292,11 +10283,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
-        "clientID",
-        "clientSecret",
         "issuer",
         "clientScopes",
-        "userClaims"
+        "userClaims",
+        "clientID",
+        "clientSecret"
       ],
       "properties": {
         "clientID": {

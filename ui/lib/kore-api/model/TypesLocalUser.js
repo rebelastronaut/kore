@@ -22,12 +22,10 @@ class TypesLocalUser {
     /**
      * Constructs a new <code>TypesLocalUser</code>.
      * @alias module:model/TypesLocalUser
-     * @param password {String} 
-     * @param username {String} 
      */
-    constructor(password, username) { 
+    constructor() { 
         
-        TypesLocalUser.initialize(this, password, username);
+        TypesLocalUser.initialize(this);
     }
 
     /**
@@ -35,9 +33,7 @@ class TypesLocalUser {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, password, username) { 
-        obj['Password'] = password;
-        obj['Username'] = username;
+    static initialize(obj) { 
     }
 
     /**
@@ -51,11 +47,11 @@ class TypesLocalUser {
         if (data) {
             obj = obj || new TypesLocalUser();
 
-            if (data.hasOwnProperty('Password')) {
-                obj['Password'] = ApiClient.convertToType(data['Password'], 'String');
+            if (data.hasOwnProperty('password')) {
+                obj['password'] = ApiClient.convertToType(data['password'], 'String');
             }
-            if (data.hasOwnProperty('Username')) {
-                obj['Username'] = ApiClient.convertToType(data['Username'], 'String');
+            if (data.hasOwnProperty('username')) {
+                obj['username'] = ApiClient.convertToType(data['username'], 'String');
             }
         }
         return obj;
@@ -65,40 +61,40 @@ class TypesLocalUser {
      * @return {String}
      */
     getPassword() {
-        return this.Password;
+        return this.password;
     }
 
     /**
      * @param {String} password
      */
     setPassword(password) {
-        this['Password'] = password;
+        this['password'] = password;
     }
 /**
      * @return {String}
      */
     getUsername() {
-        return this.Username;
+        return this.username;
     }
 
     /**
      * @param {String} username
      */
     setUsername(username) {
-        this['Username'] = username;
+        this['username'] = username;
     }
 
 }
 
 /**
- * @member {String} Password
+ * @member {String} password
  */
-TypesLocalUser.prototype['Password'] = undefined;
+TypesLocalUser.prototype['password'] = undefined;
 
 /**
- * @member {String} Username
+ * @member {String} username
  */
-TypesLocalUser.prototype['Username'] = undefined;
+TypesLocalUser.prototype['username'] = undefined;
 
 
 
