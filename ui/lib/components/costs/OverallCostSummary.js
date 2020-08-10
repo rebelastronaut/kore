@@ -58,7 +58,7 @@ export default class OverallCostSummary extends React.Component {
           </Col>
           {!isCurrentMonth || !isSingleMonth ? null : (
             <Col span={12}>
-              <Typography.Paragraph style={{ fontSize: '14px', marginBottom: 0 }} type="secondary">Projected Costs for {month} <IconTooltip icon="info-circle" text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." /></Typography.Paragraph>
+              <Typography.Paragraph style={{ fontSize: '14px', marginBottom: 0 }} type="secondary">Projected Costs for {month} <IconTooltip text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." /></Typography.Paragraph>
               <Typography.Text strong style={{ fontSize: '50px' }}>{summary.cost ? formatCost(this.projectMonthlyCost(fromMoment, toActual, summary.cost)) : '$0.00' }</Typography.Text>
             </Col>
           )}

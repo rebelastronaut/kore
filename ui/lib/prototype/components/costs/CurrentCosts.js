@@ -25,7 +25,7 @@ const CurrentCosts = ({ team, currentCost, predictedCost, predictedCostChangePer
     <Col span={14}>
       <Card bordered={false}>
         <Paragraph style={{ fontSize: '16px', marginBottom: 0 }} type="secondary">
-          Total costs for June 2020 (predicted) <IconTooltip icon="info-circle" text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." />
+          Total costs for June 2020 (predicted) <IconTooltip text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." />
         </Paragraph>
         <Text strong style={{ fontSize: '60px', marginRight: '5px' }}>&pound;</Text><Text style={{ fontSize: '60px' }}>{predictedCost}</Text>
         <Statistic

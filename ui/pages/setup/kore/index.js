@@ -5,7 +5,7 @@ import { Result, Icon, Button } from 'antd'
 const SetupKoreIndexPage = ({ user }) => (
   <div>
     <Result
-      icon={<Icon type="smile" theme="twoTone" />}
+      icon={<Icon type="smile" theme="twoTone" twoToneColor="#1890ff" />}
       title={`Welcome to Kore, ${user.displayName || user.name || user.id}!`}
       subTitle="As the first user you are now an administrator and are responsible for the initial setup"
       extra={[

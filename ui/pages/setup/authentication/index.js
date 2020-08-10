@@ -5,7 +5,7 @@ const { Paragraph } = Typography
 const SetupAuthIndexPage = () => (
   <div>
     <Result
-      icon={<Icon type="smile" theme="twoTone" />}
+      icon={<Icon type="smile" theme="twoTone" twoToneColor="#1890ff" />}
       title="Welcome to Kore!"
       subTitle="Authentication is not currently configured"
       extra={[

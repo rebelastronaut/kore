@@ -7,6 +7,7 @@ import ResourceVerificationStatus from '../resources/ResourceVerificationStatus'
 import AutoRefreshComponent from '../teams/AutoRefreshComponent'
 import { successMessage, errorMessage } from '../../utils/message'
 import { getProviderCloudInfo } from '../../utils/cloud'
+import IconTooltip from '../utils/IconTooltip'
 
 class Credentials extends AutoRefreshComponent {
   static propTypes = {
@@ -75,9 +76,7 @@ class Credentials extends AutoRefreshComponent {
             <>
               <Text style={{ display: 'inline', marginRight: '15px', fontSize: '16px', fontWeight: '600' }}>{credentials.spec[identifierKey]}</Text>
               <Text style={{ marginRight: '5px' }}>{credentials.allocation ? credentials.allocation.spec.name : null}</Text>
-              <Tooltip title={credentials.allocation ? credentials.allocation.spec.summary : null}>
-                <Icon type="info-circle" theme="twoTone" />
-              </Tooltip>
+              <IconTooltip text={credentials.allocation ? credentials.allocation.spec.summary : null} />
             </>
           }
           description={<Text>Allocated to: {displayAllocations()}</Text>}

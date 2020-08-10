@@ -71,7 +71,7 @@ export default class TeamCostSummary extends React.Component {
           </Col>
           {!isCurrentMonth || !isSingleMonth ? null : (
             <Col span={12}>
-              <Typography.Paragraph style={{ fontSize: '14px', marginBottom: 0 }} type="secondary">Projected Team Costs for {month} <IconTooltip icon="info-circle" text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." /></Typography.Paragraph>
+              <Typography.Paragraph style={{ fontSize: '14px', marginBottom: 0 }} type="secondary">Projected Team Costs for {month} <IconTooltip text="This figure is projected from the usage so far this month, it could increase or decrease with usage changes." /></Typography.Paragraph>
               <Typography.Text strong style={{ fontSize: '50px' }}>{summary.cost ? formatCost(this.projectMonthlyCost(fromMoment, toActual, summary.cost)) : '$0.00' }</Typography.Text>
             </Col>
           )}
@@ -127,7 +127,7 @@ export default class TeamCostSummary extends React.Component {
               footer={() => <>
                 <Checkbox onChange={(e) => this.setState({ showZeroCostLineItems: e.target.checked })} checked={showZeroCostLineItems} />&nbsp;&nbsp;Show zero-cost line items
                 &nbsp;
-                <IconTooltip icon="info-circle" text="For clarity, line items costing less than $0.01 are not shown - check this box to see all line items" />
+                <IconTooltip text="For clarity, line items costing less than $0.01 are not shown - check this box to see all line items" />
               </>}
             />
           </>          

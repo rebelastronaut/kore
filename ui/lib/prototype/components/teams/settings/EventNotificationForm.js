@@ -139,7 +139,7 @@ class EventNotificationForm extends React.Component {
 
           <Divider style={{ marginBottom: '10px', marginTop: '10px' }} />
 
-          <Card title={<Text style={{ fontSize: '16px' }}>Slack notification <IconTooltip text="Send a notification to your slack channel when this event occurs" icon="info-circle" /></Text>} headStyle={{ border: 'none', padding: '0 12px' }} bodyStyle={{ padding: '0 12px' }} bordered={false} extra={this.switch('slackNotification')}>
+          <Card title={<Text style={{ fontSize: '16px' }}>Slack notification <IconTooltip text="Send a notification to your slack channel when this event occurs" /></Text>} headStyle={{ border: 'none', padding: '0 12px' }} bodyStyle={{ padding: '0 12px' }} bordered={false} extra={this.switch('slackNotification')}>
             {this.state.slackNotification ? (
               <>
                 <Paragraph type="secondary">Send a notification to your slack channel</Paragraph>
@@ -156,7 +156,7 @@ class EventNotificationForm extends React.Component {
 
           <Divider style={{ marginBottom: '10px', marginTop: '10px' }} />
 
-          <Card title={<Text style={{ fontSize: '16px' }}>Email notification <IconTooltip text="Send en email when this event occurs, choose to email all team members or specific email addresses" icon="info-circle" /></Text>} headStyle={{ border: 'none', padding: '0 12px' }} bodyStyle={{ padding: '0 12px' }} bordered={false} extra={this.switch('emailNotification')}>
+          <Card title={<Text style={{ fontSize: '16px' }}>Email notification <IconTooltip text="Send en email when this event occurs, choose to email all team members or specific email addresses" /></Text>} headStyle={{ border: 'none', padding: '0 12px' }} bodyStyle={{ padding: '0 12px' }} bordered={false} extra={this.switch('emailNotification')}>
             {this.state.emailNotification ? (
               <>
                 <div style={{ marginBottom: '15px' }}>

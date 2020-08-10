@@ -206,7 +206,7 @@ export default class ManagePlanForm extends React.Component {
             <Alert
               message="Cost Estimate"
               description={<>See an <b>approximate</b> cost estimate for usage of this plan</>}
-              type="success"
+              type="info"
               style={{ marginBottom: '20px' }}
             />
             <CostEstimate 
