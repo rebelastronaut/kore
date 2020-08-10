@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Form, Icon, List, Button, Drawer, Input, Descriptions, InputNumber, Collapse, Modal, Alert } from 'antd'
+import { Form, Icon, List, Button, Drawer, Input, Descriptions, InputNumber, Collapse, Modal, Alert, Switch, Typography } from 'antd'
+const { Paragraph, Text } = Typography
 
 import copy from '../../../utils/object-copy'
 import PlanOptionBase from '../PlanOptionBase'
@@ -120,12 +121,12 @@ export default class PlanOptionAKSNodePools extends PlanOptionBase {
   }
 
   render() {
-    const { name, editable, property, plan } = this.props
+    const { name, editable, property, plan, manage } = this.props
     const { displayName, valueOrDefault } = this.prepCommonProps(this.props, [])
-    const { selectedIndex, prices } = this.state
+    const { selectedIndex, prices, showAll } = this.state
     const id_prefix = 'plan_nodepool'
     const selected = selectedIndex >= 0 ? valueOrDefault[selectedIndex] : null
-    const description = this.props.manage ? 'Default node pools for clusters created from this plan' : null
+    const description = manage ? 'Default node pools for clusters created from this plan' : null
 
     let ngNameClash = false, nodePoolCloseable = true
     if (selected) {
@@ -165,23 +166,33 @@ export default class PlanOptionAKSNodePools extends PlanOptionBase {
         >
           {!selected ? null : (
             <>
+              {manage ? null : (
+                <Paragraph>
+                  <Text strong style={{ marginRight: '10px' }}>Show all parameters</Text>
+                  <Switch checked={showAll} onChange={(showAll) => this.setState({ showAll })} />
+                </Paragraph>
+              )}
               <Collapse defaultActiveKey={['basics','compute','metadata']}>
                 <Collapse.Panel key="basics" header="Basic Configuration (name, versions, sizing)">
-                  <Form.Item label="Name" help="Unique name for this group within the cluster">
-                    <Input id={`${id_prefix}_name`} pattern={property.items.properties.name.pattern} value={selected.name} onChange={(e) => this.setNodePoolProperty(selectedIndex, 'name', e.target.value)} disabled={!this.isEditable(property.items.properties.name)} />
-                    {this.validationErrors(`${name}[${selectedIndex}].name`)}
-                    {!ngNameClash ? null : <Alert type="error" message="This name is already used by another node pool, it must be changed." />}
-                    {selected.name && selected.name.match(property.items.properties.name.pattern) ? null : <Alert type="error" message="Name must be minimum 2, maximum 40 alpha-numeric characters and hyphens" />}
-                  </Form.Item>
+                  {this.isEditable(property.items.properties.name) || showAll ? (
+                    <Form.Item label="Name" help="Unique name for this group within the cluster">
+                      <Input id={`${id_prefix}_name`} pattern={property.items.properties.name.pattern} value={selected.name} onChange={(e) => this.setNodePoolProperty(selectedIndex, 'name', e.target.value)} disabled={!this.isEditable(property.items.properties.name)} />
+                      {this.validationErrors(`${name}[${selectedIndex}].name`)}
+                      {!ngNameClash ? null : <Alert type="error" message="This name is already used by another node pool, it must be changed." />}
+                      {selected.name && selected.name.match(property.items.properties.name.pattern) ? null : <Alert type="error" message="Name must be minimum 2, maximum 40 alpha-numeric characters and hyphens" />}
+                    </Form.Item>
+                  ) : null}
 
-                  <Form.Item label="Mode" help="Type of the node pool. System node pools serve the primary purpose of hosting critical system pods such as CoreDNS and tunnelfront. User node pools serve the primary purpose of hosting your application pods.">
-                    <ConstrainedDropdown id={`${id_prefix}_mode`} allowedValues={modes} value={selected.mode} readOnly={!this.isEditable(property.items.properties.mode)} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'mode', v)} />
-                    {this.validationErrors(`${name}[${selectedIndex}].mode`)}
-                  </Form.Item>
+                  {this.isEditable(property.items.properties.mode) || showAll ? (
+                    <Form.Item label="Mode" help="Type of the node pool. System node pools serve the primary purpose of hosting critical system pods such as CoreDNS and tunnelfront. User node pools serve the primary purpose of hosting your application pods.">
+                      <ConstrainedDropdown id={`${id_prefix}_mode`} allowedValues={modes} value={selected.mode} readOnly={!this.isEditable(property.items.properties.mode)} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'mode', v)} />
+                      {this.validationErrors(`${name}[${selectedIndex}].mode`)}
+                    </Form.Item>
+                  ) : null}
 
-                  <PlanOption id={`${id_prefix}_version`} {...this.props} hideNonEditable={false} displayName="Version" name={`${name}[${selectedIndex}].version`} property={property.items.properties.version} value={selected.version} disabled={!this.isEditable(property.items.properties.version)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'version', v)} />
+                  <PlanOption id={`${id_prefix}_version`} {...this.props} forceShow={showAll} displayName="Version" name={`${name}[${selectedIndex}].version`} property={property.items.properties.version} value={selected.version} disabled={!this.isEditable(property.items.properties.version)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'version', v)} />
 
-                  <PlanOption id={`${id_prefix}_enableAutoscaler`} {...this.props} hideNonEditable={false} displayName="Auto-scale" name={`${name}[${selectedIndex}].enableAutoscaler`} property={property.items.properties.enableAutoscaler} value={selected.enableAutoscaler} disabled={!this.isEditable(property.items.properties.enableAutoscaler)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'enableAutoscaler', v)} />
+                  <PlanOption id={`${id_prefix}_enableAutoscaler`} {...this.props} forceShow={showAll} displayName="Auto-scale" name={`${name}[${selectedIndex}].enableAutoscaler`} property={property.items.properties.enableAutoscaler} value={selected.enableAutoscaler} disabled={!this.isEditable(property.items.properties.enableAutoscaler)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'enableAutoscaler', v)} />
                   <Form.Item label="Pool size">
                     <Descriptions layout="horizontal" size="small">
                       {!selected.enableAutoscaler ? null : <Descriptions.Item label="Minimum">
@@ -199,22 +210,24 @@ export default class PlanOptionAKSNodePools extends PlanOptionBase {
                     </Descriptions>
                   </Form.Item>
                   <NodePoolCost prices={prices} nodePool={selected} help="Adjust pool size and machine type to see the cost impacts" />
-                  <PlanOption id={`${id_prefix}_maxPodsPerNode`} {...this.props} hideNonEditable={false} displayName="Max pods per node" name={`${name}[${selectedIndex}].maxPodsPerNode`} property={property.items.properties.maxPodsPerNode} value={selected.maxPodsPerNode} editable={this.isEditable(property.items.properties.maxPodsPerNode)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'maxPodsPerNode', v)} />
+                  <PlanOption id={`${id_prefix}_maxPodsPerNode`} {...this.props} forceShow={showAll} displayName="Max pods per node" name={`${name}[${selectedIndex}].maxPodsPerNode`} property={property.items.properties.maxPodsPerNode} value={selected.maxPodsPerNode} editable={this.isEditable(property.items.properties.maxPodsPerNode)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'maxPodsPerNode', v)} />
                 </Collapse.Panel>
                 <Collapse.Panel key="compute" header="Compute Configuration (image type, machine type, disk size)">
-                  <Form.Item label="Image Type" help="The image type used by the nodes">
-                    <ConstrainedDropdown id={`${id_prefix}_imageType`} allowedValues={imageTypes} value={selected.imageType} readOnly={!this.isEditable(property.items.properties.imageType)} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'imageType', v)} />
-                    {this.validationErrors(`${name}[${selectedIndex}].imageType`)}
-                  </Form.Item>
-                  <PlanOptionClusterMachineType id={`${id_prefix}_machineType`} {...this.props} editable={this.isEditable(property.items.properties.machineType)} displayName="Machine Type" name={`${name}[${selectedIndex}].machineType`} property={property.items.properties.machineType} value={selected.machineType} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'machineType', v )} nodePriceSet={(prices) => this.setState({ prices })} />
+                  {this.isEditable(property.items.properties.imageType) || showAll ? (
+                    <Form.Item label="Image Type" help="The image type used by the nodes">
+                      <ConstrainedDropdown id={`${id_prefix}_imageType`} allowedValues={imageTypes} value={selected.imageType} readOnly={!this.isEditable(property.items.properties.imageType)} onChange={(v) => this.setNodePoolProperty(selectedIndex, 'imageType', v)} />
+                      {this.validationErrors(`${name}[${selectedIndex}].imageType`)}
+                    </Form.Item>
+                  ) : null}
+                  <PlanOptionClusterMachineType id={`${id_prefix}_machineType`} {...this.props} forceShow={showAll} editable={this.isEditable(property.items.properties.machineType)} displayName="Machine Type" name={`${name}[${selectedIndex}].machineType`} property={property.items.properties.machineType} value={selected.machineType} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'machineType', v )} nodePriceSet={(prices) => this.setState({ prices })} />
                   <PlanOption id={`${id_prefix}_diskSize`} {...this.props} displayName="Instance Root Disk Size (GiB)" name={`${name}[${selectedIndex}].diskSize`} property={property.items.properties.diskSize} value={selected.diskSize} editable={this.isEditable(property.items.properties.diskSize)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'diskSize', v)} />
                 </Collapse.Panel>
                 <Collapse.Panel key="metadata" header="Labels & Taints">
-                  <PlanOption id={`${id_prefix}_labels`} {...this.props} hideNonEditable={false} displayName="Labels" help="Labels help kubernetes workloads find this group" name={`${name}[${selectedIndex}].labels`} property={property.items.properties.labels} value={selected.labels} editable={this.isEditable(property.items.properties.labels)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'labels', v)} />
-                  <PlanOption id={`${id_prefix}_taints`} {...this.props} hideNonEditable={false} displayName="Taints" help="Taints help kubernetes make scheduling decisions against nodepools" name={`${name}[${selectedIndex}].taints`} property={property.items.properties.taints} value={selected.taints} editable={this.isEditable(property.items.properties.taints)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'taints', v)} />
+                  <PlanOption id={`${id_prefix}_labels`} {...this.props} forceShow={showAll} displayName="Labels" help="Labels help kubernetes workloads find this group" name={`${name}[${selectedIndex}].labels`} property={property.items.properties.labels} value={selected.labels} editable={this.isEditable(property.items.properties.labels)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'labels', v)} />
+                  <PlanOption id={`${id_prefix}_taints`} {...this.props} forceShow={showAll} displayName="Taints" help="Taints help kubernetes make scheduling decisions against nodepools" name={`${name}[${selectedIndex}].taints`} property={property.items.properties.taints} value={selected.taints} editable={this.isEditable(property.items.properties.taints)} onChange={(_, v) => this.setNodePoolProperty(selectedIndex, 'taints', v)} />
                 </Collapse.Panel>
               </Collapse>
-              <Form.Item>
+              <Form.Item style={{ marginTop: '20px' }}>
                 <Button id={`${id_prefix}_close`} type="primary" disabled={!nodePoolCloseable} onClick={() => this.closeNodePool()}>{nodePoolCloseable ? 'Close' : 'Node pool not valid - please correct errors'}</Button>
               </Form.Item>
             </>

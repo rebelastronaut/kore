@@ -187,9 +187,13 @@ export default class PlanOptionClusterMachineType extends PlanOptionBase {
   }
 
   render() {
-    const { name, editable, nodePriceSet } = this.props
+    const { name, editable, nodePriceSet, forceShow } = this.props
     const { displayName, valueOrDefault, id } = this.prepCommonProps(this.props)
     const { types, typeIndex, priceIndex, loadingInstances, noRegion, extInfo } = this.state
+
+    if (!editable && !forceShow) {
+      return null
+    }
 
     if (loadingInstances) {
       return <Icon type="loading" />
