@@ -68,8 +68,7 @@ func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 
 	o.SetHelmValue("api.auth_plugins.0", "admintoken")
 	o.SetHelmValue("api.auth_plugins.1", "jwt")
-	o.SetHelmValue("api.auth_plugins.2", "localjwt")
-	o.SetHelmValue("api.auth_plugins.3", "basicauth")
+	o.SetHelmValue("api.auth_plugins.2", "basicauth")
 
 	// @step: inject the local admin - only if not set
 	if !o.EnableSSO {
@@ -91,7 +90,7 @@ func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 		}
 		values["idp"] = v
 
-		o.SetHelmValue("api.auth_plugins.4", "openid")
+		o.SetHelmValue("api.auth_plugins.3", "openid")
 	}
 
 	// @step: inject the flags if required
