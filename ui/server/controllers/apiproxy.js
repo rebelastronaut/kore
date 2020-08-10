@@ -1,26 +1,26 @@
 const axios = require('axios')
+const { retryWithTokenRefresh } = require('../lib/auth-helpers')
 const Router = require('express').Router
 
 const PATH_BLACKLIST = ['/auth']
 
-function apiProxy(koreApiUrl) {
+function apiProxy(koreApiUrl, authService) {
   return async (req, res) => {
     const method = req.method.toLowerCase()
     const apiUrlPath = req.originalUrl.replace('/apiproxy', '')
-    const options = {
-      headers: {
-        ...req.headers,
-        'Authorization': `Bearer ${req.session.passport.user.id_token}`
-      }
-    }
     try {
-      const result = await axios[method](
-        `${koreApiUrl}${apiUrlPath}`,
-        ['get', 'delete'].includes(method) ? options : req.body,
-        ['get', 'delete'].includes(method) ? undefined : options
-      )
-      return res.json(result.data)
-    } catch (err) {
+      const result = await callApi(koreApiUrl, apiUrlPath, method, req)
+      return res.json(result)
+    } catch (firstError) {
+      let err = firstError
+      try {
+        const result = await retryWithTokenRefresh(err, req, authService, async function() { 
+          return await callApi(koreApiUrl, apiUrlPath, method, req) 
+        })
+        return res.json(result)
+      } catch (errInner) {
+        err = errInner
+      }
       const status = (err.response && err.response.status) || 500
       if (status === 400 || status === 409) {
         console.log(`Validation error for ${apiUrlPath}`, err.response.data)
@@ -33,6 +33,21 @@ function apiProxy(koreApiUrl) {
   }
 }
 
+async function callApi(koreApiUrl, apiUrlPath, method, req) {
+  const options = {
+    headers: {
+      ...req.headers,
+      'Authorization': `Bearer ${req.session.passport.user.id_token}`
+    }
+  }
+  const result = await axios[method](
+    `${koreApiUrl}${apiUrlPath}`,
+    ['get', 'delete'].includes(method) ? options : req.body,
+    ['get', 'delete'].includes(method) ? undefined : options
+  )
+  return result.data
+}
+
 function checkBlacklist(req, res, next) {
   const apiUrlPath = req.originalUrl.replace('/apiproxy', '')
   if (PATH_BLACKLIST.includes(apiUrlPath)) {
@@ -41,9 +56,9 @@ function checkBlacklist(req, res, next) {
   next()
 }
 
-function initRouter({ ensureAuthenticated, ensureUserCurrent, koreApiUrl }) {
+function initRouter({ ensureAuthenticated, ensureUserCurrent, koreApiUrl, authService }) {
   const router = Router()
-  router.use('/apiproxy/*', ensureAuthenticated, checkBlacklist, ensureUserCurrent, apiProxy(koreApiUrl))
+  router.use('/apiproxy/*', ensureAuthenticated, checkBlacklist, ensureUserCurrent, apiProxy(koreApiUrl, authService))
   return router
 }
 
