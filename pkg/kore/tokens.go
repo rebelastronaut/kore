@@ -34,6 +34,9 @@ const (
 type Tokens interface {
 	// Issue is used to issue a token from kore
 	Issue(ctx context.Context, options IssueOptions) ([]byte, error)
+	// Validate is used to verify a token has been signed by kore, returning true
+	// plus the claims if valid, false otherwise
+	Validate(ctx context.Context, token []byte, audience string) (bool, *utils.Claims)
 }
 
 // IssueOptions are options for creating tokens
@@ -77,4 +80,37 @@ func (t *tokenImpl) Issue(ctx context.Context, options IssueOptions) ([]byte, er
 	}
 
 	return minted, nil
+}
+
+func (t *tokenImpl) Validate(ctx context.Context, token []byte, audience string) (bool, *utils.Claims) {
+	c := make(jwt.MapClaims)
+
+	// @step: parse and extract the identity
+	parsedToken, err := jwt.ParseWithClaims(string(token), &c, func(token *jwt.Token) (interface{}, error) {
+		return jwt.ParseRSAPublicKeyFromPEM(t.CertificateAuthority())
+	})
+	if err != nil {
+		log.WithError(err).Warn("error attempting to validate token")
+		return false, nil
+	}
+	if !parsedToken.Valid {
+		log.Debug("invalid token presented (e.g. signature failure)")
+		return false, nil
+	}
+
+	claims := utils.NewClaims(c)
+
+	// @step: check the audience
+	aud, found := claims.GetAudience()
+	if !found {
+		log.Debug("no audience in the presented token")
+
+		return false, nil
+	}
+	if aud != audience {
+		log.Debug("invalid audience presented in the token")
+
+		return false, nil
+	}
+	return true, claims
 }

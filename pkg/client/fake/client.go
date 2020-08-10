@@ -141,3 +141,8 @@ func (f *fake) Team(string) client.RestInterface {
 func (f *fake) Update() client.RestInterface {
 	return f
 }
+
+// Post performs an post request
+func (f *fake) Post() client.RestInterface {
+	return f
+}

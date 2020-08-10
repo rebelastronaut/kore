@@ -21,6 +21,10 @@ type TypesIssuedToken struct {
 	// Required: true
 	Expires *int64 `json:"Expires"`
 
+	// refresh token
+	// Required: true
+	RefreshToken *string `json:"RefreshToken"`
+
 	// token
 	// Required: true
 	Token *string `json:"Token"`
@@ -31,6 +35,10 @@ func (m *TypesIssuedToken) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateExpires(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRefreshToken(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -47,6 +55,15 @@ func (m *TypesIssuedToken) Validate(formats strfmt.Registry) error {
 func (m *TypesIssuedToken) validateExpires(formats strfmt.Registry) error {
 
 	if err := validate.Required("Expires", "body", m.Expires); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TypesIssuedToken) validateRefreshToken(formats strfmt.Registry) error {
+
+	if err := validate.Required("RefreshToken", "body", m.RefreshToken); err != nil {
 		return err
 	}
 

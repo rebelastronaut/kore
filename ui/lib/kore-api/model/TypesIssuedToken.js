@@ -23,11 +23,12 @@ class TypesIssuedToken {
      * Constructs a new <code>TypesIssuedToken</code>.
      * @alias module:model/TypesIssuedToken
      * @param expires {Number} 
+     * @param refreshToken {String} 
      * @param token {String} 
      */
-    constructor(expires, token) { 
+    constructor(expires, refreshToken, token) { 
         
-        TypesIssuedToken.initialize(this, expires, token);
+        TypesIssuedToken.initialize(this, expires, refreshToken, token);
     }
 
     /**
@@ -35,8 +36,9 @@ class TypesIssuedToken {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, expires, token) { 
+    static initialize(obj, expires, refreshToken, token) { 
         obj['Expires'] = expires;
+        obj['RefreshToken'] = refreshToken;
         obj['Token'] = token;
     }
 
@@ -53,6 +55,9 @@ class TypesIssuedToken {
 
             if (data.hasOwnProperty('Expires')) {
                 obj['Expires'] = ApiClient.convertToType(data['Expires'], 'Number');
+            }
+            if (data.hasOwnProperty('RefreshToken')) {
+                obj['RefreshToken'] = ApiClient.convertToType(data['RefreshToken'], 'String');
             }
             if (data.hasOwnProperty('Token')) {
                 obj['Token'] = ApiClient.convertToType(data['Token'], 'String');
@@ -77,6 +82,19 @@ class TypesIssuedToken {
 /**
      * @return {String}
      */
+    getRefreshToken() {
+        return this.RefreshToken;
+    }
+
+    /**
+     * @param {String} refreshToken
+     */
+    setRefreshToken(refreshToken) {
+        this['RefreshToken'] = refreshToken;
+    }
+/**
+     * @return {String}
+     */
     getToken() {
         return this.Token;
     }
@@ -94,6 +112,11 @@ class TypesIssuedToken {
  * @member {Number} Expires
  */
 TypesIssuedToken.prototype['Expires'] = undefined;
+
+/**
+ * @member {String} RefreshToken
+ */
+TypesIssuedToken.prototype['RefreshToken'] = undefined;
 
 /**
  * @member {String} Token

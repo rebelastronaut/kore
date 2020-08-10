@@ -195,7 +195,7 @@ func (o *AuthorizeOptions) RequestKubeToken() (*utils.JWTToken, error) {
 		return nil, err
 	}
 
-	return utils.NewJWTTokenFromBytes(token.Token)
+	return utils.NewJWTTokenFromBytes([]byte(token.Token))
 }
 
 // RenderKubectlCredentials is used to render the credential to screen

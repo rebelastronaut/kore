@@ -59,30 +59,80 @@ func (l *loginHandler) Register(i kore.Interface, builder utils.PathBuilder) (*r
 	ws.Path(path.Base())
 
 	ws.Route(
-		ws.PUT("/authorize/{user}").To(l.loginHandler).
+		withAllNonValidationErrors(ws.GET("/methods")).To(l.getLoginMethods).
+			Doc("Retrieve the supported authentication methods").
+			Operation("GetLoginMethods").
+			Returns(http.StatusOK, "Details of which login providers are configured", []string{}),
+	)
+
+	ws.Route(
+		withAllErrors(ws.POST("")).To(l.login).
 			Filter(filters.NewRateLimiter(filters.RateConfig{Period: 60 * time.Second, Limit: 5})).
-			Doc("Used login and authorize an account in kore").
-			Operation("AuthorizeUser").
-			Param(ws.PathParameter("user", "The username you are trying to authorize")).
-			Param(ws.QueryParameter("scopes", "A list of requested scopes being request").Required(false)).
-			Returns(http.StatusOK, "Contains the access token on successfully authentication", types.IssuedToken{}).
-			DefaultReturns("A generic API error containing the cause of the error", Error{}),
+			Doc("Retrieve a refresh token using the specified local credentials").
+			Operation("Login").
+			Reads(types.LocalUser{}).
+			Returns(http.StatusOK, "An access token and a refresh token to access Kore", types.IssuedToken{}),
+	)
+
+	ws.Route(
+		withAllNonValidationErrors(ws.GET("/token")).To(l.getToken).
+			Filter(filters.NewRateLimiter(filters.RateConfig{Period: 60 * time.Second, Limit: 5})).
+			Doc("Retrieve a new token for the user identified by the specified refresh token").
+			Param(ws.QueryParameter("refresh", "The refresh token to exchange")).
+			Operation("GetToken").
+			Returns(http.StatusOK, "An access token which can be used for accessing Kore", types.IssuedToken{}),
 	)
 
 	return ws, nil
 }
 
-// loginHandler is responsible for issuing a local token for local users
-func (l *loginHandler) loginHandler(req *restful.Request, resp *restful.Response) {
+func (l *loginHandler) getLoginMethods(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
-		// @question: wonder if we can start to use scope somehow?
-		issued, err := l.Users().Identities().IssueIDToken(req.Request.Context(), "kore")
-		if err != nil {
+		return resp.WriteHeaderAndEntity(http.StatusOK, l.Config().Authenticators)
+	})
+}
+
+func (l *loginHandler) login(req *restful.Request, resp *restful.Response) {
+	handleErrors(req, resp, func() error {
+		localUser := &types.LocalUser{}
+		if err := req.ReadEntity(localUser); err != nil {
 			return err
 		}
+		valid, refreshToken := l.Users().Identities().IssueRefreshToken(req.Request.Context(), localUser.Username, localUser.Password)
+		if !valid {
+			resp.WriteHeader(http.StatusUnauthorized)
+			return nil
+		}
+		valid, token := l.Users().Identities().ExchangeRefreshToken(req.Request.Context(), refreshToken)
+		if !valid {
+			resp.WriteHeader(http.StatusUnauthorized)
+			return nil
+		}
 
-		return resp.WriteHeaderAndEntity(http.StatusOK, &types.IssuedToken{Token: issued})
+		return resp.WriteHeaderAndEntity(http.StatusOK, &types.IssuedToken{
+			RefreshToken: string(refreshToken),
+			Token:        string(token),
+		})
 	})
+}
+
+func (l *loginHandler) getToken(req *restful.Request, resp *restful.Response) {
+	handleErrors(req, resp, func() error {
+		refreshToken := req.QueryParameter("refresh")
+		// @question: wonder if we can start to use scope somehow?
+		valid, issued := l.Users().Identities().ExchangeRefreshToken(req.Request.Context(), []byte(refreshToken))
+		if !valid {
+			resp.WriteHeader(http.StatusUnauthorized)
+			return nil
+		}
+
+		return resp.WriteHeaderAndEntity(http.StatusOK, &types.IssuedToken{Token: string(issued)})
+	})
+}
+
+// EnableAuthentication returns false for the login controller - it does authentication, but its operations are anonymous
+func (l *loginHandler) EnableAuthentication() bool {
+	return false
 }
 
 // EnableAdminsOnly indicates if we need to be an admin user
