@@ -94,7 +94,7 @@ class PolicyList extends ResourceList {
         </Text>,
         <Text key="copy_policy">
           <Tooltip title="Copy this policy">
-            <a id={`plans_copy_${policy.metadata.name}`} onClick={this.copyPolicy(policy)}><Icon type="copy" /></a>
+            <a id={`policy_copy_${policy.metadata.name}`} onClick={this.copyPolicy(policy)}><Icon type="copy" /></a>
           </Tooltip>
         </Text>
       ]}>

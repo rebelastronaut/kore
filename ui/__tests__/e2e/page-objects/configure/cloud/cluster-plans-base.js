@@ -16,6 +16,11 @@ export class ConfigureCloudClusterPlansBase extends ConfigureCloudPage {
     await waitForDrawerOpenClose(this.p)
   }
 
+  async copy(name) {
+    await this.p.click(`a#plans_copy_${name}`)
+    await waitForDrawerOpenClose(this.p)
+  }
+
   async delete(name) {
     await this.p.click(`a#plans_delete_${name}`)
   }

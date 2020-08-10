@@ -16,6 +16,11 @@ export class ConfigureCloudClusterPoliciesBase extends ConfigureCloudPage {
     await waitForDrawerOpenClose(this.p)
   }
 
+  async copy(name) {
+    await this.p.click(`a#policy_copy_${name}`)
+    await waitForDrawerOpenClose(this.p)
+  }
+
   async delete(name) {
     await this.p.click(`a#policy_delete_${name}`)
   }
