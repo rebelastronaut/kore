@@ -15,7 +15,8 @@ class PolicyForm extends React.Component {
     policy: PropTypes.object,
     allocatedTeams: PropTypes.array,
     kind: PropTypes.string.isRequired,
-    handleSubmit: PropTypes.func.isRequired
+    handleSubmit: PropTypes.func.isRequired,
+    creating: PropTypes.bool
   }
 
   state = {
@@ -98,7 +99,7 @@ class PolicyForm extends React.Component {
   fieldError = fieldKey => this.props.form.isFieldTouched(fieldKey) && this.props.form.getFieldError(fieldKey)
 
   render() {
-    const { form } = this.props
+    const { form, creating } = this.props
     const { submitting, policy, formErrorMessage } = this.state
     const { getFieldDecorator, getFieldsError } = form
 
@@ -118,6 +119,16 @@ class PolicyForm extends React.Component {
 
     return (
       <Form {...formConfig} onSubmit={this.handleSubmit}>
+
+        {creating && policy.copiedFrom ? (
+          <Alert
+            message={`Copy of policy "${policy.copiedFrom}"`}
+            description="Change the policy values below as required and click Save to create"
+            type="info"
+            showIcon
+            style={{ marginBottom: '20px' }}
+          />
+        ) : null}
 
         <FormErrorMessage message={formErrorMessage} />
 
