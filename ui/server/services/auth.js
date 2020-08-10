@@ -81,16 +81,27 @@ class AuthService {
 
   async authenticateLocalUser({ username, password }) {
     try {
-      const basicAuth = Buffer.from(`${username}:${password}`).toString('base64')
-      const result = await (await this.getApiClient(basicAuth)).WhoAmI()
-      console.log('result', result)
-      return result
+      const tokens = await (await this.KoreApi.client({ id_token: null })).Login(username, password)
+      const user = await (await this.KoreApi.client({ id_token: tokens.token })).WhoAmI()
+      console.log('Local user successfully logged in: ', username)
+      return { ...user, ...tokens }
     } catch (err) {
       if (err.response && err.response.status === 401) {
         return Promise.reject({ status: 401 })
       }
       console.log('Error authenticating local user', err)
       return Promise.reject({ status: 500 })
+    }
+  }
+
+  async localTokenRefresh(refreshToken) {
+    try {
+      const tokens = await (await this.KoreApi.client({ id_token: null })).GetToken(refreshToken)
+      console.log('Local user token refreshed successfully')
+      return tokens.token
+    } catch (err) {
+      console.log('Local user token refresh failed', err)
+      return null
     }
   }
 }
