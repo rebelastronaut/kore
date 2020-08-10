@@ -1261,39 +1261,121 @@
         }
       }
     },
-    "/api/v1alpha1/login/authorize/{user}": {
-      "put": {
+    "/api/v1alpha1/login": {
+      "post": {
         "consumes": [
           "application/json"
         ],
         "produces": [
           "application/json"
         ],
-        "summary": "Used login and authorize an account in kore",
-        "operationId": "AuthorizeUser",
+        "summary": "Retrieve a refresh token using the specified local credentials",
+        "operationId": "Login",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/types.LocalUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An access token and a refresh token to access Kore",
+            "schema": {
+              "$ref": "#/definitions/types.IssuedToken"
+            }
+          },
+          "400": {
+            "description": "Validation error of supplied parameters/body",
+            "schema": {
+              "$ref": "#/definitions/validation.Error"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1alpha1/login/methods": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Retrieve the supported authentication methods",
+        "operationId": "GetLoginMethods",
+        "responses": {
+          "200": {
+            "description": "Details of which login providers are configured",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1alpha1/login/token": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Retrieve a new token for the user identified by the specified refresh token",
+        "operationId": "GetToken",
         "parameters": [
           {
             "type": "string",
-            "description": "The username you are trying to authorize",
-            "name": "user",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "A list of requested scopes being request",
-            "name": "scopes",
+            "description": "The refresh token to exchange",
+            "name": "refresh",
             "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Contains the access token on successfully authentication",
+            "description": "An access token which can be used for accessing Kore",
             "schema": {
               "$ref": "#/definitions/types.IssuedToken"
             }
           },
-          "default": {
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
             "description": "A generic API error containing the cause of the error",
             "schema": {
               "$ref": "#/definitions/apiserver.Error"
@@ -8041,6 +8123,7 @@
     },
     "types.IssuedToken": {
       "required": [
+        "RefreshToken",
         "Token",
         "Expires"
       ],
@@ -8049,7 +8132,24 @@
           "type": "integer",
           "format": "int64"
         },
+        "RefreshToken": {
+          "type": "string"
+        },
         "Token": {
+          "type": "string"
+        }
+      }
+    },
+    "types.LocalUser": {
+      "required": [
+        "Username",
+        "Password"
+      ],
+      "properties": {
+        "Password": {
+          "type": "string"
+        },
+        "Username": {
           "type": "string"
         }
       }
@@ -9169,8 +9269,8 @@
     },
     "v1.OptionalSecretKeySelector": {
       "required": [
-        "name",
-        "key"
+        "key",
+        "name"
       ],
       "properties": {
         "key": {

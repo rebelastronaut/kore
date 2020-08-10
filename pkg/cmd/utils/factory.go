@@ -82,6 +82,41 @@ func (f *factory) refreshToken() {
 			}
 		}
 	}
+	if auth.IdentityToken != nil {
+		// @step: has the access token expired
+		token, err := utils.NewClaimsFromRawToken(utils.StringValue(auth.IdentityToken))
+		if err != nil {
+			log.WithError(err).Warn("error decoding token")
+			return
+		}
+		if !token.HasExpired() {
+			return
+		}
+		expiry, _ := token.GetExpiry()
+		log.WithField("expiredAt", expiry).Debug("attempting to refresh kore token")
+
+		issued := &types.IssuedToken{}
+		// Don't use ClientWithEndpoint here else it will recursively call back into this
+		// function ;)
+		err = f.client.Request().Endpoint("/login/token").
+			Parameters(client.QueryParameter("refresh", utils.StringValue(auth.IdentityRefreshToken))).
+			Result(issued).
+			Get().
+			Error()
+		if err != nil {
+			log.WithError(err).Debug("error refreshing id-token")
+			log.Warn("Failed to refresh your access token, please run kore login")
+			return
+		}
+		auth.IdentityToken = &issued.Token
+		err = f.UpdateConfig()
+		if err != nil {
+			log.WithError(err).Debug("error storing refreshed ID token in profile")
+			log.Warn("Failed to store your refreshed access token in your profile, please try again")
+			return
+		}
+		log.Debug("kore token refreshed successfully")
+	}
 }
 
 // Client returns the underlying client

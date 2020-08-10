@@ -18,10 +18,21 @@ package types
 
 // IssuedToken is a minted token from kore
 type IssuedToken struct {
-	// Token is the actual token
-	Token []byte
+	// RefreshToken is a token to retrieve new tokens, populated only on
+	// initial login
+	RefreshToken string
+	// Token is the actual token for accessing the API
+	Token string
 	// Expires is the time token will expire
 	Expires int64
+}
+
+// LocalUser represents a local user for login purposes
+type LocalUser struct {
+	// Username is the user's username
+	Username string
+	// Password used to identify the local user
+	Password string
 }
 
 // WhoAmI provides a description to who you are

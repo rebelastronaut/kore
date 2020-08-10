@@ -134,6 +134,7 @@ func (o *authImpl) Admit(ctx context.Context, req identity.Requestor) (authentic
 		return nil, false
 	}
 
+	log.WithField("user", username).Debug("user passed JWT authentication")
 	return identity, true
 }
 

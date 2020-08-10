@@ -31,11 +31,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	// DefaultCostFactor is the cost factor for bcrypt
-	DefaultCostFactor = 9
-)
-
 var (
 	// AccountLocal is a local basic auth account
 	AccountLocal = "basicauth"
@@ -49,6 +44,10 @@ var (
 		AccountToken,
 		AccountSSO,
 	}
+	// RefreshTokenAudience is the audience for kore refresh tokens
+	RefreshTokenAudience = "kore-refresh"
+	// KoreTokenAudience is the audience for kore identity tokens
+	KoreTokenAudience = "kore"
 )
 
 // IdentitiesListOptions are search options for listing
@@ -65,7 +64,13 @@ type Identities interface {
 	AssociateIDPUser(ctx context.Context, update *orgv1.UpdateIDPIdentity) error
 	// Delete is called to delete an associated identity of a user
 	Delete(ctx context.Context, user string, identity string) error
-	// IssueIDToken is used to issue a token for a identity in kore
+	// IssueRefreshToken creates a new refresh token for the specified username and password,
+	// returning true if user valid, false if not, and the created token
+	IssueRefreshToken(ctx context.Context, username string, password string) (bool, []byte)
+	// ExchangeRefreshToken is used to issue a token for the specified refresh token, returning true
+	// and the token if the supplied token is valid and the user is enabled, false otherwise
+	ExchangeRefreshToken(ctx context.Context, refreshToken []byte) (bool, []byte)
+	// IssueIDToken is used to issue a token for the current user context in kore
 	IssueIDToken(ctx context.Context, audience string) ([]byte, error)
 	// List returns a list of all the identities managed in kore
 	List(ctx context.Context, options IdentitiesListOptions) (*orgv1.IdentityList, error)
@@ -82,14 +87,111 @@ func (h *idImpl) AssociateIDPUser(ctx context.Context, update *orgv1.UpdateIDPId
 	return nil
 }
 
-// IssueToken is used to issue a token for a identity in kore
+func (h *idImpl) IssueRefreshToken(ctx context.Context, username string, password string) (bool, []byte) {
+	u, err := h.Persist().Users().Get(ctx, username)
+	if err != nil {
+		log.WithField("user", username).WithError(err).Error("trying to retrieve user to issue refresh token")
+		return false, nil
+	}
+	if u.Disabled {
+		log.WithField("user", username).Debug("refresh token not issued as user is disabled")
+		return false, nil
+	}
+
+	identity, err := h.Persist().Identities().Get(ctx,
+		persistence.Filter.WithUser(username),
+		persistence.Filter.WithProvider(AccountLocal),
+	)
+	if err != nil {
+		log.WithField("user", username).WithError(err).Error("trying to retrieve the identity to issue refresh token")
+		return false, nil
+	}
+	if identity.ProviderToken == "" {
+		log.WithField("user", username).Debug("refresh token not issued as user identity has no password (provider token) set")
+		return false, nil
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(identity.ProviderToken), []byte(password)); err != nil {
+		log.WithField("user", username).Debug("refresh token not issued as user provided incorrect password")
+		return false, nil
+	}
+
+	minted, err := h.Tokens().Issue(ctx, IssueOptions{
+		Audience: RefreshTokenAudience,
+		Scopes:   []string{},
+		Duration: 24 * time.Hour * 28,
+		Email:    u.Email,
+		Username: u.Username,
+	})
+	if err != nil {
+		log.WithField("user", username).WithError(err).Error("trying to mint refresh token")
+
+		return false, nil
+	}
+
+	log.WithFields(log.Fields{
+		"email":    u.Email,
+		"username": u.Username,
+	}).Info("created refresh token for user")
+
+	return true, minted
+}
+
+func (h *idImpl) ExchangeRefreshToken(ctx context.Context, refreshToken []byte) (bool, []byte) {
+	// First, check refresh token is signed by us, and has the right audience
+	valid, claims := h.Tokens().Validate(ctx, refreshToken, RefreshTokenAudience)
+	if !valid {
+		log.Debug("invalid refresh token presented, rejecting exchange")
+		return false, nil
+	}
+
+	// check the user is still valid in kore
+	username, found := claims.GetUserClaim(Userclaim)
+	if !found {
+		log.Debug("no username claim on refresh token, rejecting exchange")
+		return false, nil
+	}
+
+	identity, found, err := h.GetUserIdentity(ctx, username, WithAuthMethod("jwt"))
+	if err != nil {
+		log.WithField("user", username).WithError(err).Error("trying to retrieve user identity, rejecting exchange")
+		return false, nil
+	}
+	if !found {
+		log.WithField("user", username).Debug("user not found in kore (may have been deleted since refresh token was issued), rejecting exchange")
+		return false, nil
+	}
+	if identity.Disabled() {
+		log.WithField("user", username).Debug("user disabled, rejecting exchange")
+		return false, nil
+	}
+
+	minted, err := h.Tokens().Issue(ctx, IssueOptions{
+		Audience: KoreTokenAudience,
+		Scopes:   []string{},
+		Duration: 30 * time.Minute,
+		Email:    identity.Email(),
+		Username: identity.Username(),
+	})
+	if err != nil {
+		log.WithField("user", username).WithError(err).Error("trying to mint id token")
+		return false, nil
+	}
+	log.WithFields(log.Fields{
+		"email":    identity.Email(),
+		"username": identity.Username(),
+	}).Debug("created access token for user")
+	return true, minted
+}
+
+// IssueIDToken is used to issue a token for a identity in kore
 func (h *idImpl) IssueIDToken(ctx context.Context, audience string) ([]byte, error) {
 	user := authentication.MustGetIdentity(ctx)
 
 	minted, err := h.Tokens().Issue(ctx, IssueOptions{
 		Audience: audience,
 		Scopes:   []string{},
-		Duration: 24 * time.Hour * 14,
+		Duration: 24 * time.Hour,
 		Email:    user.Email(),
 		Username: user.Username(),
 	})
@@ -101,7 +203,7 @@ func (h *idImpl) IssueIDToken(ctx context.Context, audience string) ([]byte, err
 	log.WithFields(log.Fields{
 		"email":    user.Email(),
 		"username": user.Username(),
-	}).Info("successfully minted a token to local user")
+	}).Debug("created access token for user")
 
 	return minted, nil
 }
@@ -234,7 +336,7 @@ func (h *idImpl) UpdateUserBasicAuth(ctx context.Context, update *orgv1.UpdateBa
 	}
 
 	// @step: encrypt the token
-	hashed, err := bcrypt.GenerateFromPassword([]byte(update.Password), DefaultCostFactor)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(update.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.WithError(err).Error("trying to hash the password")
 

@@ -76,6 +76,8 @@ type RestInterface interface {
 	Team(string) RestInterface
 	// Update performs an put request
 	Update() RestInterface
+	// Post performs a post request
+	Post() RestInterface
 }
 
 // ParameterFunc defines a method for a parameter type

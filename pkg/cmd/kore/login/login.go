@@ -161,14 +161,41 @@ func (o *LoginOptions) Run() error {
 		if o.LocalUser {
 			return o.RunIDAuth()
 		}
-		_, method, err = (&promptui.Select{
-			Label:        "Which method are you using to login?",
-			Items:        []string{"sso", "idtoken"},
-			HideHelp:     true,
-			HideSelected: true,
-		}).Run()
+
+		// check what are supported on the server
+		authenticators := &[]string{}
+		err = o.ClientWithEndpoint("/login/methods").
+			Result(authenticators).
+			Get().
+			Error()
 		if err != nil {
 			return err
+		}
+		supported := []string{}
+		for _, auth := range *authenticators {
+			if auth == "openid" {
+				supported = append(supported, "Single Sign-On")
+			}
+			if auth == "jwt" {
+				supported = append(supported, "Kore Username + Password")
+			}
+		}
+
+		if len(supported) == 1 {
+			// Only one supported, just use it.
+			method = supported[0]
+		} else if len(supported) == 0 {
+			return errors.New("no supported authentication providers available")
+		} else {
+			_, method, err = (&promptui.Select{
+				Label:        "Which method do you wish to use to login?",
+				Items:        supported,
+				HideHelp:     true,
+				HideSelected: true,
+			}).Run()
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		method = o.Config().GetProfileAuthMethod(current)
@@ -176,9 +203,9 @@ func (o *LoginOptions) Run() error {
 
 	// @step: else we do have a profile so need see if basicauth or sso
 	switch method {
-	case "idtoken":
+	case "idtoken", "Kore Username and Password":
 		return o.RunIDAuth()
-	case "sso":
+	case "sso", "Single Sign-On":
 		return o.RunOAuth()
 	case "token", "basicauth":
 		return errors.New(method + " authentication does not require login")
@@ -221,16 +248,15 @@ func (o *LoginOptions) RunIDAuth() error {
 	}
 
 	issued := &types.IssuedToken{}
-	auth.BasicAuth = &config.BasicAuth{
-		Username: username,
-		Password: password,
-	}
 
-	// @step: exchange the credentials for idtoken
-	err := o.ClientWithEndpoint("/login/authorize/{user}").
-		Parameters(client.PathParameter("user", username)).
+	// @step: perform login with supplied credentials
+	err := o.ClientWithEndpoint("/login").
 		Result(issued).
-		Update().
+		Payload(&types.LocalUser{
+			Username: username,
+			Password: password,
+		}).
+		Post().
 		Error()
 	if err != nil {
 		if client.IsNotAuthorized(err) {
@@ -240,11 +266,10 @@ func (o *LoginOptions) RunIDAuth() error {
 		return err
 	}
 
-	// @step: do not save the authentication setting
 	// @note if this probably has been be reviewed as it relys on orders
 	// https://github.com/appvia/kore/blob/master/pkg/client/client.go#L249-L259
-	auth.BasicAuth = nil
-	auth.IdentityToken = utils.StringPtr(string(issued.Token))
+	auth.IdentityToken = utils.StringPtr(issued.Token)
+	auth.IdentityRefreshToken = utils.StringPtr(issued.RefreshToken)
 
 	return o.UpdateConfig()
 }

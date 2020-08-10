@@ -425,6 +425,11 @@ func (a *apiClient) Update() RestInterface {
 	return a.HandleRequest(http.MethodPut)
 }
 
+// Post performs a post request
+func (a *apiClient) Post() RestInterface {
+	return a.HandleRequest(http.MethodPost)
+}
+
 // Parameters defines a list of parameters for the request
 func (a *apiClient) Parameters(params ...ParameterFunc) RestInterface {
 	for _, fn := range params {

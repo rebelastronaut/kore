@@ -78,7 +78,7 @@ func (l *issueHandler) issueHandler(req *restful.Request, resp *restful.Response
 			return err
 		}
 
-		return resp.WriteHeaderAndEntity(http.StatusOK, &types.IssuedToken{Token: issued})
+		return resp.WriteHeaderAndEntity(http.StatusOK, &types.IssuedToken{Token: string(issued)})
 	})
 }
 

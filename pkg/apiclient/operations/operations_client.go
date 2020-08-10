@@ -31,8 +31,6 @@ type ClientService interface {
 
 	AssociateIDPIdentity(params *AssociateIDPIdentityParams, authInfo runtime.ClientAuthInfoWriter) (*AssociateIDPIdentityOK, error)
 
-	AuthorizeUser(params *AuthorizeUserParams, authInfo runtime.ClientAuthInfoWriter) (*AuthorizeUserOK, error)
-
 	DeleteAKSCredentials(params *DeleteAKSCredentialsParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAKSCredentialsOK, error)
 
 	DeleteAWSOrganization(params *DeleteAWSOrganizationParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteAWSOrganizationOK, error)
@@ -89,6 +87,8 @@ type ClientService interface {
 
 	GetKubernetes(params *GetKubernetesParams, authInfo runtime.ClientAuthInfoWriter) (*GetKubernetesOK, error)
 
+	GetLoginMethods(params *GetLoginMethodsParams, authInfo runtime.ClientAuthInfoWriter) (*GetLoginMethodsOK, error)
+
 	GetNamespace(params *GetNamespaceParams, authInfo runtime.ClientAuthInfoWriter) (*GetNamespaceOK, error)
 
 	GetPlan(params *GetPlanParams, authInfo runtime.ClientAuthInfoWriter) (*GetPlanOK, error)
@@ -116,6 +116,8 @@ type ClientService interface {
 	GetTeamSecret(params *GetTeamSecretParams, authInfo runtime.ClientAuthInfoWriter) (*GetTeamSecretOK, error)
 
 	GetTeamSecurityOverview(params *GetTeamSecurityOverviewParams, authInfo runtime.ClientAuthInfoWriter) (*GetTeamSecurityOverviewOK, error)
+
+	GetToken(params *GetTokenParams, authInfo runtime.ClientAuthInfoWriter) (*GetTokenOK, error)
 
 	GetUser(params *GetUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetUserOK, error)
 
@@ -188,6 +190,8 @@ type ClientService interface {
 	ListUsers(params *ListUsersParams, authInfo runtime.ClientAuthInfoWriter) (*ListUsersOK, error)
 
 	LocalAuthorize(params *LocalAuthorizeParams, authInfo runtime.ClientAuthInfoWriter) (*LocalAuthorizeOK, error)
+
+	Login(params *LoginParams, authInfo runtime.ClientAuthInfoWriter) (*LoginOK, error)
 
 	LoginAttempted(params *LoginAttemptedParams, authInfo runtime.ClientAuthInfoWriter) (*LoginAttemptedOK, error)
 
@@ -362,40 +366,6 @@ func (a *Client) AssociateIDPIdentity(params *AssociateIDPIdentityParams, authIn
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for AssociateIDPIdentity: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
-}
-
-/*
-  AuthorizeUser useds login and authorize an account in kore
-*/
-func (a *Client) AuthorizeUser(params *AuthorizeUserParams, authInfo runtime.ClientAuthInfoWriter) (*AuthorizeUserOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewAuthorizeUserParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "AuthorizeUser",
-		Method:             "PUT",
-		PathPattern:        "/api/v1alpha1/login/authorize/{user}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &AuthorizeUserReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*AuthorizeUserOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	unexpectedSuccess := result.(*AuthorizeUserDefault)
-	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -1369,6 +1339,41 @@ func (a *Client) GetKubernetes(params *GetKubernetesParams, authInfo runtime.Cli
 }
 
 /*
+  GetLoginMethods retrieves the supported authentication methods
+*/
+func (a *Client) GetLoginMethods(params *GetLoginMethodsParams, authInfo runtime.ClientAuthInfoWriter) (*GetLoginMethodsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetLoginMethodsParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetLoginMethods",
+		Method:             "GET",
+		PathPattern:        "/api/v1alpha1/login/methods",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetLoginMethodsReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetLoginMethodsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetLoginMethods: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
   GetNamespace useds to return the details of a namespace within a team
 */
 func (a *Client) GetNamespace(params *GetNamespaceParams, authInfo runtime.ClientAuthInfoWriter) (*GetNamespaceOK, error) {
@@ -1854,6 +1859,41 @@ func (a *Client) GetTeamSecurityOverview(params *GetTeamSecurityOverviewParams, 
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetTeamSecurityOverview: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  GetToken retrieves a new token for the user identified by the specified refresh token
+*/
+func (a *Client) GetToken(params *GetTokenParams, authInfo runtime.ClientAuthInfoWriter) (*GetTokenOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetTokenParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetToken",
+		Method:             "GET",
+		PathPattern:        "/api/v1alpha1/login/token",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetTokenReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetTokenOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetToken: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -3108,6 +3148,41 @@ func (a *Client) LocalAuthorize(params *LocalAuthorizeParams, authInfo runtime.C
 	// unexpected success response
 	unexpectedSuccess := result.(*LocalAuthorizeDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  Login retrieves a refresh token using the specified local credentials
+*/
+func (a *Client) Login(params *LoginParams, authInfo runtime.ClientAuthInfoWriter) (*LoginOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewLoginParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "Login",
+		Method:             "POST",
+		PathPattern:        "/api/v1alpha1/login",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &LoginReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*LoginOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for Login: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
