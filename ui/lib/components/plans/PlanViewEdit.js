@@ -2,7 +2,9 @@ import * as React from 'react'
 import PropTypes from 'prop-types'
 import { Switch, Typography } from 'antd'
 const { Paragraph, Text } = Typography
+
 import PlanOption from './PlanOption'
+import IconTooltip from '../utils/IconTooltip'
 
 /**
  * PlanViewEdit is the underlying component which handles all plan viewing and editing. Most likely, you
@@ -25,25 +27,25 @@ export default class PlanViewEdit extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state = { showAll: props.manage === true }
+    this.state = { showReadOnly: props.manage === true }
   }
 
   componentDidUpdate(prevProps) {
     if (this.props.mode !== prevProps.mode) {
-      this.setState({ showAll: this.props.manage === true })
+      this.setState({ showReadOnly: this.props.manage === true })
     }
   }
 
   render() {
     const { resourceType, mode, manage, team, kind, plan, originalPlan, schema, editableParams, onPlanValueChange, validationErrors } = this.props
-    const showAll = this.state.showAll
+    const showReadOnly = this.state.showReadOnly
 
     return (
       <>
         {manage ? null : (
           <Paragraph>
-            <Text strong style={{ marginRight: '10px' }}>Show all parameters</Text>
-            <Switch checked={showAll} onChange={(showAll) => this.setState({ showAll })} />
+            <Text strong style={{ marginRight: '10px' }}>Show read-only parameters <IconTooltip text="Parameters may be read-only as defined by the plan policy or may only be editable on cluster creation. Turn this on to see these parameters." icon="info-circle" /></Text>
+            <Switch checked={showReadOnly} onChange={(showReadOnly) => this.setState({ showReadOnly })} />
           </Paragraph>
         )}
 
@@ -53,8 +55,8 @@ export default class PlanViewEdit extends React.Component {
             (schema.properties[name].const === undefined || schema.properties[name].const === null) &&
             (mode === 'create' || manage || !schema.properties[name].immutable) // Disallow editing of params which can only be set at create time when in 'use' mode
           // always show properties that are editable according to the policy, even when in view mode
-          // properties not editable by the policy can be shown by enabling showAll
-          const forceShow = showAll || (mode === 'view' && (editableParams.includes('*') || editableParams.includes(name)))
+          // properties not editable by the policy can be shown by enabling showReadOnly
+          const forceShow = showReadOnly || (mode === 'view' && (editableParams.includes('*') || editableParams.includes(name)))
 
           return (
             <PlanOption
