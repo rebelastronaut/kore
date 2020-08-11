@@ -34,8 +34,8 @@ export default class MonitoringStatusTable extends React.Component {
     },
     {
       title: 'Summary',
-      dataIndex: 'category',
-      key: 'category',
+      dataIndex: 'summary',
+      key: 'summary',
       render: (text) => (
         <>
           <span>{MonitoringStatusTable.summaries[text]}</span>
@@ -59,15 +59,15 @@ export default class MonitoringStatusTable extends React.Component {
     if (!this.props.alerts) {
       return []
     }
-    var filtered = []
-    var matches = new Map()
+    const filtered = []
+    const matches = new Map()
 
     this.props.alerts.items.map((record) => {
       if ((this.props.severity || []).includes(record.status.rule.spec.severity)) {
 
         if ((this.props.status || []).includes(record.status.status)) {
 
-          var category = record.status.rule.metadata.labels['category']
+          const category = record.status.rule.metadata.labels['category']
           if (category !== null) {
             if (!matches.has(category)) {
               matches.set(category, {
@@ -76,7 +76,7 @@ export default class MonitoringStatusTable extends React.Component {
                 'status': record.status.rule.spec.severity,
               })
             } else {
-              var e = matches.get(category)
+              const e = matches.get(category)
               e['count'] += 1
               e['alerts'].push(record)
               if (record.status.rule.spec.severity === 'Critical') {

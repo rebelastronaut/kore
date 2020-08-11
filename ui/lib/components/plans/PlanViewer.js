@@ -96,7 +96,7 @@ class PlanViewer extends React.Component {
         if (schema.properties) {
           return <Table size="small" pagination={false} columns={columns} style={{ paddingTop: '5px', paddingBottom: '5px' }}
             dataSource={Object.keys(schema.properties).map(p => ({
-              key: p,
+              key: p.name,
               property: propertyDisplayName(p),
               value: propertyDisplayValue(schema.properties[p], value[p])
             }))}

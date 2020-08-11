@@ -106,7 +106,7 @@ class TeamDashboardTabPage extends React.Component {
             <SecurityTab team={this.props.team} getOverviewStatus={(status) => this.setState({ securityStatus: status })} />
           </TabPane>
 
-          <TabPane key="monitoring" tab={<TextWithCount title="Monitoring" icon={<Icon type="monitor"/>} />} forceRender={true}>
+          <TabPane key="monitoring" tab={<TextWithCount title="Monitoring" icon={<Icon type="monitor" style={{ marginLeft: '10px' }} />} />} forceRender={true}>
             <MonitoringTab user={this.props.user} team={this.props.team} />
           </TabPane>
         </Tabs>
