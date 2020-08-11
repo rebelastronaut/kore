@@ -175,6 +175,12 @@ func (o *LoginOptions) Run() error {
 			Get().
 			Error()
 		if err != nil {
+			if client.IsNotFound(err) {
+				// backwards compatibility - /login/methods was introduced with
+				// the addition of kore username+password, if it's not there,
+				// we can assume sso is the only supported strategy
+				return o.RunOAuth()
+			}
 			return err
 		}
 
