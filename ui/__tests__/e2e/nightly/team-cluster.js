@@ -176,7 +176,7 @@ export class TeamCluster {
         it('navigates to the cluster page and shows no namespaces', async () => {
           await clusterPage.visitPage()
           clusterPage.verifyPageURL()
-          await expect(page).toMatch('No namespaces found for this cluster')
+          await expect(page).toMatch('No namespaces found for this cluster', { timeout: 10000 })
           console.log('Cluster found as expected on team page')
         })
       })
