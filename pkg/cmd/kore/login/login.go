@@ -169,16 +169,17 @@ func (o *LoginOptions) Run() error {
 		}
 
 		// check what are supported on the server
-		authenticators := &[]string{}
+		authenticators := []string{}
 		err = o.ClientWithEndpoint("/login/methods").
-			Result(authenticators).
+			Result(&authenticators).
 			Get().
 			Error()
 		if err != nil {
 			return err
 		}
+
 		supported := []string{}
-		for _, auth := range *authenticators {
+		for _, auth := range authenticators {
 			if auth == "openid" {
 				supported = append(supported, authMethodSSO)
 			}

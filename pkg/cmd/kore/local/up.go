@@ -160,11 +160,10 @@ func (o *UpOptions) Run() error {
 	o.Println("")
 	if !o.EnableSSO {
 		o.Println("Access the Kore portal via http://localhost:3000 [ admin | %s ]", o.LocalAdminPassword)
-		o.Println("Configure your CLI via $ kore profile configure local -a http://localhost:10080 --account basicauth")
 	} else {
 		o.Println("Access the Kore portal via http://localhost:3000")
-		o.Println("Configure your CLI via $ kore login -a http://localhost:10080")
 	}
+	o.Println("Configure your CLI via $ kore login -a http://localhost:10080")
 	o.Println("")
 
 	return nil

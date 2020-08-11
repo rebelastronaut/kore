@@ -1873,7 +1873,7 @@ func (a *Client) GetToken(params *GetTokenParams, authInfo runtime.ClientAuthInf
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
 		ID:                 "GetToken",
-		Method:             "POST",
+		Method:             "GET",
 		PathPattern:        "/api/v1alpha1/login/token",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},

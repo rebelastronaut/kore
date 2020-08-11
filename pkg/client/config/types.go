@@ -60,7 +60,7 @@ type AuthInfo struct {
 	// Token is a static token to use
 	Token *string `json:"token,omitempty" yaml:"token,omitempty"`
 	// KoreIdentity is a kore manage identity
-	KoreIdentity *KoreIdentity `json:"kore_identity,omityempty" yaml:"kore_identity,omitempty"`
+	KoreIdentity *KoreIdentity `json:"kore_identity,omitempty" yaml:"kore_identity,omitempty"`
 	// OIDC is credentials from an oauth2 provider
 	OIDC *OIDC `json:"oidc,omitempty" yaml:"oidc,omitempty"`
 }

@@ -1345,7 +1345,7 @@
       }
     },
     "/api/v1alpha1/login/token": {
-      "post": {
+      "get": {
         "consumes": [
           "application/json"
         ],
@@ -8067,8 +8067,8 @@
     },
     "kore.ServicePlanDetails": {
       "required": [
-        "summary",
         "kind",
+        "summary",
         "editableParams"
       ],
       "properties": {
@@ -10285,11 +10285,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
-        "clientID",
-        "clientSecret",
         "issuer",
         "clientScopes",
-        "userClaims"
+        "userClaims",
+        "clientID",
+        "clientSecret"
       ],
       "properties": {
         "clientID": {

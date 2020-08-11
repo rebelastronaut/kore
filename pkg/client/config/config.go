@@ -80,7 +80,6 @@ func (c *Config) CreateProfile(name, endpoint string) {
 		AuthInfo: name,
 	})
 	c.AddServer(name, &Server{Endpoint: endpoint, CACertificate: string(ca)})
-	c.AddAuthInfo(name, &AuthInfo{OIDC: &OIDC{}})
 }
 
 func (c *Config) getUntrustedCA(url string) (ca []byte) {

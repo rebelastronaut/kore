@@ -67,7 +67,7 @@ type GetTokenOK struct {
 }
 
 func (o *GetTokenOK) Error() string {
-	return fmt.Sprintf("[POST /api/v1alpha1/login/token][%d] getTokenOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /api/v1alpha1/login/token][%d] getTokenOK  %+v", 200, o.Payload)
 }
 
 func (o *GetTokenOK) GetPayload() *models.TypesIssuedToken {
@@ -99,7 +99,7 @@ type GetTokenUnauthorized struct {
 }
 
 func (o *GetTokenUnauthorized) Error() string {
-	return fmt.Sprintf("[POST /api/v1alpha1/login/token][%d] getTokenUnauthorized ", 401)
+	return fmt.Sprintf("[GET /api/v1alpha1/login/token][%d] getTokenUnauthorized ", 401)
 }
 
 func (o *GetTokenUnauthorized) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -120,7 +120,7 @@ type GetTokenForbidden struct {
 }
 
 func (o *GetTokenForbidden) Error() string {
-	return fmt.Sprintf("[POST /api/v1alpha1/login/token][%d] getTokenForbidden ", 403)
+	return fmt.Sprintf("[GET /api/v1alpha1/login/token][%d] getTokenForbidden ", 403)
 }
 
 func (o *GetTokenForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -142,7 +142,7 @@ type GetTokenInternalServerError struct {
 }
 
 func (o *GetTokenInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /api/v1alpha1/login/token][%d] getTokenInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[GET /api/v1alpha1/login/token][%d] getTokenInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *GetTokenInternalServerError) GetPayload() *models.ApiserverError {
