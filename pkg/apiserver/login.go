@@ -75,15 +75,15 @@ func (l *loginHandler) Register(i kore.Interface, builder utils.PathBuilder) (*r
 	)
 
 	ws.Route(
-		withAllNonValidationErrors(ws.GET("/token")).To(l.getToken).
+		withAllNonValidationErrors(ws.POST("/token")).To(l.refreshToken).
 			// higher rate limit as multiple in-flight API requests at the same time may all cause a token refresh,
 			// lower risk as only accepts a token, so no possibility of credential stuffing. For UI token login,
 			// all requests will come from the same server, so this is in effect a global limit not a per client
 			// limit. @TODO: Consider changing or possibly removing these limits for this endpoint.
 			Filter(filters.NewRateLimiter(filters.RateConfig{Period: 30 * time.Second, Limit: 30})).
-			Doc("Retrieve a new token for the user identified by the specified refresh token").
+			Doc("Retrieve a new access token for the user identified by the specified refresh token").
 			Reads(types.IssuedToken{}).
-			Operation("GetToken").
+			Operation("RefreshToken").
 			Returns(http.StatusOK, "An access token which can be used for accessing Kore", types.IssuedToken{}),
 	)
 
@@ -120,15 +120,14 @@ func (l *loginHandler) login(req *restful.Request, resp *restful.Response) {
 	})
 }
 
-func (l *loginHandler) getToken(req *restful.Request, resp *restful.Response) {
+func (l *loginHandler) refreshToken(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
 		token := &types.IssuedToken{}
 		if err := req.ReadEntity(token); err != nil {
 			return err
 		}
-		refreshToken := token.RefreshToken
 
-		valid, issued := l.Users().Identities().ExchangeRefreshToken(req.Request.Context(), []byte(refreshToken))
+		valid, issued := l.Users().Identities().ExchangeRefreshToken(req.Request.Context(), []byte(token.RefreshToken))
 		if !valid {
 			resp.WriteHeader(http.StatusUnauthorized)
 

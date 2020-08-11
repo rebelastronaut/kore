@@ -96,7 +96,7 @@ class AuthService {
 
   async localTokenRefresh(refreshToken) {
     try {
-      const tokens = await (await this.KoreApi.client({ id_token: null })).GetToken(refreshToken)
+      const tokens = await (await this.KoreApi.client({ id_token: null })).RefreshToken(refreshToken)
       console.log('Local user token refreshed successfully')
       return tokens.token
     } catch (err) {

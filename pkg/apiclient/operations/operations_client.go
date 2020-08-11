@@ -117,8 +117,6 @@ type ClientService interface {
 
 	GetTeamSecurityOverview(params *GetTeamSecurityOverviewParams, authInfo runtime.ClientAuthInfoWriter) (*GetTeamSecurityOverviewOK, error)
 
-	GetToken(params *GetTokenParams, authInfo runtime.ClientAuthInfoWriter) (*GetTokenOK, error)
-
 	GetUser(params *GetUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetUserOK, error)
 
 	InvitationSubmit(params *InvitationSubmitParams, authInfo runtime.ClientAuthInfoWriter) (*InvitationSubmitOK, error)
@@ -196,6 +194,8 @@ type ClientService interface {
 	LoginAttempted(params *LoginAttemptedParams, authInfo runtime.ClientAuthInfoWriter) (*LoginAttemptedOK, error)
 
 	LoginCallback(params *LoginCallbackParams, authInfo runtime.ClientAuthInfoWriter) (*LoginCallbackOK, error)
+
+	RefreshToken(params *RefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*RefreshTokenOK, error)
 
 	RemoveAccount(params *RemoveAccountParams, authInfo runtime.ClientAuthInfoWriter) (*RemoveAccountOK, error)
 
@@ -1863,41 +1863,6 @@ func (a *Client) GetTeamSecurityOverview(params *GetTeamSecurityOverviewParams, 
 }
 
 /*
-  GetToken retrieves a new token for the user identified by the specified refresh token
-*/
-func (a *Client) GetToken(params *GetTokenParams, authInfo runtime.ClientAuthInfoWriter) (*GetTokenOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetTokenParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetToken",
-		Method:             "GET",
-		PathPattern:        "/api/v1alpha1/login/token",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetTokenReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetTokenOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetToken: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
   GetUser returns information related to the specific user in the kore
 */
 func (a *Client) GetUser(params *GetUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetUserOK, error) {
@@ -3251,6 +3216,41 @@ func (a *Client) LoginCallback(params *LoginCallbackParams, authInfo runtime.Cli
 	// unexpected success response
 	unexpectedSuccess := result.(*LoginCallbackDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  RefreshToken retrieves a new access token for the user identified by the specified refresh token
+*/
+func (a *Client) RefreshToken(params *RefreshTokenParams, authInfo runtime.ClientAuthInfoWriter) (*RefreshTokenOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRefreshTokenParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "RefreshToken",
+		Method:             "POST",
+		PathPattern:        "/api/v1alpha1/login/token",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &RefreshTokenReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RefreshTokenOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RefreshToken: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*

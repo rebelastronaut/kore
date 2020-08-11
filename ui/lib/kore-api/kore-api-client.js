@@ -78,7 +78,7 @@ class KoreApiClient {
 
   // Login
   Login = (username, password) => this.apis.default.Login({ body: JSON.stringify({ username, password }) })
-  GetToken = (refreshToken) => this.apis.default.GetToken({ refresh: refreshToken })
+  RefreshToken = (refreshToken) => this.apis.default.RefreshToken({ body: JSON.stringify({ refreshToken }) })
   WhoAmI = () => this.apis.default.WhoAmI()
 
   // Users

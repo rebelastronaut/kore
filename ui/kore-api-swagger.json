@@ -1345,15 +1345,15 @@
       }
     },
     "/api/v1alpha1/login/token": {
-      "get": {
+      "post": {
         "consumes": [
           "application/json"
         ],
         "produces": [
           "application/json"
         ],
-        "summary": "Retrieve a new token for the user identified by the specified refresh token",
-        "operationId": "GetToken",
+        "summary": "Retrieve a new access token for the user identified by the specified refresh token",
+        "operationId": "RefreshToken",
         "parameters": [
           {
             "name": "body",
@@ -9262,8 +9262,8 @@
     },
     "v1.OptionalSecretKeySelector": {
       "required": [
-        "name",
-        "key"
+        "key",
+        "name"
       ],
       "properties": {
         "key": {
