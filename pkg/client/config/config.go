@@ -110,7 +110,7 @@ func (c *Config) GetProfileAuthMethod(name string) string {
 		return "sso"
 	case auth.Token != nil:
 		return "token"
-	case auth.IdentityToken != nil:
+	case auth.KoreIdentity != nil:
 		return "idtoken"
 	}
 
