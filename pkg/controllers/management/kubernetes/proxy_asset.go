@@ -150,6 +150,10 @@ spec:
               value: /tls/tls.crt
             - name: TLS_KEY
               value: /tls/tls.key
+            {{- if eq .Provider "EKS" }}
+            - name: ENABLE_PROXY_PROTOCOL
+              value: "true"
+            {{- end }}
           args:
             {{- range .AllowedIPs }}
             - --allowed-ips={{ . }}

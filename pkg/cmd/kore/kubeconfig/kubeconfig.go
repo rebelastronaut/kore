@@ -145,7 +145,7 @@ func (o *KubeConfigOptions) WriteConfig(clusters *clustersv1.ClusterList, path s
 			},
 		}
 
-	case auth.BasicAuth != nil:
+	case auth.KoreIdentity != nil, auth.BasicAuth != nil:
 		authUser = fmt.Sprintf("kore-pf-%s", current)
 
 		cfg.AuthInfos[authUser] = &api.AuthInfo{
