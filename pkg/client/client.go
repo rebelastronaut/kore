@@ -271,8 +271,8 @@ func (a *apiClient) MakeRequest(method, url, caCertificate string) (*http.Respon
 		request.Header.Set("Authorization", "Bearer "+*auth.Token)
 	case auth.BasicAuth != nil:
 		request.SetBasicAuth(auth.BasicAuth.Username, auth.BasicAuth.Password)
-	case auth.IdentityToken != nil:
-		request.Header.Set("Authorization", "Bearer "+*auth.IdentityToken)
+	case auth.KoreIdentity != nil:
+		request.Header.Set("Authorization", "Bearer "+auth.KoreIdentity.Token)
 	}
 
 	hc := a.createHTTPClient(caCertificate)

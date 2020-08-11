@@ -82,7 +82,7 @@ func (l *loginHandler) Register(i kore.Interface, builder utils.PathBuilder) (*r
 			// limit. @TODO: Consider changing or possibly removing these limits for this endpoint.
 			Filter(filters.NewRateLimiter(filters.RateConfig{Period: 30 * time.Second, Limit: 30})).
 			Doc("Retrieve a new token for the user identified by the specified refresh token").
-			Param(ws.QueryParameter("refresh", "The refresh token to exchange")).
+			Reads(types.IssuedToken{}).
 			Operation("GetToken").
 			Returns(http.StatusOK, "An access token which can be used for accessing Kore", types.IssuedToken{}),
 	)
@@ -122,11 +122,16 @@ func (l *loginHandler) login(req *restful.Request, resp *restful.Response) {
 
 func (l *loginHandler) getToken(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
-		refreshToken := req.QueryParameter("refresh")
-		// @question: wonder if we can start to use scope somehow?
+		token := &types.IssuedToken{}
+		if err := req.ReadEntity(token); err != nil {
+			return err
+		}
+		refreshToken := token.RefreshToken
+
 		valid, issued := l.Users().Identities().ExchangeRefreshToken(req.Request.Context(), []byte(refreshToken))
 		if !valid {
 			resp.WriteHeader(http.StatusUnauthorized)
+
 			return nil
 		}
 

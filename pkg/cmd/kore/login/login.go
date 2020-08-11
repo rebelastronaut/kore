@@ -42,6 +42,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	authMethodSSO       = "Single Sign-On"
+	authMethodBasicauth = "Kore Username + Password"
+)
+
 var (
 	loginLongDescription = `
 Is used to authenticate yourself to the currently selected profile. Login
@@ -57,6 +62,7 @@ $ kore login local -a http://127.0.0.1:8080  # create a profile and login
 const (
 	// DefaultKoreURL is the default value for the kore api
 	DefaultKoreURL = "http://localhost:10080"
+	//
 )
 
 // LoginOptions are the options for logging in
@@ -174,10 +180,10 @@ func (o *LoginOptions) Run() error {
 		supported := []string{}
 		for _, auth := range *authenticators {
 			if auth == "openid" {
-				supported = append(supported, "Single Sign-On")
+				supported = append(supported, authMethodSSO)
 			}
 			if auth == "jwt" {
-				supported = append(supported, "Kore Username + Password")
+				supported = append(supported, authMethodBasicauth)
 			}
 		}
 
@@ -203,9 +209,9 @@ func (o *LoginOptions) Run() error {
 
 	// @step: else we do have a profile so need see if basicauth or sso
 	switch method {
-	case "idtoken", "Kore Username + Password":
+	case "idtoken", authMethodBasicauth:
 		return o.RunIDAuth()
-	case "sso", "Single Sign-On":
+	case "sso", authMethodSSO:
 		return o.RunOAuth()
 	case "token", "basicauth":
 		return errors.New(method + " authentication does not require login")
@@ -220,7 +226,10 @@ func (o *LoginOptions) RunIDAuth() error {
 	current := o.Client().CurrentProfile()
 
 	auth := o.Config().GetAuthInfo(current)
-	token := utils.StringValue(auth.IdentityToken)
+	if auth.KoreIdentity == nil {
+		auth.KoreIdentity = &config.KoreIdentity{}
+	}
+	token := auth.KoreIdentity.Token
 
 	var username, password string
 
@@ -266,10 +275,10 @@ func (o *LoginOptions) RunIDAuth() error {
 		return err
 	}
 
-	// @note if this probably has been be reviewed as it relys on orders
-	// https://github.com/appvia/kore/blob/master/pkg/client/client.go#L249-L259
-	auth.IdentityToken = utils.StringPtr(issued.Token)
-	auth.IdentityRefreshToken = utils.StringPtr(issued.RefreshToken)
+	auth.KoreIdentity = &config.KoreIdentity{
+		Token:        issued.Token,
+		RefreshToken: issued.RefreshToken,
+	}
 
 	return o.UpdateConfig()
 }

@@ -1345,7 +1345,7 @@
       }
     },
     "/api/v1alpha1/login/token": {
-      "get": {
+      "post": {
         "consumes": [
           "application/json"
         ],
@@ -1356,10 +1356,12 @@
         "operationId": "GetToken",
         "parameters": [
           {
-            "type": "string",
-            "description": "The refresh token to exchange",
-            "name": "refresh",
-            "in": "query"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/types.IssuedToken"
+            }
           }
         ],
         "responses": {
@@ -8065,8 +8067,8 @@
     },
     "kore.ServicePlanDetails": {
       "required": [
-        "kind",
         "summary",
+        "kind",
         "editableParams"
       ],
       "properties": {
@@ -10283,11 +10285,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
+        "clientID",
+        "clientSecret",
         "issuer",
         "clientScopes",
-        "userClaims",
-        "clientID",
-        "clientSecret"
+        "userClaims"
       ],
       "properties": {
         "clientID": {

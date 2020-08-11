@@ -14,6 +14,8 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+
+	"github.com/appvia/kore/pkg/apiclient/models"
 )
 
 // NewGetTokenParams creates a new GetTokenParams object
@@ -60,11 +62,8 @@ for the get token operation typically these are written to a http.Request
 */
 type GetTokenParams struct {
 
-	/*Refresh
-	  The refresh token to exchange
-
-	*/
-	Refresh *string
+	/*Body*/
+	Body *models.TypesIssuedToken
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,15 +103,15 @@ func (o *GetTokenParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithRefresh adds the refresh to the get token params
-func (o *GetTokenParams) WithRefresh(refresh *string) *GetTokenParams {
-	o.SetRefresh(refresh)
+// WithBody adds the body to the get token params
+func (o *GetTokenParams) WithBody(body *models.TypesIssuedToken) *GetTokenParams {
+	o.SetBody(body)
 	return o
 }
 
-// SetRefresh adds the refresh to the get token params
-func (o *GetTokenParams) SetRefresh(refresh *string) {
-	o.Refresh = refresh
+// SetBody adds the body to the get token params
+func (o *GetTokenParams) SetBody(body *models.TypesIssuedToken) {
+	o.Body = body
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -123,20 +122,10 @@ func (o *GetTokenParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.Refresh != nil {
-
-		// query param refresh
-		var qrRefresh string
-		if o.Refresh != nil {
-			qrRefresh = *o.Refresh
+	if o.Body != nil {
+		if err := r.SetBodyParam(o.Body); err != nil {
+			return err
 		}
-		qRefresh := qrRefresh
-		if qRefresh != "" {
-			if err := r.SetQueryParam("refresh", qRefresh); err != nil {
-				return err
-			}
-		}
-
 	}
 
 	if len(res) > 0 {
