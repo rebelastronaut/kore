@@ -53,6 +53,9 @@ api:
     - openid
   auth_plugin_config: {}
   replicas: 2
+  tls:
+    enabled: false
+    secretName: ""
 ui:
   feature_gates: []
   endpoint:

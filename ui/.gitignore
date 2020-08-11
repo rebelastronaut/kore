@@ -4,3 +4,6 @@ node_modules
 # config
 dev.env
 demo.env
+
+# node configuration
+node_extra_ca_certs.pem

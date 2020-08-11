@@ -18,9 +18,11 @@ package local
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -33,7 +35,6 @@ import (
 	"github.com/appvia/kore/pkg/cmd/kore/local/providers"
 	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
 	"github.com/appvia/kore/pkg/utils"
-	"github.com/appvia/kore/pkg/utils/httputils"
 	ksutils "github.com/appvia/kore/pkg/utils/kubernetes"
 	"github.com/appvia/kore/pkg/version"
 
@@ -152,7 +153,7 @@ func (o *UpOptions) Run() error {
 
 	o.Println("")
 	o.Println("You can access the Kore portal via http://localhost:3000")
-	o.Println("Configure your CLI via $ kore login -a http://localhost:10080 local")
+	o.Println("Configure your CLI via $ kore login -a %s local", o.getAPIUrl())
 	o.Println("")
 
 	return nil
@@ -483,10 +484,21 @@ func (o *UpOptions) EnsureUP(ctx context.Context) error {
 		Header:      fmt.Sprintf("Waiting for deployment to rollout successfully (%s timeout)", timeout.String()),
 		Description: "Successfully deployed the kore release to cluster",
 		Handler: func(ctx context.Context) error {
-			hc := httputils.DefaultHTTPClient
+			hc := http.Client{
+				Timeout: time.Second * 10,
+				Transport: &http.Transport{
+					Dial: (&net.Dialer{
+						Timeout: 5 * time.Second,
+					}).Dial,
+					TLSHandshakeTimeout: 5 * time.Second,
+					TLSClientConfig: &tls.Config{
+						InsecureSkipVerify: true,
+					},
+				},
+			}
 
 			err := utils.WaitUntilComplete(ctx, timeout, interval, func() (bool, error) {
-				resp, err := hc.Get("http://localhost:10080/healthz")
+				resp, err := hc.Get(o.getAPIUrl() + "/healthz")
 				if err == nil && resp.StatusCode == http.StatusOK {
 					return true, nil
 				}
@@ -500,4 +512,10 @@ func (o *UpOptions) EnsureUP(ctx context.Context) error {
 			return nil
 		},
 	}).Run(ctx, o.Writer())
+}
+
+func (o *UpOptions) getAPIUrl() string {
+	api := o.Values["api"].(map[string]interface{})
+	endpoint := api["endpoint"].(map[string]interface{})
+	return endpoint["url"].(string)
 }

@@ -19,6 +19,8 @@ package client
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -50,8 +52,6 @@ type apiClient struct {
 	ferror error
 	// endpoint is the raw endpoint template to use
 	endpoint string
-	// hc is the http client to use
-	hc *http.Client
 	// profile is the name of the profile to use
 	profile string
 	// parameters hold the parameters for the request
@@ -75,7 +75,6 @@ var (
 // cc provides a wrapper around th config
 type cc struct {
 	cfg     *config.Config
-	hc      *http.Client
 	profile string
 }
 
@@ -85,14 +84,7 @@ func New(c *config.Config) (Interface, error) {
 		return nil, errors.New("no client configuration")
 	}
 
-	return &cc{cfg: c, hc: DefaultHTTPClient, profile: c.CurrentProfile}, nil
-}
-
-// HTTPClient sets the http client
-func (c *cc) HTTPClient(hc *http.Client) Interface {
-	c.hc = hc
-
-	return c
+	return &cc{cfg: c}, nil
 }
 
 // OverrideProfile sets the default profile to use
@@ -104,16 +96,18 @@ func (c *cc) OverrideProfile(name string) Interface {
 
 // CurrentProfile returns the current profile
 func (c *cc) CurrentProfile() string {
-	return c.profile
+	if c.profile != "" {
+		return c.profile
+	}
+	return c.cfg.CurrentProfile
 }
 
 // Request creates a request instance
 func (c *cc) Request() RestInterface {
 	return &apiClient{
 		cfg:        c.cfg,
-		hc:         c.hc,
 		parameters: make(map[string]string),
-		profile:    c.profile,
+		profile:    c.CurrentProfile(),
 	}
 }
 
@@ -139,6 +133,7 @@ func (a *apiClient) HandleRequest(method string) RestInterface {
 			return cerrors.NewProfileInvalidError("missing profile server", a.Profile())
 		}
 		endpoint := server.Endpoint
+		caCertificate := server.CACertificate
 
 		if endpoint == "" {
 			return cerrors.NewProfileInvalidError("missing endpoint", a.Profile())
@@ -150,9 +145,10 @@ func (a *apiClient) HandleRequest(method string) RestInterface {
 			return err
 		}
 		log.WithFields(log.Fields{
-			"endpoint": endpoint,
-			"method":   method,
-			"uri":      uri,
+			"endpoint":     endpoint,
+			"customCACert": caCertificate != "",
+			"method":       method,
+			"uri":          uri,
 		}).Debug("making request to kore api")
 
 		// @step: we generate the fully qualifies url
@@ -160,7 +156,7 @@ func (a *apiClient) HandleRequest(method string) RestInterface {
 
 		// @step: we make the request
 		now := time.Now()
-		resp, err := a.MakeRequest(method, ep)
+		resp, err := a.MakeRequest(method, ep, caCertificate)
 		if err != nil {
 			return err
 		}
@@ -227,8 +223,29 @@ func (a *apiClient) MakeEndpointURL() (string, error) {
 	return uri, nil
 }
 
+func (a *apiClient) createHTTPClient(caCertificate string) *http.Client {
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		rootCAs = x509.NewCertPool()
+	}
+
+	if caCertificate != "" {
+		if ok := rootCAs.AppendCertsFromPEM([]byte(caCertificate)); !ok {
+			log.Debug("no certs appended, using system certs only")
+		}
+	}
+
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: rootCAs,
+			},
+		},
+	}
+}
+
 // MakeRequest is responsible for preparing and handling the http request
-func (a *apiClient) MakeRequest(method, url string) (*http.Response, error) {
+func (a *apiClient) MakeRequest(method, url, caCertificate string) (*http.Response, error) {
 	// @step: do we have any thing to encode?
 	payload, err := a.MakePayload()
 	if err != nil {
@@ -256,7 +273,8 @@ func (a *apiClient) MakeRequest(method, url string) (*http.Response, error) {
 		request.SetBasicAuth(auth.BasicAuth.Username, auth.BasicAuth.Password)
 	}
 
-	return a.hc.Do(request)
+	hc := a.createHTTPClient(caCertificate)
+	return hc.Do(request)
 }
 
 // HandleResponse is responsible for handling the http response from api

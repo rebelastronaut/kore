@@ -21,18 +21,12 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"net/http"
 
 	"github.com/appvia/kore/pkg/client"
 )
 
 // Request creates a request instance
 func (f *fake) Request() client.RestInterface {
-	return f
-}
-
-// HTTPClient sets the http client
-func (f *fake) HTTPClient(*http.Client) client.Interface {
 	return f
 }
 

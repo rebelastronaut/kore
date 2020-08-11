@@ -17,12 +17,16 @@
 package config
 
 import (
+	"crypto/tls"
+	"encoding/pem"
 	"io"
+	"net/url"
+	"strings"
 
 	"github.com/appvia/kore/pkg/kore"
-
 	"github.com/appvia/kore/pkg/version"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -64,12 +68,49 @@ func (c *Config) IsValid() error {
 
 // CreateProfile is used to create a profile
 func (c *Config) CreateProfile(name, endpoint string) {
+	var ca []byte
+
+	u, _ := url.Parse(endpoint)
+	if u != nil && u.Scheme == "https" && u.Hostname() == "localhost" {
+		ca = c.getUntrustedCA(strings.TrimPrefix(endpoint, "https://"))
+	}
+
 	c.AddProfile(name, &Profile{
 		Server:   name,
 		AuthInfo: name,
 	})
-	c.AddServer(name, &Server{Endpoint: endpoint})
+	c.AddServer(name, &Server{Endpoint: endpoint, CACertificate: string(ca)})
 	c.AddAuthInfo(name, &AuthInfo{OIDC: &OIDC{}})
+}
+
+func (c *Config) getUntrustedCA(url string) (ca []byte) {
+	conn, err := tls.Dial("tcp", url, &tls.Config{
+		InsecureSkipVerify: true,
+	})
+	if err != nil {
+		log.Debugf("failed to connect to %s: %s", url, err.Error())
+		return nil
+	}
+
+	if err := conn.Handshake(); err != nil {
+		log.Debugf("SSL handshake failed with %s: %s", url, err.Error())
+		return nil
+	}
+
+	l := len(conn.ConnectionState().PeerCertificates)
+	caCert := conn.ConnectionState().PeerCertificates[0]
+	cert := conn.ConnectionState().PeerCertificates[l-1]
+	for _, domain := range cert.DNSNames {
+		if domain == "localhost" {
+			block := &pem.Block{
+				Type:  "CERTIFICATE",
+				Bytes: caCert.Raw,
+			}
+			return pem.EncodeToMemory(block)
+		}
+	}
+
+	return nil
 }
 
 // ListProfiles returns a list of profile names

@@ -119,7 +119,7 @@ Give the application a name and choose `Regular Web Applications`
 Once provisioned click on the `Settings` tab and scroll down to `Allowed Callback URLs`.
 These are the permitted redirects for the applications. Since we are running the application locally off the laptop set
 ```
-http://localhost:10080/oauth/callback,http://localhost:3000/auth/callback
+http://localhost:10080/oauth/callback,https://localhost:10443/oauth/callback,http://localhost:3000/auth/callback
 ```
 
 Please make a note of the [__*Domain, Client ID, and Client Secret*__].
@@ -184,7 +184,7 @@ You now have to login to be able to create teams and provision environments.
 This will use our Auth0 set up for IDP. As you're the only user, you'll be assigned Admin privileges.
 
 ```shell script
-./kore login -a http//localhost:10080 local
+./kore login -a http://localhost:10080 local
 # Attempting to authenticate to Kore: http://127.0.0.1:10080 [local]
 # Successfully authenticated
 ```
