@@ -9,10 +9,11 @@ export default class PlanOptionBase extends React.Component {
     kind: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     plan: PropTypes.object.isRequired,
+    originalPlan: PropTypes.object,
     property: PropTypes.object.isRequired,
     value: PropTypes.any,
     editable: PropTypes.bool,
-    hideNonEditable: PropTypes.bool,
+    forceShow: PropTypes.bool,
     onChange: PropTypes.func,
     displayName: PropTypes.string,
     validationErrors: PropTypes.array,
@@ -104,5 +105,17 @@ export default class PlanOptionBase extends React.Component {
     const valueOrDefault = value !== undefined && value !== null ? value : defaultValue
     const id = props.id || `plan_input_${name}`
     return { onChange, displayName, help, defaultValue, valueOrDefault, id }
+  }
+
+  isEditable(property) {
+    // quick return if the property is not editable
+    // this is in case of checking an array property and the parent property is set to not-editable
+    if (!this.props.editable) {
+      return false
+    }
+    const { manage, mode } = this.props
+    return mode !== 'view' &&
+      (property.const === undefined || property.const === null) &&
+      (mode === 'create' || manage || !property.immutable)
   }
 }

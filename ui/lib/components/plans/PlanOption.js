@@ -21,10 +21,10 @@ export default class PlanOption extends PlanOptionBase {
   }
 
   render() {
-    const { resourceType, kind, name, property, value, editable, hideNonEditable, disableCustom } = this.props
+    const { resourceType, kind, name, property, value, editable, forceShow, disableCustom } = this.props
     const { onChange, displayName, help, valueOrDefault, id } = this.prepCommonProps(this.props)
 
-    if (!editable && hideNonEditable) {
+    if (!editable && !forceShow) {
       return null
     }
 
@@ -82,21 +82,21 @@ export default class PlanOption extends PlanOptionBase {
           switch(property.type) {
           case 'string': {
             if (property.format === 'multiline') {
-              return <TextArea id={id} value={valueOrDefault} readOnly={!editable} onChange={(e) => onChange(name, e.target.value)} rows='20' />
+              return <TextArea id={id} value={valueOrDefault} disabled={!editable} onChange={(e) => onChange(name, e.target.value)} rows='20' />
             } else if (property.enum) {
               return <ConstrainedDropdown id={id} readOnly={!editable} value={valueOrDefault} allowedValues={property.enum} onChange={(e) => onChange(name, e)} />
             } else {
-              return <Input id={id} value={valueOrDefault} readOnly={!editable} pattern={property.pattern} onChange={(e) => onChange(name, e.target.value)} />
+              return <Input id={id} value={valueOrDefault} disabled={!editable} pattern={property.pattern} onChange={(e) => onChange(name, e.target.value)} />
             }
           }
           case 'boolean': {
             return <Switch id={id} checked={valueOrDefault} disabled={!editable} onChange={(v) => onChange(name, v)} checkedChildren={<Icon type="check" />} unCheckedChildren={<Icon type="close" />} />
           }
           case 'number': {
-            return <InputNumber id={id} value={valueOrDefault} readOnly={!editable} onChange={(v) => onChange(name, v)} />
+            return <InputNumber id={id} value={valueOrDefault} disabled={!editable} onChange={(v) => onChange(name, v)} />
           }
           case 'integer': {
-            return <InputNumber id={id} value={valueOrDefault} readOnly={!editable} onChange={(v) => onChange(name, v)} />
+            return <InputNumber id={id} value={valueOrDefault} disabled={!editable} onChange={(v) => onChange(name, v)} />
           }
           case 'array': {
             const values = valueOrDefault ? valueOrDefault : []

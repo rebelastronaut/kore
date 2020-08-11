@@ -20,6 +20,7 @@ class UsePlanForm extends React.Component {
     kind: PropTypes.string.isRequired,
     plan: PropTypes.string.isRequired,
     planValues: PropTypes.object,
+    originalPlanValues: PropTypes.object,
     onPlanValuesChange: PropTypes.func,
     validationErrors: PropTypes.array,
     mode: PropTypes.oneOf(['create', 'edit', 'view']).isRequired,
@@ -145,6 +146,7 @@ class UsePlanForm extends React.Component {
           team={this.props.team}
           kind={this.props.kind}
           plan={this.state.planValues}
+          originalPlan={this.props.originalPlanValues}
           schema={this.state.schema}
           editableParams={this.state.editableParams}
           onPlanValueChange={(n, v) => this.onValueChange(n, v)}

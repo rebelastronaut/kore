@@ -1,17 +1,15 @@
 import * as React from 'react'
-import { Form, Icon, List, Button, Drawer, Input, Descriptions, InputNumber, Checkbox, Collapse, Radio, Modal, Alert } from 'antd'
+import { Form, Icon, List, Button, Drawer, Input, Descriptions, InputNumber, Checkbox, Collapse, Radio, Modal, Alert, Switch, Typography } from 'antd'
+const { Paragraph, Text } = Typography
 
 import PlanOptionBase from '../PlanOptionBase'
 import PlanOption from '../PlanOption'
 import copy from '../../../utils/object-copy'
 import NodePoolCost from '../../costs/NodePoolCost'
 import PlanOptionClusterMachineType from './PlanOptionClusterMachineType'
+import IconTooltip from '../../utils/IconTooltip'
 
 export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
-  constructor(props) {
-    super(props)
-  }
-
   static AMI_TYPE_GENERAL = 'AL2_x86_64'
   static AMI_TYPE_GPU = 'AL2_x86_64_GPU'
 
@@ -129,13 +127,21 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
     return actions
   }
 
+  isEditable = (property) => {
+    // always allow editing if the node group is not part of the original pre-edited plan
+    if (this.props.originalPlan && !this.props.originalPlan.nodeGroups[this.state.selectedIndex]) {
+      return true
+    }
+    return super.isEditable(property)
+  }
+
   render() {
-    const { name, editable, property, plan } = this.props
+    const { name, editable, property, plan, manage } = this.props
     const { displayName, valueOrDefault } = this.prepCommonProps(this.props, [])
-    const { selectedIndex } = this.state
+    const { selectedIndex, showReadOnly } = this.state
     const id_prefix = 'plan_nodegroup'
     const selected = selectedIndex >= 0 ? valueOrDefault[selectedIndex] : null
-    const description = this.props.manage ? 'Set default node groups for clusters created from this plan' : 'Manage node groups for this cluster'
+    const description = manage ? 'Set default node groups for clusters created from this plan' : 'Manage node groups for this cluster'
 
     let amiType = null
     let releaseVersionSet = false, ngNameClash = false, nodeGroupCloseable = true, instanceTypeFilter = null
@@ -179,27 +185,35 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
         >
           {!selected ? null : (
             <>
+              {manage ? null : (
+                <Paragraph>
+                  <Text strong style={{ marginRight: '10px' }}>Show read-only parameters <IconTooltip text="Parameters may be read-only as defined by the plan policy or may be editable on cluster creation only. Turn this on to see these parameters." icon="info-circle" placement="bottom" /></Text>
+                  <Switch checked={showReadOnly} onChange={(showReadOnly) => this.setState({ showReadOnly })} />
+                </Paragraph>
+              )}
               <Collapse defaultActiveKey={['basics','compute','metadata']}>
                 <Collapse.Panel key="basics" header="Basic Configuration (name, sizing)">
-                  <Form.Item label="Name" help="Unique name for this group within the cluster">
-                    <Input id={`${id_prefix}_name`} value={selected.name} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'name', e.target.value)} readOnly={!editable} />
-                    {this.validationErrors(`${name}[${selectedIndex}].name`)}
-                    {!ngNameClash ? null : <Alert type="error" message="This name is already used by another node group, it must be changed." />}
-                    {selected.name && selected.name.length > 0 ? null : <Alert type="error" message="Name must be set" />}
-                  </Form.Item>
-                  <PlanOption id={`${id_prefix}_enableAutoscaler`} {...this.props} displayName="Auto-scale" name={`${name}[${selectedIndex}].enableAutoscaler`} property={property.items.properties.enableAutoscaler} value={selected.enableAutoscaler} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'enableAutoscaler', v)} />
+                  {this.isEditable(property.items.properties.name) || showReadOnly ? (
+                    <Form.Item label="Name" help="Unique name for this group within the cluster">
+                      <Input id={`${id_prefix}_name`} value={selected.name} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'name', e.target.value)} disabled={!this.isEditable(property.items.properties.name)} />
+                      {this.validationErrors(`${name}[${selectedIndex}].name`)}
+                      {!ngNameClash ? null : <Alert type="error" message="This name is already used by another node group, it must be changed." />}
+                      {selected.name && selected.name.length > 0 ? null : <Alert type="error" message="Name must be set" />}
+                    </Form.Item>
+                  ) : null}
+                  <PlanOption id={`${id_prefix}_enableAutoscaler`} {...this.props} forceShow={showReadOnly} displayName="Auto-scale" name={`${name}[${selectedIndex}].enableAutoscaler`} property={property.items.properties.enableAutoscaler} value={selected.enableAutoscaler} editable={this.isEditable(property.items.properties.enableAutoscaler)} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'enableAutoscaler', v)} />
                   <Form.Item label="Group Size">
                     <Descriptions layout="horizontal" size="small">
                       {!selected.enableAutoscaler ? null : <Descriptions.Item label="Minimum">
-                        <InputNumber id={`${id_prefix}_minSize`} value={selected.minSize} size="small" min={property.items.properties.minSize.minimum} max={selected.maxSize} readOnly={!editable} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'minSize', v)} />
+                        <InputNumber id={`${id_prefix}_minSize`} value={selected.minSize} size="small" min={property.items.properties.minSize.minimum} max={selected.maxSize} disabled={!this.isEditable(property.items.properties.minSize)} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'minSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].minSize`)}
                       </Descriptions.Item>}
                       <Descriptions.Item label={selected.enableAutoscaler ? 'Initial size' : null}>
-                        <InputNumber id={`${id_prefix}_desiredSize`} value={selected.desiredSize} size="small" min={selected.enableAutoscaler ? selected.minSize : 1} max={selected.enableAutoscaler ? selected.maxSize : undefined} readOnly={!editable} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'desiredSize', v)} />
+                        <InputNumber id={`${id_prefix}_desiredSize`} value={selected.desiredSize} size="small" min={selected.enableAutoscaler ? selected.minSize : 1} max={selected.enableAutoscaler ? selected.maxSize : undefined} disabled={!this.isEditable(property.items.properties.desiredSize)} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'desiredSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].desiredSize`)}
                       </Descriptions.Item>
                       {!selected.enableAutoscaler ? null : <Descriptions.Item label="Maximum">
-                        <InputNumber id={`${id_prefix}_maxSize`} value={selected.maxSize} size="small" min={selected.minSize} readOnly={!editable} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'maxSize', v)} />
+                        <InputNumber id={`${id_prefix}_maxSize`} value={selected.maxSize} size="small" min={selected.minSize} editable={this.isEditable(property.items.properties.maxSize)} onChange={(v) => this.setNodeGroupProperty(selectedIndex, 'maxSize', v)} />
                         {this.validationErrors(`${name}[${selectedIndex}].maxSize`)}
                       </Descriptions.Item>}
                     </Descriptions>
@@ -207,31 +221,35 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
                   <NodePoolCost prices={this.state.prices} nodePool={selected} help="Adjust group size and instance type to see the cost impacts" />
                 </Collapse.Panel>
                 <Collapse.Panel key="compute" header="Compute Configuration (instance type, GPU or regular workload)">
-                  <Form.Item label={property.items.properties.amiType.title} help={property.items.properties.amiType.description}>
-                    <Radio.Group id={`${id_prefix}_amiType`} value={amiType} onChange={(v) => this.setAmiType(selectedIndex, v.target.value)}>
-                      <Radio value={PlanOptionEKSNodeGroups.AMI_TYPE_GENERAL}>General Purpose</Radio>
-                      <Radio value={PlanOptionEKSNodeGroups.AMI_TYPE_GPU}>GPU</Radio>
-                    </Radio.Group>
-                    {this.validationErrors(`${name}[${selectedIndex}].amiType`)}
-                  </Form.Item>
-                  <Form.Item label="AWS AMI Version" help={!releaseVersionSet ? undefined : <><b>Must</b> be for Kubernetes <b>{plan.version}</b> and <b>{amiType === PlanOptionEKSNodeGroups.AMI_TYPE_GPU ? 'GPU' : 'general'}</b> workloads. Find <a target="_blank" rel="noopener noreferrer" href="https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html">supported versions</a> in AWS documentation.</>}>
-                    <Checkbox id={`${id_prefix}_releaseVersion_latest`} disabled={!editable} checked={!releaseVersionSet} onChange={(v) => this.onReleaseVersionChecked(selectedIndex, v.target.checked)}/> Use latest (<b>recommended</b>)
-                    {!releaseVersionSet ? null : <Input id={`${id_prefix}_releaseVersion_custom`} value={selected.releaseVersion} placeholder={this.describe(property.items.properties.releaseVersion)} readOnly={!editable} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'releaseVersion', e.target.value)} />}
-                    {this.validationErrors(`${name}[${selectedIndex}].releaseVersion`)}
-                  </Form.Item>
-                  <PlanOptionClusterMachineType filterCategories={instanceTypeFilter} id={`${id_prefix}_instanceType`} {...this.props} displayName="AWS Instance Type" name={`${name}[${selectedIndex}].instanceType`} property={property.items.properties.instanceType} value={selected.instanceType} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'instanceType', v )} nodePriceSet={(prices) => this.setState({ prices })} />
-                  <PlanOption {...this.props} id={`${id_prefix}_diskSize`} displayName="Instance Root Disk Size (GiB)" name={`${name}[${selectedIndex}].diskSize`} property={property.items.properties.diskSize} value={selected.diskSize} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'diskSize', v)} />
+                  {this.isEditable(property.items.properties.amiType) || showReadOnly ? (
+                    <Form.Item label={property.items.properties.amiType.title} help={property.items.properties.amiType.description}>
+                      <Radio.Group id={`${id_prefix}_amiType`} value={amiType} onChange={(v) => this.setAmiType(selectedIndex, v.target.value)} disabled={!this.isEditable(property.items.properties.amiType)}>
+                        <Radio value={PlanOptionEKSNodeGroups.AMI_TYPE_GENERAL}>General Purpose</Radio>
+                        <Radio value={PlanOptionEKSNodeGroups.AMI_TYPE_GPU}>GPU</Radio>
+                      </Radio.Group>
+                      {this.validationErrors(`${name}[${selectedIndex}].amiType`)}
+                    </Form.Item>
+                  ) : null}
+                  {this.isEditable(property.items.properties.releaseVersion) || showReadOnly ? (
+                    <Form.Item label="AWS AMI Version" help={!releaseVersionSet ? undefined : <><b>Must</b> be for Kubernetes <b>{plan.version}</b> and <b>{amiType === PlanOptionEKSNodeGroups.AMI_TYPE_GPU ? 'GPU' : 'general'}</b> workloads. Find <a target="_blank" rel="noopener noreferrer" href="https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html">supported versions</a> in AWS documentation.</>}>
+                      <Checkbox id={`${id_prefix}_releaseVersion_latest`} checked={!releaseVersionSet} disabled={!this.isEditable(property.items.properties.releaseVersion)} onChange={(v) => this.onReleaseVersionChecked(selectedIndex, v.target.checked)}/> Use latest (<b>recommended</b>)
+                      {!releaseVersionSet ? null : <Input id={`${id_prefix}_releaseVersion_custom`} value={selected.releaseVersion} placeholder={this.describe(property.items.properties.releaseVersion)} disabled={!this.isEditable(property.items.properties.releaseVersion)} onChange={(e) => this.setNodeGroupProperty(selectedIndex, 'releaseVersion', e.target.value)} />}
+                      {this.validationErrors(`${name}[${selectedIndex}].releaseVersion`)}
+                    </Form.Item>
+                  ) : null}
+                  <PlanOptionClusterMachineType filterCategories={instanceTypeFilter} id={`${id_prefix}_instanceType`} {...this.props} forceShow={showReadOnly} editable={this.isEditable(property.items.properties.instanceType)} displayName="AWS Instance Type" name={`${name}[${selectedIndex}].instanceType`} property={property.items.properties.instanceType} value={selected.instanceType} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'instanceType', v )} nodePriceSet={(prices) => this.setState({ prices })} />
+                  <PlanOption {...this.props} forceShow={showReadOnly} id={`${id_prefix}_diskSize`} displayName="Instance Root Disk Size (GiB)" name={`${name}[${selectedIndex}].diskSize`} property={property.items.properties.diskSize} value={selected.diskSize} editable={this.isEditable(property.items.properties.diskSize)} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'diskSize', v)} />
                 </Collapse.Panel>
                 <Collapse.Panel key="metadata" header="Metadata (labels, tags, etc)">
-                  <PlanOption {...this.props} id={`${id_prefix}_labels`} displayName="Labels" help="Labels help kubernetes workloads find this group" name={`${name}[${selectedIndex}].labels`} property={property.items.properties.labels} value={selected.labels} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'labels', v)} />
-                  <PlanOption {...this.props} id={`${id_prefix}_tags`} displayName="Tags" help="AWS tags to apply to the node group" name={`${name}[${selectedIndex}].tags`} property={property.items.properties.tags} value={selected.tags} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'tags', v)} />
+                  <PlanOption {...this.props} forceShow={showReadOnly} id={`${id_prefix}_labels`} displayName="Labels" help="Labels help kubernetes workloads find this group" name={`${name}[${selectedIndex}].labels`} property={property.items.properties.labels} value={selected.labels} editable={this.isEditable(property.items.properties.labels)} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'labels', v)} />
+                  <PlanOption {...this.props} forceShow={showReadOnly} id={`${id_prefix}_tags`} displayName="Tags" help="AWS tags to apply to the node group" name={`${name}[${selectedIndex}].tags`} property={property.items.properties.tags} value={selected.tags} editable={this.isEditable(property.items.properties.tags)} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'tags', v)} />
                 </Collapse.Panel>
                 <Collapse.Panel key="ssh" header="SSH Connectivity (keys, security groups)">
-                  <PlanOption {...this.props} id={`${id_prefix}_eC2SSHKey`} displayName="EC2 SSH Key" name={`${name}[${selectedIndex}].eC2SSHKey`} property={property.items.properties.eC2SSHKey} value={selected.eC2SSHKey} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'eC2SSHKey', v)} />
-                  <PlanOption {...this.props} id={`${id_prefix}_sshSourceSecurityGroups`} displayName="SSH Security Groups" name={`${name}[${selectedIndex}].sshSourceSecurityGroups`} property={property.items.properties.sshSourceSecurityGroups} value={selected.sshSourceSecurityGroups} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'sshSourceSecurityGroups', v)} />
+                  <PlanOption {...this.props} forceShow={showReadOnly} id={`${id_prefix}_eC2SSHKey`} displayName="EC2 SSH Key" name={`${name}[${selectedIndex}].eC2SSHKey`} property={property.items.properties.eC2SSHKey} value={selected.eC2SSHKey} editable={this.isEditable(property.items.properties.eC2SSHKey)} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'eC2SSHKey', v)} />
+                  <PlanOption {...this.props} forceShow={showReadOnly} id={`${id_prefix}_sshSourceSecurityGroups`} displayName="SSH Security Groups" name={`${name}[${selectedIndex}].sshSourceSecurityGroups`} property={property.items.properties.sshSourceSecurityGroups} value={selected.sshSourceSecurityGroups} editable={this.isEditable(property.items.properties.sshSourceSecurityGroups)} onChange={(_, v) => this.setNodeGroupProperty(selectedIndex, 'sshSourceSecurityGroups', v)} />
                 </Collapse.Panel>
               </Collapse>
-              <Form.Item>
+              <Form.Item style={{ marginTop: '20px' }}>
                 <Button type="primary" id={`${id_prefix}_close`} disabled={!nodeGroupCloseable} onClick={() => this.closeNodeGroup()}>{nodeGroupCloseable ? 'Close' : 'Node group not valid - correct errors'}</Button>
               </Form.Item>
             </>
