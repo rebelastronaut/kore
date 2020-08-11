@@ -162,6 +162,14 @@ describe('Configure Cloud - Azure', () => {
       await azureClusterPlansPage.confirmDelete()
       await expect(page).toMatch(`${testPlan.name} plan deleted`)
     })
+
+    it('allows copying of a plan', async() => {
+      await azureClusterPlansPage.copy('aks-development')
+      await expect(page).toMatch('New AKS plan')
+      await expect(page).toMatch('Copy of plan "AKS Development Cluster"')
+      await azureClusterPlansPage.save()
+      await expect(page).toMatch('AKS plan created successfully')
+    })
   })
 
   describe('Cluster Policies', () => {
@@ -247,6 +255,13 @@ describe('Configure Cloud - Azure', () => {
       await expect(page).toMatch('Policy Updated Policy Description deleted')
     })
 
+    it('allows copying of a policy', async() => {
+      await policiesPage.copy('default-aks')
+      await expect(page).toMatch('New AKS policy')
+      await expect(page).toMatch('Copy of policy "Default plan policy for AKS clusters"')
+      await policiesPage.save()
+      await expect(page).toMatch('Policy created successfully')
+    })
   })
 
 })

@@ -7,6 +7,7 @@ import ManageClusterPlanForm from './ManageClusterPlanForm'
 import ResourceList from '../resources/ResourceList'
 import PlanViewer from './PlanViewer'
 import KoreApi from '../../kore-api'
+import copy from '../../utils/object-copy'
 import AllocationHelpers from '../../utils/allocation-helpers'
 import { successMessage, errorMessage, loadingMessage } from '../../utils/message'
 
@@ -54,12 +55,6 @@ class PlanList extends ResourceList {
     }
   }
 
-  processPlanCreateEdit = (process) => {
-    return (args) => {
-      process && process(args)
-    }
-  }
-
   unassociatedPlanWarning = (plan) => {
     if (!this.state.accountManagement) {
       return false
@@ -96,16 +91,25 @@ class PlanList extends ResourceList {
     })
   }
 
+  copyPlan = (plan) => () => {
+    const planCopy = copy(plan)
+    delete planCopy.metadata
+    delete planCopy.status
+    planCopy.copiedFrom = planCopy.spec.description
+    planCopy.spec.description += ' COPY'
+    this.add(planCopy)()
+  }
+
   render() {
     const { resources, view, edit, add } = this.state
     const drawerVisible = Boolean(view || edit || add)
     let drawerTitle = null
     let drawerClose = () => {}
     if (view) {
-      drawerTitle = <><Title level={4}>{view.spec.summary}</Title><Text>{view.spec.description}</Text></>
+      drawerTitle = <><Title level={4}>{view.spec.description}</Title><Text>{view.spec.summary}</Text></>
       drawerClose = this.view(false)
     } else if (edit) {
-      drawerTitle = <><Title level={4}>{edit.spec.summary}</Title><Text>{edit.spec.description}</Text></>
+      drawerTitle = <><Title level={4}>{edit.spec.description}</Title><Text>{edit.spec.summary}</Text></>
       drawerClose = this.edit(false)
     } else if (add) {
       drawerTitle = <Title level={4}>New {this.props.kind} plan</Title>
@@ -147,6 +151,7 @@ class PlanList extends ResourceList {
           {!add ? null : 
             <ManageClusterPlanForm
               mode="create"
+              data={typeof add === 'object' ? add : undefined}
               kind={this.props.kind}
               handleSubmit={(args) => this.handleAddSave(args)}
             />
@@ -158,7 +163,7 @@ class PlanList extends ResourceList {
             <List
               id="plans_list"
               dataSource={resources.items}
-              renderItem={plan => <PlanItem plan={plan} viewPlan={this.view} editPlan={this.edit} deletePlan={this.delete} displayUnassociatedPlanWarning={this.unassociatedPlanWarning(plan)} /> }
+              renderItem={plan => <PlanItem plan={plan} viewPlan={this.view} editPlan={this.edit} deletePlan={this.delete} copyPlan={this.copyPlan} displayUnassociatedPlanWarning={this.unassociatedPlanWarning(plan)} /> }
             >
             </List>
           </>

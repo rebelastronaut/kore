@@ -158,6 +158,14 @@ describe('Configure Cloud - AWS', () => {
       await awsClusterPlansPage.confirmDelete()
       await expect(page).toMatch(`${testPlan.name} plan deleted`)
     })
+
+    it('allows copying of a plan', async() => {
+      await awsClusterPlansPage.copy('eks-development')
+      await expect(page).toMatch('New EKS plan')
+      await expect(page).toMatch('Copy of plan "EKS Development Cluster"')
+      await awsClusterPlansPage.save()
+      await expect(page).toMatch('EKS plan created successfully')
+    })
   })
 
   describe('Cluster Policies', () => {
@@ -243,6 +251,13 @@ describe('Configure Cloud - AWS', () => {
       await expect(page).toMatch('Policy Updated Policy Description deleted')
     })
 
+    it('allows copying of a policy', async() => {
+      await policiesPage.copy('default-eks')
+      await expect(page).toMatch('New EKS policy')
+      await expect(page).toMatch('Copy of policy "Default plan policy for EKS clusters"')
+      await policiesPage.save()
+      await expect(page).toMatch('Policy created successfully')
+    })
   })
 
 })

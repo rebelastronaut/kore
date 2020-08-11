@@ -133,6 +133,18 @@ class ManageClusterPlanForm extends ManagePlanForm {
     )
   }
 
+  copyPlanAlert = (data) => {
+    return (
+      <Alert
+        message={`Copy of plan "${data.copiedFrom}"`}
+        description="Change the plan values below as required and click Save to create"
+        type="info"
+        showIcon
+        style={{ marginBottom: '20px' }}
+      />
+    )
+  }
+
   formHeader = (formErrorMessage, mode, data) => {
     const { displayUnassociatedPlanWarning } = this.props
     return (
@@ -148,6 +160,8 @@ class ManageClusterPlanForm extends ManagePlanForm {
             style={{ marginBottom: '20px' }}
           />
         )}
+
+        {mode === 'create' && data ? this.copyPlanAlert(data) : null}
 
         {this.defaultFormHeader(formErrorMessage, mode, data)}
 

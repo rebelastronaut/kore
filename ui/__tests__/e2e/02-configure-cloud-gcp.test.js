@@ -231,6 +231,13 @@ describe('Configure Cloud - GCP', () => {
       await expect(page).toMatch(`${testPlan.name} plan deleted`)
     })
 
+    it('allows copying of a plan', async() => {
+      await clusterPlansPage.copy('gke-development')
+      await expect(page).toMatch('New GKE plan')
+      await expect(page).toMatch('Copy of plan "GKE Development Cluster"')
+      await clusterPlansPage.save()
+      await expect(page).toMatch('GKE plan created successfully')
+    })
   })
 
   describe('Cluster Policies', () => {
@@ -316,6 +323,13 @@ describe('Configure Cloud - GCP', () => {
       await expect(page).toMatch('Policy Updated Policy Description deleted')
     })
 
+    it('allows copying of a policy', async() => {
+      await policiesPage.copy('default-gke')
+      await expect(page).toMatch('New GKE policy')
+      await expect(page).toMatch('Copy of policy "Default plan policy for GKE clusters"')
+      await policiesPage.save()
+      await expect(page).toMatch('Policy created successfully')
+    })
   })
 
 })

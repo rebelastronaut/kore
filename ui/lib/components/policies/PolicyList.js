@@ -11,6 +11,7 @@ import Policy from './Policy'
 import PolicyForm from './PolicyForm'
 import AllocationHelpers from '../../utils/allocation-helpers'
 import { isReadOnlyCRD } from '../../utils/crd-helpers'
+import copy from '../../utils/object-copy'
 import { successMessage, warningMessage } from '../../utils/message'
 
 class PolicyList extends ResourceList {
@@ -60,20 +61,40 @@ class PolicyList extends ResourceList {
     return <>This policy applies to: <span style={{ fontWeight: 'bold' }}>{allocation.spec.teams.join(', ')}</span></>
   }
 
+  copyPolicy = (policy) => () => {
+    const policyCopy = copy(policy)
+    delete policyCopy.allocation
+    delete policyCopy.metadata
+    delete policyCopy.status
+    policyCopy.copiedFrom = policyCopy.spec.summary
+    policyCopy.spec.summary += ' COPY'
+    console.log('policyCopy', policyCopy)
+    this.add(policyCopy)()
+  }
+
   policyItem = (policy) => {
     const created = moment(policy.metadata.creationTimestamp).fromNow()
     const readonly = isReadOnlyCRD(policy)
     return (
       <List.Item key={policy.metadata.name} actions={[
-        <Text key="view_policy"><a id={`policy_view_${policy.metadata.name}`} onClick={this.view(policy)}><Icon type="eye" theme="filled"/> View</a></Text>,
+        <Text key="view_policy">
+          <Tooltip title="Edit this policy">
+            <a id={`policy_view_${policy.metadata.name}`} onClick={this.view(policy)}><Icon type="eye" /></a>
+          </Tooltip>
+        </Text>,
         <Text key="edit_policy">
           <Tooltip title="Edit this policy">
-            <a id={`policy_edit_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only. Create a new policy to further restrict or allow changes.' }) : this.edit(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="edit" theme="filled"/> Edit</a>
+            <a id={`policy_edit_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only. Create a new policy to further restrict or allow changes.' }) : this.edit(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="edit" /></a>
           </Tooltip>
         </Text>,
         <Text key="delete_policy">
           <Tooltip title="Delete this policy">
-            <a id={`policy_delete_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only and cannot be deleted. Create a new policy to further restrict or allow changes.' }) : this.delete(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="delete" theme="filled"/> Delete</a>
+            <a id={`policy_delete_${policy.metadata.name}`} onClick={readonly ? () => warningMessage('Read Only', { description: 'This policy is read-only and cannot be deleted. Create a new policy to further restrict or allow changes.' }) : this.delete(policy)} style={{ color: readonly ? 'lightgray' : null }}><Icon type="delete" /></a>
+          </Tooltip>
+        </Text>,
+        <Text key="copy_policy">
+          <Tooltip title="Copy this policy">
+            <a id={`policy_copy_${policy.metadata.name}`} onClick={this.copyPolicy(policy)}><Icon type="copy" /></a>
           </Tooltip>
         </Text>
       ]}>
@@ -135,7 +156,8 @@ class PolicyList extends ResourceList {
           {!add ? null : 
             <PolicyForm
               kind={this.props.kind}
-              policy={{ spec: { kind: this.props.kind, properties: [] } }}
+              policy={typeof add === 'object' ? add : { spec: { kind: this.props.kind, properties: [] } }}
+              creating={true}
               handleSubmit={this.handleAddSave}
             />
           }
