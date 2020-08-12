@@ -83,6 +83,7 @@ func (o *DestroyOptions) EnsureLocalKubernetesDeletion(ctx context.Context) erro
 
 	// @step: perform the preflight checks for the provider
 	if err := (&Task{
+		Header:      "Performing preflight checks",
 		Description: "Passed preflight checks for local cluster provider",
 		Handler: func(ctx context.Context) error {
 			return provider.Preflight(ctx)

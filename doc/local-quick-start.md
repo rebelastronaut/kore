@@ -22,9 +22,8 @@ We'll showcase how Kore can give you a head start with setting up [clusters](htt
 
 Please ensure you have the following installed on your machine,
 
-- Docker: installation instructions can be found [here]([https://docs.docker.com/install/](https://docs.docker.com/install/)
+- Docker: installation instructions can be found [here](https://docs.docker.com/install/)
 - Kubectl: installation instructions can be found [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-
 
 ### Run Kore locally
 
@@ -83,7 +82,7 @@ Please confirm password for  : ********
 $ kore whoami
 ```
 
-Note you can also enable single-sign-on for the UI and all clusters; an example of how to configure an IDP provider can be found [here](docs/setup-auth0.md). To enable the feature on the local demo add `kore alpha local up --enable-sso` which will prompt for your OpenID settings _(you can do this as any point)_.
+Note you can also enable single-sign-on for the UI and all clusters; an example of how to configure an IDP provider can be found [here](/doc/setup-auth0.md). To enable the feature on the local demo add `kore alpha local up --enable-sso` which will prompt for your OpenID settings _(you can do this as any point)_.
 
 ### Create a Team with CLI
 
@@ -109,7 +108,7 @@ $ kore get teams team-appvia
 We now need to give Kore the credentials it needs to build a cluster on our behalf. This command imports a set of credentials into kore
 and allows your new team to use them to make clusters.
 
-We'll then use these to create a cluster to host our sandbox environment. You can follow [here](docs/setup-gcp.md] to see how to configure a token, but essentially we need the service account json which has owner in the project.
+We'll then use these to create a cluster to host our sandbox environment. You can follow [here](/doc/setup-gcp.md) to see how to configure a token, but essentially we need the service account json which has owner in the project.
 
 - GKE Project ID.
 - Path to the service account key JSON file.
@@ -248,7 +247,12 @@ Once the deletion is complete, the cluster will disappear from Kore:
 Finally, after waiting for your cluster to delete, you may stop your local kore environment:
 
 ```shell script
-./kore local stop
-# ...Stopping Kore.
-# ...Kore is now stopped.
+$ kore alpha local destroy
+✅ Performing preflight checks
+   ◉ Kind binary requirement found in $PATH
+   ◉ Docker binary requirement found in $PATH
+✅ Passed preflight checks for local cluster provider
+✅ Attempting to delete the local kubernetes cluster
+   ◉ Checking if kind cluster: "kore" already exists
+✅ Removed the local kubernetes cluster
 ```
