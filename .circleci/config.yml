@@ -29,6 +29,7 @@ parameters:
 
 environment: &SERVICES_ENV
   DEBIAN_FRONTEND: "noninteractive"
+  FORCE_IMAGE_PUSH: "true"
   KORE_ADMIN_PASS: "password"
   KORE_ADMIN_TOKEN: "password"
   KORE_API_PUBLIC_URL: "http://localhost:10080"
