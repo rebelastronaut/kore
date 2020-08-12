@@ -25,10 +25,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/appvia/kore/pkg/metadata"
-	"github.com/appvia/kore/pkg/utils/kubernetes"
 	"github.com/appvia/kore/pkg/apiserver"
 	"github.com/appvia/kore/pkg/kore"
+	"github.com/appvia/kore/pkg/metadata"
 	"github.com/appvia/kore/pkg/persistence"
 	"github.com/appvia/kore/pkg/server"
 	"github.com/appvia/kore/pkg/utils/kubernetes"

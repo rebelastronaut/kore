@@ -394,6 +394,7 @@ check:
 	@$(MAKE) vet
 	@$(MAKE) verify-licences
 	@$(MAKE) check-generate-assets
+	@$(MAKE) verify-helm-chart
 
 test:
 	@echo "--> Running the tests"
@@ -460,7 +461,7 @@ crd-gen:
 	@rm -f deploy/crds/* 2>/dev/null || true
 	@go run sigs.k8s.io/controller-tools/cmd/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/apis/...  output:dir=deploy/crds
 
-helm-chart-gen:
+generate-helm-chart:
 	@echo "--> Generating the Helm Chart bundle"
 	@mkdir -p pkg/cmd/kore/local/chart
 	@go run github.com/go-bindata/go-bindata/go-bindata \
@@ -468,6 +469,16 @@ helm-chart-gen:
 		-o pkg/cmd/kore/local/chart/zz_helm_chart.go \
 		-prefix charts/ charts/kore/...
 	@gofmt -s -w pkg/cmd/kore/local/chart/zz_helm_chart.go
+
+verify-helm-chart:
+	@echo "--> Verifying Helm chart in sync"
+	@rm -rf /tmp/kore-helm-check 2>/dev/null || true
+	@mkdir -p /tmp/kore-helm-check
+	@go run hack/bin/helm_restore.go /tmp/kore-helm-check
+	@if ! diff -r /tmp/kore-helm-check/kore charts/kore; then \
+		echo "You have made changes to the Helm chart you need to run: make generate-helm-chart"; \
+		exit 1; \
+	fi
 
 check-release-notes:
 	@echo "--> Verifying Release Notes"

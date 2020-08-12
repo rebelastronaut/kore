@@ -22,147 +22,53 @@ We'll showcase how Kore can give you a head start with setting up [clusters](htt
 
 Please ensure you have the following installed on your machine,
 
-- Docker: installation instructions can be found [here]([https://docs.docker.com/install/](https://docs.docker.com/install/))
-- Docker Compose: installation instructions can found [here](https://docs.docker.com/compose/install/)
+- Docker: installation instructions can be found [here]([https://docs.docker.com/install/](https://docs.docker.com/install/)
+- Kubectl: installation instructions can be found [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
-### Kind
 
-Please ensure if you are running the local deployment you have the kind binary installed (https://kind.sigs.k8s.io/docs/user/quick-start/)
+### Run Kore locally
 
-### Google Cloud account
-
-If you don't have a Google Cloud account, grab a credit card and go to https://cloud.google.com/. Then, click the “Get started for free” button. Finally, choose whether you want a business account or an individual one.
-
-Next step: On GCP, select an existing project or create a new one.
-
-#### Enable the GKE API
-
-(You can skip this step if GKE API is already enabled for this project)
-
-With a GCP Project selected or created,
-
-- Head to the [Google Developer Console](https://console.developers.google.com/apis/api/container.googleapis.com/overview).
-- Enable the 'Kubernetes Engine API'.
-- Enable the 'Cloud Resource Manager API'
-- Enable the 'Compute Engine API'
-- Enable the 'IAM Service Account Credentials API'
-
-Alternatively you can enable these from the [gcloud](https://cloud.google.com/sdk/gcloud) command line;
+This should provision a local kubernetes installation and deploy the official helm release.
 
 ```shell
-# Setup if required
-gcloud auth login (assuming you've not authenticated)
-gcloud config set project <project_id>
+$ kore alpha local up
+✅ Performing preflight checks for installation
+   ◉ Checking for kubectl binary requirement
+✅ Passed preflight checks for kore installation
+   ◉ Single-sign on is disabled, using kore managed users
+   ◉ Local admin not set, generating admin user password
+✅ Persisting the values to local file: "/home/jest/.kore/values.yaml"
+✅ Performing preflight checks for local cluster provider
+   ◉ Kind binary requirement found in $PATH
+   ◉ Docker binary requirement found in $PATH
+✅ Passed preflight checks for cluster provider
+✅ Attempting to build the local kubernetes cluster
+   ◉ Checking if kind cluster: "kore" already exists
+   ◉ Using Kind image: "kindest/node:v1.16.9"
+   ◉ Provisioning a kind cluster: "kore" (usually takes 1-3mins)
+   ◉ Still building the kind cluster "kore": 20s
+   ◉ Still building the kind cluster "kore": 40s
+   ◉ Built local kind cluster in 61s
+   ◉ Exporting kubeconfig from kind cluster: "kore"
+✅ Exported the kubeconfig from provisioned cluster
+✅ Provisioned a local kubernetes cluster
+✅ Switched the kubectl context: "kind-kore"
+✅ Attempting to deploy the Kore release
+   ◉ Using the official Helm chart for deployment
+   ◉ Kore Helm chart has been installed at /home/jest/.kore/charts
+   ◉ Waiting for kubernetes controlplane to become available
+   ◉ Creating the kore namespace in cluster
+   ◉ Deploying the kore installation to cluster
+✅ Deployed the Kore release into the cluster
+✅ Waiting for deployment to rollout successfully (5m0s timeout)
+   ◉ Deployed Kore installation to cluster in 104s
+✅ Successfully deployed the kore release to cluster
 
-# Enable the APIs
-gcloud services enable cloudresourcemanager.googleapis.com
-gcloud services enable iam.googleapis.com
-gcloud services enable compute.googleapis.com
-gcloud services enable container.googleapis.com
+Access the Kore portal via http://localhost:3000 [ admin | VssJHJVQ ]
+Configure your CLI via $ kore login -a http://localhost:10080
 ```
 
-#### Create a Service Account
-
-(You can skip this step if you already have a Service Account setup)
-
-With the a GCP Project selected or created,
-
-- Head to the [IAM Console](https://console.cloud.google.com/iam-admin/serviceaccounts).
-- Click `Create service account`.
-- Fill in the form with details with your team's service account.
-
-#### Configure your Service Account permissions
-
-(You can skip this step if you're Service Account has the `Owner` role)
-
-- Assign the `Owner` role to your Service account.
-
-#### Create a key and download it (as JSON)
-
-(You can skip this step if you already have your Service Account key downloaded in JSON format)
-
-Kore will use this key to access the Service Account.
-
-This is the last step, create a key and download it in JSON format.
-
-### Configure Team Access
-
-Using Kore, team IAM (Identity and Access management) [is greatly simplified](security-gke.md#rbac).
-
-Kore uses an external identity provider, like Auth0 or an enterprise's existing SSO system, to directly manage team member access to the team's provisioned environment.
-
-For this guide, we'll be using Auth0 to configure team access.
-
-#### Configure Auth0
-
-[Auth0](https://auth0.com/), provides an enterprise SAAS identity provider.
-
-Sign up for an account from the [home page](https://auth0.com).
-
-From the dashboard side menu choose `Applications` and then `Create Application`
-
-Give the application a name and choose `Regular Web Applications`
-
-Once provisioned click on the `Settings` tab and scroll down to `Allowed Callback URLs`.
-These are the permitted redirects for the applications. Since we are running the application locally off the laptop set
-```
-http://localhost:10080/oauth/callback,https://localhost:10443/oauth/callback,http://localhost:3000/auth/callback
-```
-
-Please make a note of the [__*Domain, Client ID, and Client Secret*__].
-
-Scroll to the bottom of the settings and click the `Show Advanced Settings`
-
-Choose the `OAuth` tab from the advanced settings and ensure that the `JsonWebToken Signature Algorithm` is set to RS256 and `OIDC Conformant` is toggled on.
-
-#### Configuring test users
-
-Return to the Auth0 dashboard. From the side menu select 'Users & Roles' setting.
-
-- Create a user by selecting 'Users'.
-- Create a role by selecting 'Roles'.
-- Add the role to the user.
-
-### Start Kore Locally with CLI
-
-We'll be using our CLI, `kore`, to help us set up Kore locally.
-
-#### Install the kore CLI
-
-Find the latest kore release from https://github.com/appvia/kore/releases for your machine architecture and download it to a suitable location.
-
-For example:
-
-```shell script
-KORE_VERSION=v0.1.0
-curl -L https://github.com/appvia/kore/releases/download/${KORE_VERSION}/kore-cli-darwin-amd64 --output kore
-chmod +x kore
-
-# Confirm you have a working CLI:
-./kore version
-# kore version v0.1.0 (git+sha: aaaaaaa, built: 01-01-2020)
-```
-
-#### Configure Kore
-
-You'll need access to the following details created earlier:
-
-- Auth0 ClientID.
-- Auth0 Client Secret.
-- Auth0 domain.
-
-Make sure you fill in the OpenID endpoint as `https://[Auth0 domain]/`, including the trailing `/`.
-
-Once you have everything, run,
-
-```shell script
-./kore alpha local up
-# What are your Identity Broker details?
-# ✗ Client ID :
-# ...
-```
-
-This should provision a local kubernetes installation and deploy the official helm release. Note, the helm values are kept locally in values.yaml
+Note: you can now view the UI from http://localhost:3000 _(credentials will be rendered to screen)_, or use the CLI below.
 
 ### Login as Admin with CLI
 
@@ -171,10 +77,13 @@ You now have to login to be able to create teams and provision environments.
 This will use our Auth0 set up for IDP. As you're the only user, you'll be assigned Admin privileges.
 
 ```shell script
-./kore login -a http://localhost:10080 local
-# Attempting to authenticate to Kore: http://127.0.0.1:10080 [local]
-# Successfully authenticated
+✔ Please enter the Kore API (e.g https://api.example.com) : http://localhost:10080
+Please enter your username : admin
+Please confirm password for  : ********
+$ kore whoami
 ```
+
+Note you can also enable single-sign-on for the UI and all clusters; an example of how to configure an IDP provider can be found [here](docs/setup-auth0.md). To enable the feature on the local demo add `kore alpha local up --enable-sso` which will prompt for your OpenID settings _(you can do this as any point)_.
 
 ### Create a Team with CLI
 
@@ -183,14 +92,14 @@ Let's create a team with the CLI. In local mode, you'll be assigned as team memb
 As a team member, you'll be able to provision environments on behalf of team.
 
 ```shell script
-./kore create team --description 'The Appvia product team, working on project Q.' team-appvia
+$ kore create team --description 'The Appvia product team, working on project Q.' team-appvia
 # "team-appvia" team was successfully created
 ```
 
 To ensure the team was created,
 
 ```shell script
-./kore get teams team-appvia
+$ kore get teams team-appvia
 # Name            Description
 # team-appvia     The Appvia product team, working on project Q.
 ```
@@ -200,13 +109,13 @@ To ensure the team was created,
 We now need to give Kore the credentials it needs to build a cluster on our behalf. This command imports a set of credentials into kore
 and allows your new team to use them to make clusters.
 
-We'll then use these to create a cluster to host our sandbox environment. You'll need the following details which you set up earlier:
+We'll then use these to create a cluster to host our sandbox environment. You can follow [here](docs/setup-gcp.md] to see how to configure a token, but essentially we need the service account json which has owner in the project.
 
 - GKE Project ID.
 - Path to the service account key JSON file.
 
 ```shell script
-./kore create gkecredentials gke --description "GKE Credentials" -p <gcp-project-id> --cred-file <path-to-json-service-account> --allocate team-appvia
+$ kore create gkecredentials gke --description "GKE Credentials" -p <gcp-project-id> --cred-file <path-to-json-service-account> --allocate team-appvia
 # Storing credentials in Kore
 # Waiting for resource "gke" to provision (you can background with ctrl-c)
 # Successfully provisioned the resource: "gke"
@@ -220,7 +129,7 @@ We'll then use these to create a cluster to host our sandbox environment. You'll
 Its time to use the Kore CLI To provision our Sandbox environment,
 
 ```shell script
-./kore create cluster appvia-trial -t team-appvia --plan gke-development -a gke --namespaces sandbox
+$ kore create cluster appvia-trial -t team-appvia --plan gke-development -a gke --namespaces sandbox
 # Attempting to create cluster: "appvia-trial", plan: gke-development
 # Waiting for "appvia-trial" to provision (usually takes around 5 minutes, ctrl-c to background)
 # Cluster appvia-sdbox has been successfully provisioned
