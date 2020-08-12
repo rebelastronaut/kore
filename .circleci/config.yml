@@ -181,6 +181,8 @@ jobs:
             make run-api-test
 
   release:
+    environment:
+      FORCE_IMAGE_PUSH: "true"
     docker:
       - image: circleci/golang:1.14
     steps:
@@ -323,6 +325,7 @@ jobs:
 
   release-ui:
     environment:
+      FORCE_IMAGE_PUSH: "true"
       KORE_UI_IMAGE: quay.io/appvia/kore-ui
     docker:
       - image: docker:19.03-dind
