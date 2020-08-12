@@ -38,6 +38,7 @@ import (
 	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
 	"github.com/appvia/kore/pkg/utils"
 	ksutils "github.com/appvia/kore/pkg/utils/kubernetes"
+	"github.com/appvia/kore/pkg/version"
 
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
@@ -109,14 +110,14 @@ func NewCmdBootstrapUp(factory cmdutil.Factory) *cobra.Command {
 		Use:     "up",
 		Short:   "Brings up kore on a local kubernetes cluster",
 		Long:    usage,
-		Example: "kore alpha local up <name> [options]",
+		Example: "kore alpha local up [options]",
 		Run:     cmdutil.DefaultRunFunc(o),
 	}
 
 	flags := command.Flags()
 	flags.StringVar(&o.Provider, "provider", "kind", "local kubernetes provider to use `NAME`")
 	flags.StringVar(&o.Release, "release", "", "chart version to use for deployment `CHART`")
-	flags.StringVar(&o.Version, "version", "", "kore version to deployment into cluster `VERSION`")
+	flags.StringVar(&o.Version, "version", version.Release, "kore version to deployment into cluster `VERSION`")
 	flags.StringVar(&o.ValuesFile, "values", os.ExpandEnv(filepath.Join(utils.UserHomeDir(), ".kore", "values.yaml")), "path to the file container helm values `PATH`")
 	flags.StringVar(&o.BinaryPath, "binary-path", filepath.Join(config.GetClientPath(), "build"), "path to place any downloaded binaries if requested `PATH`")
 	flags.BoolVar(&o.EnableDeploy, "enable-deploy", true, "indicates if we should deploy the kore application `BOOL`")

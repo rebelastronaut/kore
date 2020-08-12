@@ -123,7 +123,7 @@ func koreChartYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kore/Chart.yaml", size: 112, mode: os.FileMode(416), modTime: time.Unix(1597222220, 0)}
+	info := bindataFileInfo{name: "kore/Chart.yaml", size: 112, mode: os.FileMode(436), modTime: time.Unix(1597228279, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -283,7 +283,7 @@ func koreTemplatesPortalYml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kore/templates/portal.yml", size: 5331, mode: os.FileMode(436), modTime: time.Unix(1597222086, 0)}
+	info := bindataFileInfo{name: "kore/templates/portal.yml", size: 5331, mode: os.FileMode(436), modTime: time.Unix(1597227734, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -303,7 +303,7 @@ func koreTemplatesSecretYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kore/templates/secret.yaml", size: 2574, mode: os.FileMode(436), modTime: time.Unix(1597222086, 0)}
+	info := bindataFileInfo{name: "kore/templates/secret.yaml", size: 2574, mode: os.FileMode(436), modTime: time.Unix(1597227734, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -323,7 +323,7 @@ func koreValuesYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kore/values.yaml", size: 1369, mode: os.FileMode(436), modTime: time.Unix(1597222204, 0)}
+	info := bindataFileInfo{name: "kore/values.yaml", size: 1369, mode: os.FileMode(436), modTime: time.Unix(1597228279, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
