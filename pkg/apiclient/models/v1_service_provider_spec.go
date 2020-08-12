@@ -25,6 +25,10 @@ type V1ServiceProviderSpec struct {
 	// configuration from
 	ConfigurationFrom []*V1ConfigurationFromSource `json:"configurationFrom"`
 
+	// configuration schema
+	// Required: true
+	ConfigurationSchema *string `json:"configurationSchema"`
+
 	// description
 	Description string `json:"description,omitempty"`
 
@@ -42,6 +46,10 @@ func (m *V1ServiceProviderSpec) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConfigurationFrom(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateConfigurationSchema(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -79,6 +87,15 @@ func (m *V1ServiceProviderSpec) validateConfigurationFrom(formats strfmt.Registr
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (m *V1ServiceProviderSpec) validateConfigurationSchema(formats strfmt.Registry) error {
+
+	if err := validate.Required("configurationSchema", "body", m.ConfigurationSchema); err != nil {
+		return err
 	}
 
 	return nil

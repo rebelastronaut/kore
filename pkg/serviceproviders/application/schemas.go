@@ -16,15 +16,6 @@
 
 package application
 
-const ProviderSchema = `
-{
-	"$id": "https://appvia.io/kore/schemas/serviceprovider/application.json",
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"description": "Kubernetes Application provider",
-	"type": "object",
-	"additionalProperties": false
-}`
-
 const AppSchema = `
 {
     "$id": "https://appvia.io/kore/schemas/services/application/app.json",

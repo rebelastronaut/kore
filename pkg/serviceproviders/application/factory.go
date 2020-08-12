@@ -44,8 +44,11 @@ func (d Factory) Type() string {
 	return Type
 }
 
-func (d Factory) JSONSchema() string {
-	return ProviderSchema
+// JSONSchemas returns all JSON schema versions for the provider's configuration
+func (d Factory) JSONSchemas() map[string]string {
+	return map[string]string{
+		"https://appvia.io/kore/schemas/serviceprovider/application/v1.json": providerSchemaV1,
+	}
 }
 
 func (d Factory) Create(ctx kore.Context, provider *servicesv1.ServiceProvider) (kore.ServiceProvider, error) {
@@ -96,10 +99,11 @@ func (d Factory) DefaultProviders() []servicesv1.ServiceProvider {
 				},
 			},
 			Spec: servicesv1.ServiceProviderSpec{
-				Type:          Type,
-				Summary:       "Kubernetes Application provider",
-				Description:   "The service provider will deploy one or more Kubernetes resources and an Application type for monitoring purposes",
-				Configuration: nil,
+				Type:                Type,
+				Summary:             "Kubernetes Application provider",
+				Description:         "The service provider will deploy one or more Kubernetes resources and an Application type for monitoring purposes",
+				Configuration:       nil,
+				ConfigurationSchema: "https://appvia.io/kore/schemas/serviceprovider/application/v1.json",
 			},
 		},
 	}

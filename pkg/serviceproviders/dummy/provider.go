@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package serviceproviders
+package dummy
 
 import (
 	"strings"
@@ -26,85 +26,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
-
-func init() {
-	kore.RegisterServiceProviderFactory(DummyFactory{})
-}
-
-const dummySchema = `{
-	"$id": "https://appvia.io/kore/schemas/services/dummy/dummy.json",
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"description": "Dummy service plan schema",
-	"type": "object",
-	"additionalProperties": false,
-	"required": [
-		"foo"
-	],
-	"properties": {
-		"foo": {
-			"type": "string",
-			"minLength": 1
-		}
-	}
-}`
-
-const dummyCredentialSchema = `{
-	"$id": "https://appvia.io/kore/schemas/services/dummy/dummy-credentials.json",
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"description": "Dummy service plan credentials schema",
-	"type": "object",
-	"additionalProperties": false,
-	"required": [
-		"bar"
-	],
-	"properties": {
-		"bar": {
-			"type": "string",
-			"minLength": 1
-		}
-	}
-}`
-
-type DummyFactory struct{}
-
-func (d DummyFactory) Type() string {
-	return "dummy"
-}
-
-func (d DummyFactory) JSONSchema() string {
-	return `{
-		"$id": "https://appvia.io/kore/schemas/serviceprovider/dummy.json",
-		"$schema": "http://json-schema.org/draft-07/schema#",
-		"description": "Dummy service plan schema",
-		"type": "object",
-		"additionalProperties": false,
-		"required": [
-			"iAmDummy"
-		],
-		"properties": {
-			"iAmDummy": {
-				"type": "string",
-				"minLength": 1
-			}
-		}
-	}`
-}
-
-func (d DummyFactory) Create(ctx kore.Context, serviceProvider *servicesv1.ServiceProvider) (kore.ServiceProvider, error) {
-	return Dummy{name: serviceProvider.Name}, nil
-}
-
-func (d DummyFactory) SetUp(_ kore.Context, _ *servicesv1.ServiceProvider) (complete bool, _ error) {
-	return true, nil
-}
-
-func (d DummyFactory) TearDown(_ kore.Context, _ *servicesv1.ServiceProvider) (complete bool, _ error) {
-	return true, nil
-}
-
-func (d DummyFactory) DefaultProviders() []servicesv1.ServiceProvider {
-	return nil
-}
 
 var _ kore.ServiceProvider = Dummy{}
 
@@ -144,8 +65,8 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
 				ServiceAccessEnabled: true,
-				Schema:               dummySchema,
-				CredentialSchema:     dummyCredentialSchema,
+				Schema:               planSchema,
+				CredentialSchema:     credentialSchema,
 			},
 		})
 
@@ -186,7 +107,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
 				ServiceAccessEnabled: true,
-				Schema:               dummySchema,
+				Schema:               planSchema,
 			},
 		})
 
@@ -207,7 +128,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
 				ServiceAccessEnabled: false,
-				Schema:               dummySchema,
+				Schema:               planSchema,
 			},
 		})
 	}

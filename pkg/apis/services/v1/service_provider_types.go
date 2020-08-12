@@ -48,6 +48,10 @@ type ServiceProviderSpec struct {
 	// +kubebuilder:validation:Type=object
 	// +kubebuilder:validation:Optional
 	Configuration *apiextv1.JSON `json:"configuration,omitempty"`
+	// ConfigurationSchema is the $id of the configuration's JSON schema
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:Required
+	ConfigurationSchema string `json:"configurationSchema"`
 	// ConfigurationFrom is a way to load configuration values from alternative sources, e.g. from secrets
 	// The values from these sources will override any existing keys defined in Configuration
 	// +kubebuilder:validation:Optional

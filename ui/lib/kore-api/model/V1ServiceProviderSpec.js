@@ -23,12 +23,13 @@ class V1ServiceProviderSpec {
     /**
      * Constructs a new <code>V1ServiceProviderSpec</code>.
      * @alias module:model/V1ServiceProviderSpec
+     * @param configurationSchema {String} 
      * @param summary {String} 
      * @param type {String} 
      */
-    constructor(summary, type) { 
+    constructor(configurationSchema, summary, type) { 
         
-        V1ServiceProviderSpec.initialize(this, summary, type);
+        V1ServiceProviderSpec.initialize(this, configurationSchema, summary, type);
     }
 
     /**
@@ -36,7 +37,8 @@ class V1ServiceProviderSpec {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, summary, type) { 
+    static initialize(obj, configurationSchema, summary, type) { 
+        obj['configurationSchema'] = configurationSchema;
         obj['summary'] = summary;
         obj['type'] = type;
     }
@@ -57,6 +59,9 @@ class V1ServiceProviderSpec {
             }
             if (data.hasOwnProperty('configurationFrom')) {
                 obj['configurationFrom'] = ApiClient.convertToType(data['configurationFrom'], [V1ConfigurationFromSource]);
+            }
+            if (data.hasOwnProperty('configurationSchema')) {
+                obj['configurationSchema'] = ApiClient.convertToType(data['configurationSchema'], 'String');
             }
             if (data.hasOwnProperty('description')) {
                 obj['description'] = ApiClient.convertToType(data['description'], 'String');
@@ -96,6 +101,19 @@ class V1ServiceProviderSpec {
      */
     setConfigurationFrom(configurationFrom) {
         this['configurationFrom'] = configurationFrom;
+    }
+/**
+     * @return {String}
+     */
+    getConfigurationSchema() {
+        return this.configurationSchema;
+    }
+
+    /**
+     * @param {String} configurationSchema
+     */
+    setConfigurationSchema(configurationSchema) {
+        this['configurationSchema'] = configurationSchema;
     }
 /**
      * @return {String}
@@ -148,6 +166,11 @@ V1ServiceProviderSpec.prototype['configuration'] = undefined;
  * @member {Array.<module:model/V1ConfigurationFromSource>} configurationFrom
  */
 V1ServiceProviderSpec.prototype['configurationFrom'] = undefined;
+
+/**
+ * @member {String} configurationSchema
+ */
+V1ServiceProviderSpec.prototype['configurationSchema'] = undefined;
 
 /**
  * @member {String} description
