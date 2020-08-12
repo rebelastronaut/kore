@@ -711,6 +711,139 @@
         }
       }
     },
+    "/api/v1alpha1/costs/summary/{from}/{to}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "costs"
+        ],
+        "summary": "Returns a summary of all costs known to kore for the specified time period",
+        "operationId": "GetCostSummary",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Start of time range to return summary for",
+            "name": "from",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "End of time range to return summary for",
+            "name": "to",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Restrict to costs for specified cloud provider (e.g. gcp, aws, azure)",
+            "name": "provider",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Invoice to return costs for, in the formay YYYYMM",
+            "name": "invoice",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A summary of costs known to the system",
+            "schema": {
+              "$ref": "#/definitions/v1beta1.OverallCostSummary"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1alpha1/costs/teamsummary/{teamIdentifier}/{from}/{to}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "costs"
+        ],
+        "summary": "Returns a summary of all costs known to kore for the specified time period",
+        "operationId": "GetTeamCostSummary",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Team identifier to retrieve costs for",
+            "name": "teamIdentifier",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Start of time range to return summary for",
+            "name": "from",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "End of time range to return summary for",
+            "name": "to",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Restrict to costs for specified cloud provider (e.g. gcp, aws, azure)",
+            "name": "provider",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Invoice to return costs for, in the formay YYYYMM",
+            "name": "invoice",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A summary of costs known to the system for the team",
+            "schema": {
+              "$ref": "#/definitions/v1beta1.TeamCostSummary"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
     "/api/v1alpha1/identities": {
       "get": {
         "consumes": [
@@ -10390,11 +10523,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
-        "clientScopes",
-        "userClaims",
         "clientID",
         "clientSecret",
-        "issuer"
+        "issuer",
+        "clientScopes",
+        "userClaims"
       ],
       "properties": {
         "clientID": {
