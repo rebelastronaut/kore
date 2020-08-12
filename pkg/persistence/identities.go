@@ -82,7 +82,7 @@ func (i *idImpl) Get(ctx context.Context, opts ...ListFunc) (*model.Identity, er
 	}
 }
 
-// List returns a filtered list of user identites
+// List returns a filtered list of user identities
 func (i *idImpl) List(ctx context.Context, opts ...ListFunc) ([]*model.Identity, error) {
 	timed := prometheus.NewTimer(listLatency)
 	defer timed.ObserveDuration()
@@ -90,12 +90,16 @@ func (i *idImpl) List(ctx context.Context, opts ...ListFunc) ([]*model.Identity,
 	terms := ApplyListOptions(opts...)
 
 	q := Preload(i.load, i.conn).
+		Preload("User").
 		Select("i.*").
 		Table("identities i").
 		Joins("JOIN users u ON u.id = i.user_id")
 
 	if terms.HasUser() {
 		q = q.Where("u.username = ?", terms.GetUser())
+	}
+	if terms.HasProviders() {
+		q = q.Where("i.provider IN ?", terms.GetProviders())
 	}
 	if terms.HasProvider() {
 		q = q.Where("i.provider = ?", terms.GetProvider())

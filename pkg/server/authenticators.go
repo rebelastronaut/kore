@@ -24,7 +24,6 @@ import (
 	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/plugins/authentication/admintoken"
 	"github.com/appvia/kore/pkg/plugins/authentication/basicauth"
-	"github.com/appvia/kore/pkg/plugins/authentication/headers"
 	"github.com/appvia/kore/pkg/plugins/authentication/localjwt"
 	"github.com/appvia/kore/pkg/plugins/authentication/openid"
 
@@ -55,8 +54,6 @@ func makeAuthenticators(hubcc kore.Interface, config Config) error {
 				})
 			case "basicauth":
 				return basicauth.New(hubcc)
-			case "identity":
-				return headers.New(hubcc)
 			case "openid":
 				return openid.New(hubcc, openid.Config{
 					ClientID:   config.Kore.IDPClientID,
@@ -65,8 +62,12 @@ func makeAuthenticators(hubcc kore.Interface, config Config) error {
 				})
 			case "localjwt":
 				return localjwt.New(hubcc, localjwt.Config{
-					PublicKey:  config.Kore.LocalJWTPublicKey,
-					UserClaims: config.Kore.IDPUserClaims,
+					PublicKey: config.Kore.LocalJWTPublicKey,
+				})
+			case "jwt":
+				return localjwt.New(hubcc, localjwt.Config{
+					Audience:      "kore",
+					PublicKeyPath: config.Kore.CertificateAuthority,
 				})
 			default:
 				return nil, errors.New("unknown plugin")

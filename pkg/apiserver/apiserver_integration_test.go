@@ -277,7 +277,7 @@ func getJWT(user *testUser) string {
 	expirationTime := time.Now().Add(5 * time.Minute)
 	claims := struct {
 		Email    string `json:"email"`
-		Username string `json:"username"`
+		Username string `json:"preferred_username"`
 		jwt.StandardClaims
 	}{
 		user.Email,

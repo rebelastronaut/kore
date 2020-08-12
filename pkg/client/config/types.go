@@ -29,6 +29,14 @@ var (
 	DefaultKoreConfigPathEnv = "KORE_CONFIG"
 )
 
+// AuthorizedTokensConfig is used to store minted tokens for a profile
+type AuthorizedTokensConfig struct {
+	// Version is the version of the configuration
+	Version string `json:"version,omitempty" yaml:"version,omitempty"`
+	// AuthInfos are token used for authentication
+	AuthInfos map[string]*AuthInfo `json:"authinfos,omitempty" yaml:"authinfos"`
+}
+
 // Config is the configuration for the api
 type Config struct {
 	// AuthInfos is a collection of credentials
@@ -51,8 +59,18 @@ type AuthInfo struct {
 	BasicAuth *BasicAuth `json:"basic-auth,omitempty" yaml:"basic-auth,omitempty"`
 	// Token is a static token to use
 	Token *string `json:"token,omitempty" yaml:"token,omitempty"`
+	// KoreIdentity is a kore manage identity
+	KoreIdentity *KoreIdentity `json:"kore_identity,omitempty" yaml:"kore_identity,omitempty"`
 	// OIDC is credentials from an oauth2 provider
 	OIDC *OIDC `json:"oidc,omitempty" yaml:"oidc,omitempty"`
+}
+
+// KoreIdentity is a kore manage identity
+type KoreIdentity struct {
+	// RefreshToken represents a kore managed refresh token issued by the kore
+	RefreshToken string `json:"refresh-token,omitempty" yaml:"refresh-token,omitempty"`
+	// Token represents a kore managed token issued by the kore service
+	Token string `json:"token,omitempty" yaml:"token,omitempty"`
 }
 
 // BasicAuth defines a basic user credential

@@ -21,6 +21,7 @@ ENABLE_EKS_E2E=${ENABLE_EKS_E2E:-"false"}
 ENABLE_GKE_E2E=${ENABLE_GKE_E2E:-"false"}
 ENABLE_AKS_E2E=${ENABLE_AKS_E2E:-"false"}
 CLUSTER="${CLUSTER="ci-${CIRCLE_BUILD_NUM:-$USER}"}"
+export LOCAL_USER_PASS=`tr -dc _A-Z-a-z-0-9 < /dev/urandom| head -c8`
 
 usage() {
   cat <<EOF
@@ -44,13 +45,13 @@ announce "running the integration suite"
 run-generic-checks() {
   announce "running generic unit tests"
   local units=(
-      setup.bats
-      profiles.bats
-      users.bats
-      whoami.bats
-      teams.bats
-      plans.bats
-      secrets.bats
+    setup.bats
+    profiles.bats
+    users.bats
+    whoami.bats
+    teams.bats
+    plans.bats
+    secrets.bats
   )
   for unit in ${units[@]}; do
     bats ${BATS_OPTIONS} ${unit} || exit 1
@@ -61,11 +62,13 @@ run-generic-checks() {
 run-cluster-checks() {
   local name=${1}
   announce "running cluster checks on cluster: ${name}"
+
   local units=(
     clusterroles.bats
     clusterconfig.bats
     namespaces.bats
     auth-proxy.bats
+    local-users.bats
     safeguards.bats
   )
   for unit in ${units[@]}; do

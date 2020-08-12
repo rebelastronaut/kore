@@ -70,10 +70,14 @@ type RestInterface interface {
 	Payload(interface{}) RestInterface
 	// Result set the object which we should decode into
 	Result(interface{}) RestInterface
+	// SubResource adds a subresource to the operation
+	SubResource(string) RestInterface
 	// Team set the team
 	Team(string) RestInterface
 	// Update performs an put request
 	Update() RestInterface
+	// Post performs a post request
+	Post() RestInterface
 }
 
 // ParameterFunc defines a method for a parameter type

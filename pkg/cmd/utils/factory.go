@@ -23,6 +23,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/appvia/kore/pkg/apiserver/types"
 	"github.com/appvia/kore/pkg/client"
 	"github.com/appvia/kore/pkg/client/config"
 	"github.com/appvia/kore/pkg/cmd/errors"
@@ -81,6 +82,45 @@ func (f *factory) refreshToken() {
 			}
 		}
 	}
+	if auth.KoreIdentity != nil {
+		if auth.KoreIdentity.Token != "" {
+			// @step: has the access token expired
+			token, err := utils.NewClaimsFromRawToken(auth.KoreIdentity.Token)
+			if err != nil {
+				log.WithError(err).Warn("error decoding token")
+				return
+			}
+			if !token.HasExpired() {
+				return
+			}
+			expiry, _ := token.GetExpiry()
+			log.WithField("expiredAt", expiry).Debug("attempting to refresh kore token")
+
+			issued := &types.IssuedToken{}
+			// Don't use ClientWithEndpoint here else it will recursively call back into this
+			// function ;)
+			err = f.client.Request().Endpoint("/login/token").
+				Payload(&types.IssuedToken{RefreshToken: auth.KoreIdentity.RefreshToken}).
+				Result(issued).
+				Post().
+				Error()
+			if err != nil {
+				log.WithError(err).Debug("error refreshing id-token")
+				log.Warn("Failed to refresh your access token, please run kore login")
+
+				return
+			}
+			auth.KoreIdentity.Token = issued.Token
+			err = f.UpdateConfig()
+			if err != nil {
+				log.WithError(err).Debug("error storing refreshed ID token in profile")
+				log.Warn("Failed to store your refreshed access token in your profile, please try again")
+
+				return
+			}
+			log.Debug("kore token refreshed successfully")
+		}
+	}
 }
 
 // Client returns the underlying client
@@ -114,9 +154,10 @@ func (f *factory) CheckError(kerror error) {
 			return errors.ErrAuthentication
 		case client.IsMethodNotAllowed(kerror):
 			return errors.ErrOperationNotPermitted
+		case client.IsNotImplemented(kerror):
+			return errors.ErrOperationNotSupported
 		case errors.IsError(kerror, &errors.ErrProfileInvalid{}):
-			return fmt.Errorf("invalid profile (%s), to fix run\n$ kore profiles configure %s --force",
-				kerror.Error(), kerror.(*errors.ErrProfileInvalid).Profile())
+			return fmt.Errorf("invalid: %s", kerror.Error())
 		}
 
 		return kerror
@@ -126,6 +167,13 @@ func (f *factory) CheckError(kerror error) {
 
 		os.Exit(1)
 	}
+}
+
+// Whoami returns the details of who they logged in with
+func (f *factory) Whoami() (*types.WhoAmI, error) {
+	who := &types.WhoAmI{}
+
+	return who, f.ClientWithEndpoint("/whoami").Result(who).Get().Error()
 }
 
 // UpdateConfig is responsible for updating the configuration

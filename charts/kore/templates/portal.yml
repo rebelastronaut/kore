@@ -55,6 +55,8 @@ spec:
           hostPort: {{ .Values.ui.hostPort }}
           {{- end }}
         env:
+        - name: AUTH_PLUGINS
+          value: {{ .Values.api.auth_plugins | join "," }}
         {{- if .Values.ui.build }}
         - name: BUILD_ID
           value: {{ .Values.ui.build }}

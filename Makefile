@@ -1,7 +1,7 @@
 SHELL = /bin/sh -e
 NAME=kore-apiserver
 AUTHOR ?= appvia
-AUTHOR_EMAIL=gambol99@gmail.com
+AUTHOR_EMAIL=kore@appvia.io
 BUILD_TIME=$(shell date '+%s')
 CURRENT_TAG=$(shell git tag --points-at HEAD)
 DEPS=$(shell go list -f '{{range .TestImports}}{{.}} {{end}}' ./...)
@@ -93,7 +93,7 @@ auth-proxy-image-release: auth-proxy-image
 kore-apiserver: golang
 	@echo "--> Compiling the kore-apiserver binary"
 	@mkdir -p bin
-	CGO_ENABLED=0 go build -ldflags "${LFLAGS}" -o bin/kore-apiserver cmd/kore-apiserver/*.go
+	CGO_ENABLED=0 go build -ldflags "${LFLAGS}" -tags=jsoniter -o bin/kore-apiserver cmd/kore-apiserver/*.go
 
 kore-apiserver-image: golang
 	@echo "--> Compiling the kore-apiserver image"
@@ -434,21 +434,21 @@ deepcopy-gen:
 schema-gen:
 	@echo "--> Generating the CRD definitions"
 	@go run github.com/go-bindata/go-bindata/go-bindata \
-		-nocompress \
-		-pkg register \
-	    -nometadata \
-		-o pkg/register/assets.go \
-		-prefix deploy deploy/crds
+    -nocompress \
+    -pkg register \
+    -nometadata \
+    -o pkg/register/assets.go \
+    -prefix deploy deploy/crds
 	@gofmt -s -w pkg/register/assets.go
 
-openapi-gen:
-	@echo "--> Generating OpenAPI files"
-	@echo "--> packages $(APIS)"
-	@$(foreach api,$(APIS), \
-		go run k8s.io/kube-openapi/cmd/openapi-gen -h hack/boilerplate.go.txt \
-			--output-file-base zz_generated_openapi \
-			-i github.com/appvia/kore/pkg/apis/$(api) \
-			-p github.com/appvia/kore/pkg/apis/$(api); )
+db-migrations-gen:
+	@echo "--> Generating the Database Migrations"
+	@go run github.com/go-bindata/go-bindata/go-bindata \
+		-pkg migrations \
+    -nometadata \
+    -o pkg/persistence/migrations/zz_migrations.go \
+    -prefix "pkg/persistence/migrations/files" pkg/persistence/migrations/files/...
+	@gofmt -s -w pkg/persistence/migrations/zz_migrations.go
 
 register-gen:
 	@echo "--> Generating Schema register.go"

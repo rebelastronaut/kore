@@ -85,7 +85,6 @@ func (u userImpl) Exists(ctx context.Context, name string) (bool, error) {
 
 // Get returns a user from the store
 func (u userImpl) Get(ctx context.Context, name string) (*model.User, error) {
-
 	timed := prometheus.NewTimer(getLatency)
 	defer timed.ObserveDuration()
 

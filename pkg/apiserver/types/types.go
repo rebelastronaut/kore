@@ -16,8 +16,29 @@
 
 package types
 
+// IssuedToken is a minted token from kore
+type IssuedToken struct {
+	// RefreshToken is a token to retrieve new tokens, populated only on
+	// initial login
+	RefreshToken string `json:"refreshToken,omitempty"`
+	// Token is the actual token for accessing the API
+	Token string `json:"token,omitempty"`
+	// Expires is the time token will expire
+	Expires int64 `json:"expires,omitempty"`
+}
+
+// LocalUser represents a local user for login purposes
+type LocalUser struct {
+	// Username is the user's username
+	Username string `json:"username,omitempty"`
+	// Password used to identify the local user
+	Password string `json:"password,omitempty"`
+}
+
 // WhoAmI provides a description to who you are
 type WhoAmI struct {
+	// AuthMethod is the authentication method being used
+	AuthMethod string `json:"authMethod,omitempty"`
 	// Email is the user email
 	Email string `json:"email,omitempty"`
 	// Username is your username
@@ -26,6 +47,7 @@ type WhoAmI struct {
 	Teams []string `json:"teams,omitempty"`
 }
 
+// TeamInvitationResponse returns the team
 type TeamInvitationResponse struct {
 	// Team is the name of team which the user just has been been added to
 	Team string `json:"team"`

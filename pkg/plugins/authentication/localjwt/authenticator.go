@@ -20,8 +20,8 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/base64"
-	"errors"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/appvia/kore/pkg/apiserver/plugins/identity"
 	"github.com/appvia/kore/pkg/kore"
@@ -32,9 +32,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// UserClaim is the jwt claims used to hold the subject
+	UserClaim = "preferred_username"
+)
+
 type authImpl struct {
 	kore.Interface
-	// config is the configuration
+	// key is the public key used to verify
+	key interface{}
+	// config is the service config
 	config Config
 }
 
@@ -46,67 +53,92 @@ func New(h kore.Interface, config Config) (identity.Plugin, error) {
 	}
 	log.Info("initializing the jwt authentication plugin")
 
-	return &authImpl{Interface: h, config: config}, nil
+	var key interface{}
+
+	if config.PublicKey != "" {
+		pubkey, err := base64.StdEncoding.DecodeString(config.PublicKey)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to parse public key from config: %v", err)
+		}
+
+		key, err = x509.ParsePKIXPublicKey([]byte(pubkey))
+		if err != nil {
+			return nil, err
+		}
+	}
+	if config.PublicKeyPath != "" {
+		content, err := ioutil.ReadFile(config.PublicKeyPath)
+		if err != nil {
+			return nil, err
+		}
+		key, err = jwt.ParseRSAPublicKeyFromPEM(content)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &authImpl{Interface: h, config: config, key: key}, nil
 }
 
 // Admit is called to authenticate the inbound request
 func (o *authImpl) Admit(ctx context.Context, req identity.Requestor) (authentication.Identity, bool) {
-
 	// @step: verify the authorization token
 	bearer, found := utils.GetBearerToken(req.Headers().Get("Authorization"))
 	if !found {
 		return nil, false
 	}
 
-	id, err := func() (authentication.Identity, error) {
-		// @step: validate the token
-		claims := struct {
-			Email    string `json:"email"`
-			Username string `json:"username"`
-			jwt.StandardClaims
-		}{}
-		_, err := jwt.ParseWithClaims(bearer, &claims, func(token *jwt.Token) (interface{}, error) {
-			// Don't forget to validate the alg is what you expect:
-			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
-			pubKeyBytes, err := base64.StdEncoding.DecodeString(o.config.PublicKey)
-			if err != nil {
-				return nil, fmt.Errorf("Unable to parse public key from config: %v", err)
-			}
-			pubKey, err := x509.ParsePKIXPublicKey(pubKeyBytes)
-			if err != nil {
-				return nil, fmt.Errorf("Unable to parse public key from config: %v", err)
-			}
-			return pubKey, nil
-		})
-		if err != nil {
-			return nil, err
-		}
+	c := make(jwt.MapClaims)
 
-		username := claims.Username
-		if username == "" {
-			return nil, errors.New("issued token does not contain the username claim")
-		}
-
-		id, found, err := o.GetUserIdentity(ctx, username)
-		if err != nil {
-			return nil, err
-		}
-		if !found {
-			return nil, errors.New("user not found in the kore")
-		}
-
-		return id, nil
-	}()
+	// @step: parse and extract the identity
+	token, err := jwt.ParseWithClaims(bearer, &c, func(token *jwt.Token) (interface{}, error) {
+		return o.key, nil
+	})
 	if err != nil {
 		return nil, false
 	}
+	if !token.Valid {
+		return nil, false
+	}
 
-	return id, true
+	claims := utils.NewClaims(c)
+
+	// @step: check the audience if required
+	if o.config.HasAudience() {
+		aud, found := claims.GetAudience()
+		if !found {
+			log.Warn("no audience in the presented token")
+
+			return nil, false
+		}
+		if aud != o.config.Audience {
+			log.Warn("invalid audience presented in the token")
+
+			return nil, false
+		}
+	}
+
+	// @note: i think it's fine to hardcode the claim here as where issuing the token anyhow
+	username, found := claims.GetUserClaim(UserClaim)
+	if !found {
+		return nil, false
+	}
+
+	identity, found, err := o.GetUserIdentity(ctx, username, kore.WithAuthMethod("jwt"))
+	if err != nil {
+		log.WithError(err).Error("trying to retrieve user identity")
+
+		return nil, false
+	}
+	if !found {
+		return nil, false
+	}
+
+	log.WithField("user", username).Debug("user passed JWT authentication")
+	return identity, true
 }
 
 // Name returns the plugin name
 func (o *authImpl) Name() string {
-	return "jwt"
+	return "localjwt"
 }

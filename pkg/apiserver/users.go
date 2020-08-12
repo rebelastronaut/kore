@@ -79,6 +79,7 @@ func (u *usersHandler) Register(i kore.Interface, builder utils.PathBuilder) (*r
 			Doc("Used to create or update a user in the kore").
 			Operation("UpdateUser").
 			Param(ws.PathParameter("user", "The name of the user you are updating or creating in the kore")).
+			Param(ws.QueryParameter("identity", "Indicates we should create the identity for the user")).
 			Reads(orgv1.User{}, "The specification for a user in the kore").
 			Returns(http.StatusOK, "Contains the user definition from the kore", orgv1.User{}).
 			Returns(http.StatusNotFound, "User does not exist", nil),
@@ -152,7 +153,9 @@ func (u usersHandler) updateUser(req *restful.Request, resp *restful.Response) {
 			return err
 		}
 
-		user, err := u.Users().Update(req.Request.Context(), user)
+		user, err := u.Users().Update(req.Request.Context(), user, kore.UpdateUserOptions{
+			ProvisionIdentity: req.QueryParameter("identity"),
+		})
 		if err != nil {
 			return err
 		}

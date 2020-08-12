@@ -22,6 +22,8 @@ import copy from '../lib/utils/object-copy'
 import OrgService from '../server/services/org'
 import userExpired from '../server/lib/user-expired'
 import gtag from '../lib/utils/gtag'
+import { retryWithTokenRefresh } from '../server/lib/auth-helpers'
+import AuthService from '../server/services/auth'
 
 Router.events.on('routeChangeComplete', url => {
   gtag.pageView(url)
@@ -46,7 +48,16 @@ class MyApp extends App {
         try {
           await orgService.refreshUser(user)
           return user
-        } catch (err) {
+        } catch (firstError) {
+          let err = firstError
+          try {
+            await retryWithTokenRefresh(err, req, new AuthService(KoreApi), async function () { 
+              return await orgService.refreshUser(user) 
+            })
+            return user
+          } catch (innerErr) {
+            err = innerErr
+          }
           console.log('Failed to refresh user in _app.js', err)
           return false
         }

@@ -36,6 +36,8 @@ import (
 type hubImpl struct {
 	// caAuthority is the certificate authority for kore
 	caAuthority []byte
+	// caKey is the certificate authority key
+	caKey []byte
 	// config is the configuration of the kore
 	config *Config
 	// store is the access layer / kubernetes api
@@ -70,6 +72,8 @@ type hubImpl struct {
 	serviceProviders ServiceProviders
 	// security provides the ability to scan kore objects for security compliance
 	security Security
+	// tokens is the tokens interface
+	tokens Tokens
 	// configs provides the ability to store key value pairs
 	configs Configs
 	// costs is the costs implementation
@@ -93,8 +97,12 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 		config.HMAC = utils.Random(32)
 	}
 
-	// @step: read the ca
+	// @step: read the public and private keys
 	authority, err := ioutil.ReadFile(config.CertificateAuthority)
+	if err != nil {
+		return nil, err
+	}
+	key, err := ioutil.ReadFile(config.CertificateAuthorityKey)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +120,7 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 
 	h := &hubImpl{
 		caAuthority: authority,
+		caKey:       key,
 		config:      &config,
 		store:       sc,
 		signer:      signer,
@@ -133,6 +142,7 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 		scanner:         security.New(),
 		securityPersist: persistenceMgr.Security(),
 	}
+	h.tokens = &tokenImpl{ConfigIface: h, CertificateIface: h}
 	h.configs = &configImpl{hubImpl: h}
 	h.costs = costs.New(&config.Costs)
 	h.features = &koreFeaturesImpl{store: h.store}
@@ -148,6 +158,11 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 // CertificateAuthority returns the ca pem authority
 func (h *hubImpl) CertificateAuthority() []byte {
 	return h.caAuthority
+}
+
+// CertificateAuthority returns the ca pem authority key
+func (h *hubImpl) CertificateAuthorityKey() []byte {
+	return h.caKey
 }
 
 // SignedClientCertificate is used to generate a client certificate
@@ -224,6 +239,11 @@ func (h hubImpl) Invitations() Invitations {
 // Teams returns the team implementation
 func (h hubImpl) Teams() Teams {
 	return h.teams
+}
+
+// Tokens returns the token implementation
+func (h hubImpl) Tokens() Tokens {
+	return h.tokens
 }
 
 // Auth returns the authentication interface

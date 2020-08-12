@@ -33,7 +33,7 @@ import (
 
 	"github.com/appvia/kore/pkg/apiserver"
 	"github.com/appvia/kore/pkg/client/config"
-	cerrors "github.com/appvia/kore/pkg/cmd/errors"
+	cmderr "github.com/appvia/kore/pkg/cmd/errors"
 	"github.com/appvia/kore/pkg/utils/validation"
 	"github.com/appvia/kore/pkg/version"
 
@@ -126,17 +126,17 @@ func (a *apiClient) HandleRequest(method string) RestInterface {
 		// @step: check we have the endpoint
 		profile, found := a.cfg.Profiles[a.Profile()]
 		if !found {
-			return cerrors.ErrMissingProfile
+			return cmderr.ErrMissingProfile
 		}
 		server, found := a.cfg.Servers[profile.Server]
 		if !found {
-			return cerrors.NewProfileInvalidError("missing profile server", a.Profile())
+			return cmderr.NewProfileInvalidError("missing profile server", a.Profile())
 		}
 		endpoint := server.Endpoint
 		caCertificate := server.CACertificate
 
 		if endpoint == "" {
-			return cerrors.NewProfileInvalidError("missing endpoint", a.Profile())
+			return cmderr.NewProfileInvalidError("missing endpoint", a.Profile())
 		}
 
 		// @step: we generate the uri from the parameter
@@ -189,7 +189,7 @@ func (a *apiClient) MakeDefaultURL() (string, error) {
 	if value, found := a.HasParameter("team"); found && value != "" {
 		paths = append(paths, []string{"teams", value}...)
 	}
-	for _, x := range []string{"resource", "name"} {
+	for _, x := range []string{"resource", "name", "subresource"} {
 		if value, found := a.HasParameter(x); found {
 			paths = append(paths, value)
 		}
@@ -264,13 +264,15 @@ func (a *apiClient) MakeRequest(method, url, caCertificate string) (*http.Respon
 	auth := a.cfg.AuthInfos[a.Profile()]
 	switch {
 	case auth == nil:
-		return nil, cerrors.NewProfileInvalidError("missing authenication profile", a.Profile())
+		return nil, cmderr.NewProfileInvalidError("missing authentication profile", a.Profile())
 	case auth.OIDC != nil:
 		request.Header.Set("Authorization", "Bearer "+auth.OIDC.IDToken)
 	case auth.Token != nil:
-		request.Header.Set("Authorization:", "Bearer "+*auth.Token)
+		request.Header.Set("Authorization", "Bearer "+*auth.Token)
 	case auth.BasicAuth != nil:
 		request.SetBasicAuth(auth.BasicAuth.Username, auth.BasicAuth.Password)
+	case auth.KoreIdentity != nil:
+		request.Header.Set("Authorization", "Bearer "+auth.KoreIdentity.Token)
 	}
 
 	hc := a.createHTTPClient(caCertificate)
@@ -423,6 +425,11 @@ func (a *apiClient) Update() RestInterface {
 	return a.HandleRequest(http.MethodPut)
 }
 
+// Post performs a post request
+func (a *apiClient) Post() RestInterface {
+	return a.HandleRequest(http.MethodPost)
+}
+
 // Parameters defines a list of parameters for the request
 func (a *apiClient) Parameters(params ...ParameterFunc) RestInterface {
 	for _, fn := range params {
@@ -441,6 +448,13 @@ func (a *apiClient) Parameters(params ...ParameterFunc) RestInterface {
 			a.queryparams.Add(param.Name, param.Value)
 		}
 	}
+
+	return a
+}
+
+// SubResource adds a subresource to the operation
+func (a *apiClient) SubResource(v string) RestInterface {
+	a.parameters["subresource"] = v
 
 	return a
 }

@@ -35,8 +35,8 @@ router.use(require('./controllers/auth-openid').initRouter({ authService, ensure
 router.use(require('./controllers/swagger').initRouter({ koreApiUrl }))
 
 // other routes must have an authenticated user
-router.use(require('./controllers/session').initRouter({ ensureAuthenticated: ensureAuthenticated401, ensureUserCurrent, persistRequestedPath, orgService }))
-router.use(require('./controllers/apiproxy').initRouter({ ensureAuthenticated: ensureAuthenticatedRedirect, ensureUserCurrent, koreApiUrl }))
+router.use(require('./controllers/session').initRouter({ ensureAuthenticated: ensureAuthenticated401, ensureUserCurrent, persistRequestedPath, orgService, authService }))
+router.use(require('./controllers/apiproxy').initRouter({ ensureAuthenticated: ensureAuthenticatedRedirect, ensureUserCurrent, koreApiUrl, authService }))
 router.use(require('./controllers/process').initRouter({ ensureAuthenticated: ensureAuthenticatedRedirect, ensureUserCurrent, KoreApi }))
 router.use(require('./controllers/version').initRouter())
 

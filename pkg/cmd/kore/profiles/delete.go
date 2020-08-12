@@ -27,13 +27,15 @@ type DeleteOptions struct {
 	cmdutil.Factory
 	// Name is the profile to delete
 	Name string
+	// Force indicates we ignore any checks and balances
+	Force bool
 }
 
 // NewCmdProfilesDelete creates and returns the profile delete command
 func NewCmdProfilesDelete(factory cmdutil.Factory) *cobra.Command {
 	o := &DeleteOptions{Factory: factory}
 
-	command := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "delete",
 		Aliases: []string{"rm"},
 		Short:   "removes a profile from configuration",
@@ -45,7 +47,10 @@ func NewCmdProfilesDelete(factory cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	return command
+	flags := cmd.Flags()
+	flags.BoolVar(&o.Force, "force", false, "force the deletion of the profile `BOOL`")
+
+	return cmd
 }
 
 // Validate checks the options
@@ -54,7 +59,7 @@ func (o DeleteOptions) Validate() error {
 		return errors.ErrMissingResourceName
 	}
 
-	if !o.Config().HasProfile(o.Name) {
+	if !o.Config().HasProfile(o.Name) && !o.Force {
 		return errors.ErrMissingProfile
 	}
 
@@ -65,16 +70,17 @@ func (o DeleteOptions) Validate() error {
 func (o *DeleteOptions) Run() error {
 	config := o.Config()
 
-	if config.CurrentProfile == o.Name {
-		config.CurrentProfile = ""
-	}
-	config.RemoveProfile(o.Name)
+	if o.Config().HasProfile(o.Name) {
+		if config.CurrentProfile == o.Name {
+			config.CurrentProfile = ""
+		}
+		config.RemoveProfile(o.Name)
 
-	if err := o.UpdateConfig(); err != nil {
-		return err
+		if err := o.UpdateConfig(); err != nil {
+			return err
+		}
 	}
 	o.Println("Successfully removed the profile: %s", o.Name)
 
 	return nil
-
 }
