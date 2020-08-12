@@ -20,6 +20,7 @@ var (
 	// Plugins is a list of supported plugins
 	Plugins = []string{
 		"admintoken",
+		"basicauth",
 		"jwt",
 		"localjwt",
 		"openid",

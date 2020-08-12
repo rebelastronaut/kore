@@ -294,6 +294,7 @@ func (o *UpOptions) EnsureHelm(ctx context.Context) error {
 	}
 
 	err := (&Task{
+		Header: "Checking for Helm requirements",
 		Handler: func(ctx context.Context) error {
 			// @step: can we find helm in the search path?
 			path, err := exec.LookPath("helm")
