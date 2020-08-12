@@ -46,6 +46,25 @@ func (o *UpOptions) SetHelmValue(key, value string) {
 	o.HelmValues = append(o.HelmValues, kv)
 }
 
+// HasAuthPlugin checks if the auth plugin is defined already
+func (o *UpOptions) HasAuthPlugin(values map[string]interface{}, name string) bool {
+	v, err := utils.MapLookup(values, "api", "auth_plugins")
+	if err == utils.ErrMapLookupNotFound {
+		return false
+	}
+	items, ok := v.([]interface{})
+	if !ok {
+		return false
+	}
+
+	var list []string
+	for _, x := range items {
+		list = append(list, fmt.Sprintf("%v", x))
+	}
+
+	return utils.Contains(name, list)
+}
+
 // GetHelmValues returns returns or prompts for the values
 func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
@@ -68,7 +87,7 @@ func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 	}
 
 	for _, x := range []string{"admintoken", "jwt", "basicauth"} {
-		if utils.Contains(x, authentication.Plugins) {
+		if utils.Contains(x, authentication.Plugins) && !o.HasAuthPlugin(values, x) {
 			o.SetHelmValue("api.auth_plugins.-1", x)
 		}
 	}
@@ -98,13 +117,22 @@ func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 		}
 		values["idp"] = v
 
-		o.SetHelmValue("api.auth_plugins.-1", "openid")
+		if !o.HasAuthPlugin(values, "openid") {
+			o.SetHelmValue("api.auth_plugins.-1", "openid")
+		}
 	}
 
 	// @step: inject the flags if required
 	if utils.Contains("version", o.FlagsChanged) {
 		for _, x := range []string{"api.version", "ui.version"} {
 			o.HelmValues = append(o.HelmValues, fmt.Sprintf("%s=%s", x, o.Version))
+		}
+		o.SetHelmValue("api.images.auth_proxy", "quay.io/appvia/auth-proxy:"+o.Version)
+	} else {
+		if !found {
+			for _, x := range []string{"api.version", "ui.version"} {
+				o.HelmValues = append(o.HelmValues, fmt.Sprintf("%s=%s", x, o.Version))
+			}
 		}
 	}
 
