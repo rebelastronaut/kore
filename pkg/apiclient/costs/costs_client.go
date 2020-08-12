@@ -27,31 +27,37 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetCost(params *GetCostParams, authInfo runtime.ClientAuthInfoWriter) (*GetCostOK, error)
+	GetAssets(params *GetAssetsParams, authInfo runtime.ClientAuthInfoWriter) (*GetAssetsOK, error)
+
+	GetCostSummary(params *GetCostSummaryParams, authInfo runtime.ClientAuthInfoWriter) (*GetCostSummaryOK, error)
+
+	GetTeamCostSummary(params *GetTeamCostSummaryParams, authInfo runtime.ClientAuthInfoWriter) (*GetTeamCostSummaryOK, error)
 
 	ListCosts(params *ListCostsParams, authInfo runtime.ClientAuthInfoWriter) (*ListCostsOK, error)
+
+	PostCosts(params *PostCostsParams, authInfo runtime.ClientAuthInfoWriter) (*PostCostsOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-  GetCost gets a specific cost
+  GetAssets returns details of the assets known to kore which should be monitored for costs by a costs provider
 */
-func (a *Client) GetCost(params *GetCostParams, authInfo runtime.ClientAuthInfoWriter) (*GetCostOK, error) {
+func (a *Client) GetAssets(params *GetAssetsParams, authInfo runtime.ClientAuthInfoWriter) (*GetAssetsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetCostParams()
+		params = NewGetAssetsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetCost",
+		ID:                 "GetAssets",
 		Method:             "GET",
-		PathPattern:        "/api/v1alpha1/costs/{name}",
+		PathPattern:        "/api/v1alpha1/costs/assets/{provider}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetCostReader{formats: a.formats},
+		Reader:             &GetAssetsReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -59,13 +65,83 @@ func (a *Client) GetCost(params *GetCostParams, authInfo runtime.ClientAuthInfoW
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetCostOK)
+	success, ok := result.(*GetAssetsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetCost: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetAssets: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  GetCostSummary returns a summary of all costs known to kore for the specified time period
+*/
+func (a *Client) GetCostSummary(params *GetCostSummaryParams, authInfo runtime.ClientAuthInfoWriter) (*GetCostSummaryOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetCostSummaryParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetCostSummary",
+		Method:             "GET",
+		PathPattern:        "/api/v1alpha1/costs/summary/{from}/{to}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetCostSummaryReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetCostSummaryOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetCostSummary: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  GetTeamCostSummary returns a summary of all costs known to kore for the specified time period
+*/
+func (a *Client) GetTeamCostSummary(params *GetTeamCostSummaryParams, authInfo runtime.ClientAuthInfoWriter) (*GetTeamCostSummaryOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetTeamCostSummaryParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetTeamCostSummary",
+		Method:             "GET",
+		PathPattern:        "/api/v1alpha1/costs/teamsummary/{teamIdentifier}/{from}/{to}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetTeamCostSummaryReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetTeamCostSummaryOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetTeamCostSummary: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -101,6 +177,41 @@ func (a *Client) ListCosts(params *ListCostsParams, authInfo runtime.ClientAuthI
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for ListCosts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+  PostCosts persists one or more asset costs
+*/
+func (a *Client) PostCosts(params *PostCostsParams, authInfo runtime.ClientAuthInfoWriter) (*PostCostsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostCostsParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "PostCosts",
+		Method:             "POST",
+		PathPattern:        "/api/v1alpha1/costs",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostCostsReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostCostsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostCosts: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

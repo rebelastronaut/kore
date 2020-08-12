@@ -16,44 +16,37 @@
 
 package costs
 
+import (
+	"github.com/appvia/kore/pkg/metadata"
+	"github.com/appvia/kore/pkg/persistence"
+)
+
 type Costs interface {
-	// Metadata returns the interface to the pricing metadata service
-	Metadata() Metadata
 	// Estimates returns the interface to the cost estimation service
 	Estimates() Estimates
-	// Actuals returns the interface to the actual costs service
-	Actuals() Actuals
+	// Assets returns the interface to the assets service
+	Assets() Assets
 }
 
 // New returns a new instance of the costs API
-func New(config *Config) Costs {
-	cloudinfo := NewCloudInfo(config.CloudinfoURL)
-	metadata := NewMetadata(cloudinfo)
+func New(metadata metadata.Metadata, persistence persistence.TeamAssets, getKoreIdentifier func() string) Costs {
 	estimates := NewEstimates(metadata)
-	actuals := NewActuals()
+	assets := NewAssets(persistence, getKoreIdentifier)
 	return &costsImpl{
-		metadata,
 		estimates,
-		actuals,
+		assets,
 	}
 }
 
-var _ Costs = &costsImpl{}
-
 type costsImpl struct {
-	metadata  Metadata
 	estimates Estimates
-	actuals   Actuals
-}
-
-func (c *costsImpl) Metadata() Metadata {
-	return c.metadata
+	assets    Assets
 }
 
 func (c *costsImpl) Estimates() Estimates {
 	return c.estimates
 }
 
-func (c *costsImpl) Actuals() Actuals {
-	return c.actuals
+func (c *costsImpl) Assets() Assets {
+	return c.assets
 }

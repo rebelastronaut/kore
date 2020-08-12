@@ -56,6 +56,10 @@ generate-assets:
 	@go generate ./pkg/kore/assets
 	@go generate -tags=dev ./pkg/kore/assets
 	@go generate ./pkg/security
+	@go generate ./pkg/persistence/migrations
+	@gofmt -s -w pkg/kore/assets
+	@gofmt -s -w pkg/security
+	@gofmt -s -w pkg/persistence/migrations
 
 check-generate-assets: generate-assets
 	@if [ $$(git status --porcelain pkg/apiclient | wc -l) -gt 0 ]; then \
@@ -441,15 +445,6 @@ schema-gen:
     -prefix deploy deploy/crds
 	@gofmt -s -w pkg/register/assets.go
 
-db-migrations-gen:
-	@echo "--> Generating the Database Migrations"
-	@go run github.com/go-bindata/go-bindata/go-bindata \
-		-pkg migrations \
-    -nometadata \
-    -o pkg/persistence/migrations/zz_migrations.go \
-    -prefix "pkg/persistence/migrations/files" pkg/persistence/migrations/files/...
-	@gofmt -s -w pkg/persistence/migrations/zz_migrations.go
-
 register-gen:
 	@echo "--> Generating Schema register.go"
 	@echo "--> packages $(APIS)"
@@ -511,6 +506,10 @@ kind-ui-logs:
 
 kind-admintoken:
 	@echo `kubectl --context kind-kore -n kore get secret kore-api -o json | jq -r ".data.KORE_ADMIN_TOKEN" | base64 --decode`
+
+.PHONY: kind-db-cli
+kind-db-cli:
+	@kubectl exec --stdin --tty `kubectl get pod -n kore -l name=kore-mysql -o name` -n kore -- mysql -u root --password=`kubectl get secret kore-mysql -n kore -o json | jq -r ".data.MYSQL_ROOT_PASSWORD" | base64 --decode` kore
 
 kind-api-test:
 	@export KORE_ADMIN_TOKEN="$(shell kubectl --context kind-kore -n kore get secret kore-api -o json | jq -r ".data.KORE_ADMIN_TOKEN" | base64 --decode)" && ${MAKE} run-api-test

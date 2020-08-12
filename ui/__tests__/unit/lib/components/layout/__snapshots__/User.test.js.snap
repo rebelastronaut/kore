@@ -21,7 +21,7 @@ exports[`Snapshot testing shows admin user details 1`] = `
     }
   >
     <span
-      className="ant-tag ant-tag-green user-admin"
+      className="ant-tag ant-tag-cyan user-admin"
       style={
         Object {
           "backgroundColor": undefined,

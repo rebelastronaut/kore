@@ -37,7 +37,7 @@ import (
 )
 
 // Setup is called one on initialization and used to provision and empty kore
-func (h hubImpl) Setup(ctx context.Context) error {
+func (h *hubImpl) Setup(ctx context.Context) error {
 	log.Info("initializing the kore")
 
 	// @step: ensure the kore namespaces are there
@@ -350,15 +350,15 @@ func (h hubImpl) ensureHubIDPClientExists(ctx context.Context) error {
 	return nil
 }
 
-func (h hubImpl) ensureTeamsAndClustersIdentified(ctx context.Context) error {
+func (h *hubImpl) ensureTeamsAndClustersIdentified(ctx context.Context) error {
 	teams, err := h.Teams().List(getAdminContext(ctx))
 	if err != nil {
 		log.Errorf("error getting team list: %v", err)
 		return err
 	}
 
+	// @step: check all teams have identifiers, assigning if needed
 	for _, team := range teams.Items {
-		// @step: check team has identifier, assigning if needed
 		teamlog := log.WithField("team", team.Name)
 		if team.Labels[LabelTeamIdentifier] == "" {
 			teamlog.Info("assigning new identifier to team")
@@ -369,7 +369,16 @@ func (h hubImpl) ensureTeamsAndClustersIdentified(ctx context.Context) error {
 			}
 		}
 
-		// @step: check clusters owned by team all have identifiers
+		// @step: The kore admin team identifier is used to identify kore itself, so
+		// ensure the hub knows its identifier
+		if team.Name == HubAdminTeam {
+			h.setKoreIdentifier(team.Labels[LabelTeamIdentifier])
+		}
+	}
+
+	// @step: check all clusters owned by each team all have identifiers
+	for _, team := range teams.Items {
+		teamlog := log.WithField("team", team.Name)
 		teamClusters, err := h.Teams().Team(team.Name).Clusters().List(getAdminContext(ctx))
 		if err != nil {
 			teamlog.Errorf("error getting cluster list for team: %v", err)
@@ -380,22 +389,30 @@ func (h hubImpl) ensureTeamsAndClustersIdentified(ctx context.Context) error {
 			updated := false
 			logger := teamlog.WithField("cluster", cluster.Name)
 
+			if cluster.Labels == nil {
+				cluster.Labels = map[string]string{}
+			}
+
+			if cluster.Labels[LabelKoreIdentifier] == "" {
+				logger.Info("setting kore identifier for cluster")
+				cluster.Labels[LabelKoreIdentifier] = h.KoreIdentifier()
+				updated = true
+			}
+
 			if cluster.Labels[LabelTeamIdentifier] == "" {
 				logger.Info("setting team identifier for cluster")
-				if cluster.Labels == nil {
-					cluster.Labels = map[string]string{}
-				}
 				cluster.Labels[LabelTeamIdentifier] = team.Labels[LabelTeamIdentifier]
 				updated = true
 			}
 
 			if cluster.Labels[LabelClusterIdentifier] == "" {
 				logger.Info("assigning cluster identifier")
-
-				if cluster.Labels == nil {
-					cluster.Labels = map[string]string{}
+				cloud, mapErr := h.Metadata().MapProviderToCloud(cluster.Spec.Kind)
+				if mapErr != nil {
+					logger.WithField("provider", cluster.Spec.Kind).WithError(mapErr).Error("received error mapping k8s provider to cloud provider for asset identifier")
+					return mapErr
 				}
-				cluster.Labels[LabelClusterIdentifier], err = h.Teams().Team(team.Name).Assets().GenerateAssetIdentifier(ctx, orgv1.TeamAssetTypeCluster, cluster.Name)
+				cluster.Labels[LabelClusterIdentifier], err = h.Teams().Team(team.Name).Assets().GenerateAssetIdentifier(ctx, orgv1.TeamAssetTypeCluster, cluster.Name, cloud)
 				if err != nil {
 					logger.Errorf("error generating identifier for team cluster: %v", err)
 					return err
@@ -404,7 +421,10 @@ func (h hubImpl) ensureTeamsAndClustersIdentified(ctx context.Context) error {
 			}
 
 			if updated {
-				logger.Debugf("persisting cluster after identifiers assigned - team: %s cluster: %s", cluster.Labels[LabelTeamIdentifier], cluster.Labels[LabelClusterIdentifier])
+				logger.Debugf("persisting cluster after identifiers assigned - kore: %s, team: %s, cluster: %s",
+					cluster.Labels[LabelKoreIdentifier],
+					cluster.Labels[LabelTeamIdentifier],
+					cluster.Labels[LabelClusterIdentifier])
 				err = h.Store().Client().Update(
 					getAdminContext(ctx),
 					store.UpdateOptions.To(cluster),

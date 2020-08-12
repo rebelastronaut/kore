@@ -44,7 +44,7 @@ export default class PlanViewEdit extends React.Component {
       <>
         {manage ? null : (
           <Paragraph>
-            <Text strong style={{ marginRight: '10px' }}>Show read-only parameters <IconTooltip text="Parameters may be read-only as defined by the plan policy or may only be editable on cluster creation. Turn this on to see these parameters." icon="info-circle" /></Text>
+            <Text strong style={{ marginRight: '10px' }}>Show read-only parameters <IconTooltip text="Parameters may be read-only as defined by the plan policy or may only be editable on cluster creation. Turn this on to see these parameters." /></Text>
             <Switch checked={showReadOnly} onChange={(showReadOnly) => this.setState({ showReadOnly })} />
           </Paragraph>
         )}

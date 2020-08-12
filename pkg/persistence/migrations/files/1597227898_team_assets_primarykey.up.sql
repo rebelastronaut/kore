@@ -1,0 +1,1 @@
+ALTER TABLE team_assets ADD CONSTRAINT pk_team_assets PRIMARY KEY IF NOT EXISTS (asset_identifier);

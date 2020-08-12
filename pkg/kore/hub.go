@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/appvia/kore/pkg/costs"
+	"github.com/appvia/kore/pkg/metadata"
 	"github.com/appvia/kore/pkg/persistence"
 	"github.com/appvia/kore/pkg/security"
 	"github.com/appvia/kore/pkg/store"
@@ -76,10 +77,14 @@ type hubImpl struct {
 	tokens Tokens
 	// configs provides the ability to store key value pairs
 	configs Configs
+	// metadata is the metadata implementation
+	metadata metadata.Metadata
 	// costs is the costs implementation
 	costs costs.Costs
 	// features is the features implementation
 	features KoreFeatures
+	// koreIdentifier is a unique identifier for this instance of kore
+	koreIdentifier string
 }
 
 // New returns a new instance of the kore bridge
@@ -144,7 +149,8 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 	}
 	h.tokens = &tokenImpl{ConfigIface: h, CertificateIface: h}
 	h.configs = &configImpl{hubImpl: h}
-	h.costs = costs.New(&config.Costs)
+	h.metadata = metadata.New(&config.Metadata)
+	h.costs = costs.New(h.metadata, h.persistenceMgr.TeamAssets(), h.KoreIdentifier)
 	h.features = &koreFeaturesImpl{store: h.store}
 
 	// @step: call the setup code for the kore
@@ -287,10 +293,22 @@ func (h hubImpl) Configs() Configs {
 	return h.configs
 }
 
+func (h hubImpl) Metadata() metadata.Metadata {
+	return h.metadata
+}
+
 func (h hubImpl) Costs() costs.Costs {
 	return h.costs
 }
 
 func (h hubImpl) Features() KoreFeatures {
 	return h.features
+}
+
+func (h *hubImpl) setKoreIdentifier(koreIdentifier string) {
+	h.koreIdentifier = koreIdentifier
+}
+
+func (h *hubImpl) KoreIdentifier() string {
+	return h.koreIdentifier
 }

@@ -131,7 +131,7 @@ func (c *metadataHandler) Register(i kore.Interface, builder utils.PathBuilder) 
 func (c metadataHandler) getCloudRegions(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
 		cloud := strings.ToLower(req.PathParameter("cloud"))
-		regions, err := c.Costs().Metadata().Regions(cloud)
+		regions, err := c.Metadata().Regions(cloud)
 		if err != nil {
 			return err
 		}
@@ -142,7 +142,7 @@ func (c metadataHandler) getCloudRegionZones(req *restful.Request, resp *restful
 	handleErrors(req, resp, func() error {
 		cloud := strings.ToLower(req.PathParameter("cloud"))
 		region := strings.ToLower(req.PathParameter("region"))
-		zones, err := c.Costs().Metadata().RegionZones(cloud, region)
+		zones, err := c.Metadata().RegionZones(cloud, region)
 		if err != nil {
 			return err
 		}
@@ -153,7 +153,7 @@ func (c metadataHandler) getCloudNodeTypes(req *restful.Request, resp *restful.R
 	handleErrors(req, resp, func() error {
 		cloud := strings.ToLower(req.PathParameter("cloud"))
 		region := strings.ToLower(req.PathParameter("region"))
-		instances, err := c.Costs().Metadata().InstanceTypes(cloud, region)
+		instances, err := c.Metadata().InstanceTypes(cloud, region)
 		if err != nil {
 			return err
 		}
@@ -164,11 +164,11 @@ func (c metadataHandler) getCloudNodeTypes(req *restful.Request, resp *restful.R
 func (c metadataHandler) getKubernetesRegions(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
 		provider := strings.ToUpper(req.PathParameter("provider"))
-		cloud, err := c.Costs().Metadata().MapProviderToCloud(provider)
+		cloud, err := c.Metadata().MapProviderToCloud(provider)
 		if err != nil {
 			return resp.WriteHeaderAndEntity(http.StatusNotFound, err)
 		}
-		regions, err := c.Costs().Metadata().Regions(cloud)
+		regions, err := c.Metadata().Regions(cloud)
 		if err != nil {
 			return err
 		}
@@ -178,12 +178,12 @@ func (c metadataHandler) getKubernetesRegions(req *restful.Request, resp *restfu
 func (c metadataHandler) getKubernetesRegionZones(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
 		provider := strings.ToUpper(req.PathParameter("provider"))
-		cloud, err := c.Costs().Metadata().MapProviderToCloud(provider)
+		cloud, err := c.Metadata().MapProviderToCloud(provider)
 		if err != nil {
 			return resp.WriteHeaderAndEntity(http.StatusNotFound, err)
 		}
 		region := strings.ToLower(req.PathParameter("region"))
-		zones, err := c.Costs().Metadata().RegionZones(cloud, region)
+		zones, err := c.Metadata().RegionZones(cloud, region)
 		if err != nil {
 			return err
 		}
@@ -193,12 +193,12 @@ func (c metadataHandler) getKubernetesRegionZones(req *restful.Request, resp *re
 func (c metadataHandler) getKubernetesNodeTypes(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
 		provider := strings.ToUpper(req.PathParameter("provider"))
-		cloud, err := c.Costs().Metadata().MapProviderToCloud(provider)
+		cloud, err := c.Metadata().MapProviderToCloud(provider)
 		if err != nil {
 			return resp.WriteHeaderAndEntity(http.StatusNotFound, err)
 		}
 		region := strings.ToLower(req.PathParameter("region"))
-		instances, err := c.Costs().Metadata().InstanceTypes(cloud, region)
+		instances, err := c.Metadata().InstanceTypes(cloud, region)
 		if err != nil {
 			return err
 		}
@@ -208,12 +208,12 @@ func (c metadataHandler) getKubernetesNodeTypes(req *restful.Request, resp *rest
 func (c metadataHandler) getKubernetesVersions(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
 		provider := strings.ToUpper(req.PathParameter("provider"))
-		cloud, err := c.Costs().Metadata().MapProviderToCloud(provider)
+		cloud, err := c.Metadata().MapProviderToCloud(provider)
 		if err != nil {
 			return resp.WriteHeaderAndEntity(http.StatusNotFound, err)
 		}
 		region := strings.ToLower(req.PathParameter("region"))
-		versions, err := c.Costs().Metadata().KubernetesVersions(cloud, region)
+		versions, err := c.Metadata().KubernetesVersions(cloud, region)
 		if err != nil {
 			return err
 		}

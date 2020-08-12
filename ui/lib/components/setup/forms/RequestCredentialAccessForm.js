@@ -65,7 +65,7 @@ class RequestCredentialAccessForm extends React.Component {
     return (
       <>
         {helpInModal ? (
-          <Paragraph style={{ fontSize: '16px', fontWeight: '600' }}>{content.accountNoun} credential access for teams <Icon style={{ marginLeft: '5px' }} type="info-circle" theme="twoTone" onClick={this.projectCredentialAccessHelp}/></Paragraph>
+          <Paragraph style={{ fontSize: '16px', fontWeight: '600' }}>{content.accountNoun} credential access for teams <Icon style={{ marginLeft: '5px', color: '#13c2c2' }} type="info-circle" theme="filled" onClick={this.projectCredentialAccessHelp}/></Paragraph>
         ) : (
           <>
             <Paragraph style={{ fontSize: '16px', fontWeight: '600' }}>{content.accountNoun} credential access for teams</Paragraph>

@@ -200,7 +200,7 @@ class CloudAccountAutomationSettings extends React.Component {
 
   koreManagedAccountSettings = () => (
     <>
-      <Paragraph style={{ fontSize: '16px', fontWeight: '600' }}>Configure {this.props.cloud} {this.props.accountNoun} automation <Icon style={{ marginLeft: '5px' }} type="info-circle" theme="twoTone" onClick={this.accountAutomationHelp}/></Paragraph>
+      <Paragraph style={{ fontSize: '16px', fontWeight: '600' }}>Configure {this.props.cloud} {this.props.accountNoun} automation <Icon style={{ marginLeft: '5px', color: '#13c2c2' }} type="info-circle" theme="filled" onClick={this.accountAutomationHelp}/></Paragraph>
 
       <KoreManagedCloudAccountsConfigure
         cloudAccountList={this.state.cloudAccountList}

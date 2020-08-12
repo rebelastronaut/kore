@@ -6,6 +6,7 @@ const { Text } = Typography
 import ResourceVerificationStatus from '../resources/ResourceVerificationStatus'
 import AutoRefreshComponent from '../teams/AutoRefreshComponent'
 import { successMessage, errorMessage } from '../../utils/message'
+import IconTooltip from '../utils/IconTooltip'
 
 class GCPOrganization extends AutoRefreshComponent {
   static propTypes = {
@@ -70,9 +71,7 @@ class GCPOrganization extends AutoRefreshComponent {
             <>
               <Text style={{ display: 'inline', marginRight: '15px', fontSize: '20px', fontWeight: '600' }}>{organization.spec.parentID}</Text>
               <Text style={{ marginRight: '5px' }}>{organization.allocation ? organization.allocation.spec.name : organization.metadata.name}</Text>
-              <Tooltip title={organization.allocation ? organization.allocation.spec.summary : organization.spec.summary}>
-                <Icon type="info-circle" theme="twoTone" />
-              </Tooltip>
+              <IconTooltip text={organization.allocation ? organization.allocation.spec.summary : organization.spec.summary} />
             </>
           }
           description={

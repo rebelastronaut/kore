@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-package costs
+//go:generate go run github.com/go-bindata/go-bindata/go-bindata -pkg migrations -nometadata -o zz_migrations.go -prefix files files
 
-// Actuals represents the API for determining and accessing actual incurred costings
-type Actuals interface {
-}
-
-// NewActuals returns a new instance of the actuals API
-func NewActuals() Actuals {
-	return &actualsImpl{}
-}
-
-type actualsImpl struct {
-}
+package migrations

@@ -537,11 +537,101 @@
         ],
         "summary": "Returns a list of actual costs",
         "operationId": "ListCosts",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Identifier of a team to filter costs for",
+            "name": "team",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Identifier of an asset to filter costs for",
+            "name": "asset",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Start of time range to return costs for",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "End of time range to return costs for",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Cloud provider (e.g. gcp, aws, azure) to return costs for",
+            "name": "provider",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Account/project/subscription to return costs for",
+            "name": "account",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Invoice to return costs for, in the formay YYYYMM",
+            "name": "invoice",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "A list of all costs known to the system",
+            "description": "A list of costs known to the system, filtered by the above parameters",
             "schema": {
-              "$ref": "#/definitions/v1beta1.CostList"
+              "$ref": "#/definitions/v1beta1.AssetCostList"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "costs"
+        ],
+        "summary": "Persists one or more asset costs",
+        "operationId": "PostCosts",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1beta1.AssetCostList"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Costs successfully persisted"
+          },
+          "400": {
+            "description": "Validation error of supplied parameters/body",
+            "schema": {
+              "$ref": "#/definitions/validation.Error"
             }
           },
           "401": {
@@ -559,7 +649,7 @@
         }
       }
     },
-    "/api/v1alpha1/costs/{name}": {
+    "/api/v1alpha1/costs/assets/{provider}": {
       "get": {
         "consumes": [
           "application/json"
@@ -570,22 +660,40 @@
         "tags": [
           "costs"
         ],
-        "summary": "Gets a specific cost",
-        "operationId": "GetCost",
+        "summary": "Returns details of the assets known to kore which should be monitored for costs by a costs provider",
+        "operationId": "GetAssets",
         "parameters": [
           {
             "type": "string",
-            "description": "The name of the cost to retrieve",
-            "name": "name",
+            "description": "Cloud provider (e.g. gcp, aws, azure) to return asset metadata for",
+            "name": "provider",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "description": "Identifier of a team to filter assets for",
+            "name": "team",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Identifier of an asset to filter assets for",
+            "name": "asset",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Set to true to include deleted assets",
+            "name": "with_deleted",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Cost found",
+            "description": "Metadata describing the assets for the cloud provider in question",
             "schema": {
-              "$ref": "#/definitions/v1beta1.Cost"
+              "$ref": "#/definitions/v1beta1.AssetList"
             }
           },
           "401": {
@@ -594,8 +702,138 @@
           "403": {
             "description": "If authenticated but not authorized"
           },
-          "404": {
-            "description": "Cost doesn't exist"
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1alpha1/costs/summary/{from}/{to}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "costs"
+        ],
+        "summary": "Returns a summary of all costs known to kore for the specified time period",
+        "operationId": "GetCostSummary",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Start of time range to return summary for",
+            "name": "from",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "End of time range to return summary for",
+            "name": "to",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Restrict to costs for specified cloud provider (e.g. gcp, aws, azure)",
+            "name": "provider",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Invoice to return costs for, in the formay YYYYMM",
+            "name": "invoice",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A summary of costs known to the system",
+            "schema": {
+              "$ref": "#/definitions/v1beta1.OverallCostSummary"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1alpha1/costs/teamsummary/{teamIdentifier}/{from}/{to}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "costs"
+        ],
+        "summary": "Returns a summary of all costs known to kore for the specified time period",
+        "operationId": "GetTeamCostSummary",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Team identifier to retrieve costs for",
+            "name": "teamIdentifier",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Start of time range to return summary for",
+            "name": "from",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "End of time range to return summary for",
+            "name": "to",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Restrict to costs for specified cloud provider (e.g. gcp, aws, azure)",
+            "name": "provider",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Invoice to return costs for, in the formay YYYYMM",
+            "name": "invoice",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A summary of costs known to the system for the team",
+            "schema": {
+              "$ref": "#/definitions/v1beta1.TeamCostSummary"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
           },
           "500": {
             "description": "A generic API error containing the cause of the error",
@@ -9262,8 +9500,8 @@
     },
     "v1.OptionalSecretKeySelector": {
       "required": [
-        "key",
-        "name"
+        "name",
+        "key"
       ],
       "properties": {
         "key": {
@@ -10285,11 +10523,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
+        "clientID",
+        "clientSecret",
         "issuer",
         "clientScopes",
-        "userClaims",
-        "clientID",
-        "clientSecret"
+        "userClaims"
       ],
       "properties": {
         "clientID": {
@@ -12416,6 +12654,142 @@
         }
       }
     },
+    "v1beta1.Asset": {
+      "properties": {
+        "assetIdentifier": {
+          "type": "string"
+        },
+        "koreIdentifier": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "teamIdentifier": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1.AssetCost": {
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "assetIdentifier": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "costIdentifier": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "invoice": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "retrievedAt": {
+          "type": "string"
+        },
+        "teamIdentifier": {
+          "type": "string"
+        },
+        "usageAmount": {
+          "type": "string"
+        },
+        "usageEndTime": {
+          "type": "string"
+        },
+        "usageStartTime": {
+          "type": "string"
+        },
+        "usageType": {
+          "type": "string"
+        },
+        "usageUnit": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1.AssetCostList": {
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.AssetCost"
+          }
+        }
+      }
+    },
+    "v1beta1.AssetCostSummary": {
+      "required": [
+        "cost"
+      ],
+      "properties": {
+        "assetIdentifier": {
+          "type": "string"
+        },
+        "assetName": {
+          "type": "string"
+        },
+        "assetType": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.AssetCost"
+          }
+        },
+        "provider": {
+          "type": "string"
+        },
+        "teamIdentifier": {
+          "type": "string"
+        },
+        "usageEndTime": {
+          "type": "string"
+        },
+        "usageStartTime": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1.AssetList": {
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.Asset"
+          }
+        }
+      }
+    },
     "v1beta1.Continent": {
       "required": [
         "name",
@@ -12443,55 +12817,6 @@
           "items": {
             "$ref": "#/definitions/v1beta1.Continent"
           }
-        }
-      }
-    },
-    "v1beta1.Cost": {
-      "properties": {
-        "cost": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "costElements": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1beta1.CostElement"
-          }
-        },
-        "from": {
-          "type": "string"
-        },
-        "resource": {
-          "$ref": "#/definitions/v1.Ownership"
-        },
-        "resourceIdentifier": {
-          "type": "string"
-        },
-        "retrievedAt": {
-          "type": "string"
-        },
-        "team": {
-          "type": "string"
-        },
-        "teamIdentifier": {
-          "type": "string"
-        },
-        "to": {
-          "type": "string"
-        }
-      }
-    },
-    "v1beta1.CostElement": {
-      "properties": {
-        "cost": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
-        },
-        "resourceIdentifier": {
-          "type": "string"
         }
       }
     },
@@ -12549,19 +12874,6 @@
         }
       }
     },
-    "v1beta1.CostList": {
-      "required": [
-        "items"
-      ],
-      "properties": {
-        "items": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1beta1.Cost"
-          }
-        }
-      }
-    },
     "v1beta1.InstanceType": {
       "required": [
         "category",
@@ -12606,6 +12918,30 @@
         }
       }
     },
+    "v1beta1.OverallCostSummary": {
+      "required": [
+        "cost",
+        "teamCosts"
+      ],
+      "properties": {
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "teamCosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.TeamCostSummary"
+          }
+        },
+        "usageEndTime": {
+          "type": "string"
+        },
+        "usageStartTime": {
+          "type": "string"
+        }
+      }
+    },
     "v1beta1.Region": {
       "required": [
         "id",
@@ -12616,6 +12952,36 @@
           "type": "string"
         },
         "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1beta1.TeamCostSummary": {
+      "required": [
+        "assetCosts",
+        "cost"
+      ],
+      "properties": {
+        "assetCosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1beta1.AssetCostSummary"
+          }
+        },
+        "cost": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "teamIdentifier": {
+          "type": "string"
+        },
+        "teamName": {
+          "type": "string"
+        },
+        "usageEndTime": {
+          "type": "string"
+        },
+        "usageStartTime": {
           "type": "string"
         }
       }

@@ -10,7 +10,7 @@ const User = ({ user }) => {
       </Menu.Item>
     </Menu>
   )
-  const adminTag = user && user.isAdmin ? <Tag className="user-admin" color="green">admin</Tag> : null
+  const adminTag = user && user.isAdmin ? <Tag className="user-admin" color="cyan">admin</Tag> : null
 
   if (user) {
     return (

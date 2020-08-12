@@ -187,7 +187,7 @@ export default class PlanOptionEKSNodeGroups extends PlanOptionBase {
             <>
               {manage ? null : (
                 <Paragraph>
-                  <Text strong style={{ marginRight: '10px' }}>Show read-only parameters <IconTooltip text="Parameters may be read-only as defined by the plan policy or may be editable on cluster creation only. Turn this on to see these parameters." icon="info-circle" placement="bottom" /></Text>
+                  <Text strong style={{ marginRight: '10px' }}>Show read-only parameters <IconTooltip text="Parameters may be read-only as defined by the plan policy or may be editable on cluster creation only. Turn this on to see these parameters." placement="bottom" /></Text>
                   <Switch checked={showReadOnly} onChange={(showReadOnly) => this.setState({ showReadOnly })} />
                 </Paragraph>
               )}

@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	configv1 "github.com/appvia/kore/pkg/apis/config/v1"
+	"github.com/appvia/kore/pkg/metadata"
 	"github.com/appvia/kore/pkg/utils/validation"
 )
 
@@ -124,7 +125,7 @@ func getNodePools(provider string, planConfig map[string]interface{}) ([]nodePoo
 
 func getPlanParamNames(provider string) (planParamNames, error) {
 	switch provider {
-	case providerGCP:
+	case metadata.ProviderGCP:
 		return planParamNames{
 			NodePools:   "nodePools",
 			Name:        "name",
@@ -136,7 +137,7 @@ func getPlanParamNames(provider string) (planParamNames, error) {
 			Spot:        "preemptible",
 			AutoScale:   "enableAutoscaler",
 		}, nil
-	case providerAWS:
+	case metadata.ProviderAWS:
 		return planParamNames{
 			NodePools:   "nodeGroups",
 			Name:        "name",
@@ -148,7 +149,7 @@ func getPlanParamNames(provider string) (planParamNames, error) {
 			Spot:        "",
 			AutoScale:   "enableAutoscaler",
 		}, nil
-	case providerAzure:
+	case metadata.ProviderAzure:
 		return planParamNames{
 			NodePools:   "nodePools",
 			Name:        "name",
