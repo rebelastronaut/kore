@@ -14,30 +14,34 @@
  * limitations under the License.
  */
 
-package local
+package utils
 
 import (
-	"io"
+	"testing"
+	"time"
 
-	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
-	"github.com/appvia/kore/pkg/utils"
+	"github.com/stretchr/testify/assert"
 )
 
-type plogger struct {
-	cmdutil.Factory
-}
-
-// newLogger provides a logger
-func newLogger(factory cmdutil.Factory) utils.Logger {
-	return &plogger{Factory: factory}
-}
-
-// Infof prints the message
-func (p *plogger) Infof(message string, args ...interface{}) {
-	p.Printf("   ◉ "+message, args...)
-}
-
-// Stdout returns the writer
-func (p *plogger) Stdout() io.Writer {
-	return p.Writer()
+func TestHumanDuration(t *testing.T) {
+	cases := []struct {
+		Duration time.Duration
+		Expected string
+	}{
+		{
+			Duration: 1 * time.Second,
+			Expected: "1s",
+		},
+		{
+			Duration: 150 * time.Millisecond,
+			Expected: "0s",
+		},
+		{
+			Duration: 2500 * time.Millisecond,
+			Expected: "2s",
+		},
+	}
+	for _, x := range cases {
+		assert.Equal(t, x.Expected, HumanDuration(x.Duration))
+	}
 }

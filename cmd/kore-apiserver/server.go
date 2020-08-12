@@ -25,13 +25,13 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/appvia/kore/pkg/costs"
-	"github.com/appvia/kore/pkg/utils/kubernetes"
-
 	"github.com/appvia/kore/pkg/apiserver"
+	"github.com/appvia/kore/pkg/costs"
 	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/persistence"
 	"github.com/appvia/kore/pkg/server"
+	"github.com/appvia/kore/pkg/utils/kubernetes"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )

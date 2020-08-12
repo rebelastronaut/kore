@@ -115,7 +115,7 @@ func GetHelmReleaseURL(release string) string {
 func GetProvider(f cmdutil.Factory, name string) (providers.Interface, error) {
 	switch name {
 	case "kind":
-		return kind.New(newProviderLogger(f))
+		return kind.New(newLogger(f))
 	default:
 		return nil, fmt.Errorf("unknown provider: %s", name)
 	}

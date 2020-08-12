@@ -46,7 +46,7 @@ api:
   hostPort: ""
   serviceType: ClusterIP
   image: quay.io/appvia/kore-apiserver
-  version: v0.2.0-rc1
+  version: latest
   auth_plugins:
     - admintoken
     - jwt
@@ -71,7 +71,7 @@ ui:
   hostPort: ""
   serviceType: ClusterIP
   image: quay.io/appvia/kore-ui
-  version: v0.2.0-rc1
+  version: latest
   replicas: 2
   show_prototypes: false
   disable_animations: false

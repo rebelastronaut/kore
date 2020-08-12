@@ -1,3 +1,4 @@
+
 # Local Quick Start Guide
 
 In this guide, we'll walk you through how to use the Kore CLI to set up a sandbox team environment locally and deploy a sample application.
@@ -6,23 +7,9 @@ We'll showcase how Kore can give you a head start with setting up [clusters](htt
 
 **NOTE** The installation of Kore created by the `kore alpha local` command in this quick start is suitable for testing and proof-of-concept work only. Bootstrapping a production installation of Kore is coming soon with [issue/340](https://github.com/appvia/kore/issues/340).
 
-## Kubernetes
-
-You'll need a Kubernetes provider to work through this guide. We simplify this by helping you set up a project on [GKE](https://cloud.google.com/kubernetes-engine).
-
-**Please Note**: Created GKE clusters are for demo purposes only. They're tied to a local environment and will be orphaned once the local Kore instance is stopped.
-
-## Team Access
-
-Kore uses an external identity provider to manage team member identity and authenticate members.
-
-For this guide, we'll help you to get set up on Auth0 to configure team access.
-
 ## Getting Started
 
 - [Docker](#docker)
-- [Google Cloud account](#google-cloud-account)
-- [Configure Team Access](#configure-team-access)
 - [Start Kore Locally with CLI](#start-kore-locally-with-cli)
 - [Login as Admin with CLI](#login-as-admin-with-cli)
 - [Create a Team with CLI](#create-a-team-with-cli)

@@ -56,6 +56,7 @@ generate-assets:
 	@go generate ./pkg/kore/assets
 	@go generate -tags=dev ./pkg/kore/assets
 	@go generate ./pkg/security
+	@$(MAKE) helm-chart-gen
 
 check-generate-assets: generate-assets
 	@if [ $$(git status --porcelain pkg/apiclient | wc -l) -gt 0 ]; then \
@@ -64,7 +65,7 @@ check-generate-assets: generate-assets
 		exit 1; \
 	fi
 
-build: golang
+build: golang helm-chart-gen
 	@echo "--> Compiling the project ($(VERSION))"
 	@mkdir -p bin
 	@for binary in kore kore-apiserver auth-proxy; do \
@@ -72,7 +73,7 @@ build: golang
 		CGO_ENABLED=0 go build -ldflags "${LFLAGS}" -tags=jsoniter -o bin/$${binary} cmd/$${binary}/*.go || exit 1; \
 	done
 
-kore: golang
+kore: golang helm-chart-gen
 	@echo "--> Compiling the kore binary"
 	@mkdir -p bin
 	go build -ldflags "${LFLAGS}" -tags=jsoniter -o bin/kore cmd/kore/*.go
@@ -464,6 +465,15 @@ crd-gen:
 	@mkdir -p deploy
 	@rm -f deploy/crds/* 2>/dev/null || true
 	@go run sigs.k8s.io/controller-tools/cmd/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/apis/...  output:dir=deploy/crds
+
+helm-chart-gen:
+	@echo "--> Generating the Helm Chart bundle"
+	@mkdir -p pkg/cmd/kore/local/chart
+	@go run github.com/go-bindata/go-bindata/go-bindata \
+		-pkg chart \
+		-o pkg/cmd/kore/local/chart/zz_helm_chart.go \
+		-prefix charts/ charts/kore/...
+	@gofmt -s -w pkg/cmd/kore/local/chart/zz_helm_chart.go
 
 check-release-notes:
 	@echo "--> Verifying Release Notes"

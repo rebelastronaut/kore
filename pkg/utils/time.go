@@ -14,30 +14,15 @@
  * limitations under the License.
  */
 
-package local
+package utils
 
 import (
-	"io"
+	"time"
 
-	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
-	"github.com/appvia/kore/pkg/utils"
+	"k8s.io/apimachinery/pkg/util/duration"
 )
 
-type plogger struct {
-	cmdutil.Factory
-}
-
-// newLogger provides a logger
-func newLogger(factory cmdutil.Factory) utils.Logger {
-	return &plogger{Factory: factory}
-}
-
-// Infof prints the message
-func (p *plogger) Infof(message string, args ...interface{}) {
-	p.Printf("   ◉ "+message, args...)
-}
-
-// Stdout returns the writer
-func (p *plogger) Stdout() io.Writer {
-	return p.Writer()
+// HumanDuration returns a more human friendly duration
+func HumanDuration(d time.Duration) string {
+	return duration.HumanDuration(d)
 }

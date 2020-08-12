@@ -44,7 +44,7 @@ const (
 )
 
 type providerImpl struct {
-	providers.Logger
+	utils.Logger
 	// path is the file path to the kind binary
 	path string
 	// options are the configurables
@@ -88,26 +88,8 @@ func AddProviderFlags(cmd *cobra.Command) {
 	flags.StringSliceVar(&loadImages, "kind-load-image", []string{}, "collection of images to load after creating cluster")
 }
 
-// GetKindConfiguration returns the kind config
-func GetKindConfiguration(options providers.CreateOptions) (string, error) {
-	tmpl, err := template.New("main").Parse(KindConfiguration)
-	if err != nil {
-		return "", err
-	}
-	values := map[string]interface{}{
-		"DisableUI": options.DisableUI,
-		"Image":     kindVersion,
-	}
-	b := &bytes.Buffer{}
-	if err := tmpl.Execute(b, values); err != nil {
-		return "", err
-	}
-
-	return b.String(), nil
-}
-
 // New creates and returns a kind provider
-func New(logger providers.Logger) (providers.Interface, error) {
+func New(logger utils.Logger) (providers.Interface, error) {
 	return &providerImpl{Logger: logger}, nil
 }
 
@@ -125,22 +107,35 @@ func (p *providerImpl) Destroy(ctx context.Context, name string) error {
 		"cluster",
 		"--name", name,
 	}
-	p.Info("Deleting the kind cluster: %q", name)
+	p.Infof("Deleting the kind cluster: %q\n", name)
 
 	return exec.CommandContext(ctx, p.path, args...).Run()
 }
 
 // Create is responsible for provisioning a kind cluster
 func (p *providerImpl) Create(ctx context.Context, name string, options providers.CreateOptions) error {
+	// @step: adding to give some context for longer up times
 	found, err := p.Has(ctx, name)
 	if err != nil {
 		return err
 	}
 	if found {
-		p.Info("Kind cluster: %q already exists, skipping creation", name)
+		p.Infof("Kind cluster: %q already exists, skipping creation\n", name)
 
 		return p.ensureRunning(ctx, name)
 	}
+
+	p.Infof("Using Kind image: %q\n", KindImageShortName())
+
+	// @step: adding to give some context for longer up times
+	found, err = hasDockerImage(ctx, KindImageShortName())
+	if err != nil {
+		return err
+	}
+	if !found {
+		p.Infof("Kind image not found, using docker pull (takes a while depending network)\n")
+	}
+
 	start := time.Now()
 
 	args := []string{
@@ -150,8 +145,7 @@ func (p *providerImpl) Create(ctx context.Context, name string, options provider
 		"--wait", "10m",
 		"--config=-",
 	}
-	p.Info("Using Kind image: %q", strings.Split(kindVersion, "@")[0])
-	p.Info("Provisioning a kind cluster: %q (usually takes 3-5mins)", name)
+	p.Infof("Provisioning a kind cluster: %q (usually takes 1-3mins)\n", name)
 
 	cmd := exec.CommandContext(ctx, p.path, args...)
 	stdin, err := cmd.StdinPipe()
@@ -169,10 +163,27 @@ func (p *providerImpl) Create(ctx context.Context, name string, options provider
 	}
 	stdin.Close()
 
+	// @note: largely for user feedback so they are not left with an empty prompt
+	cutoff, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go func() {
+		interval := 20 * time.Second
+		start := time.Now()
+		time.Sleep(interval)
+
+		_ = utils.RetryWithTimeout(cutoff, 10*time.Minute, interval, func() (bool, error) {
+			p.Infof("Still building the kind cluster %q: %s\n", name, utils.HumanDuration(time.Since(start)))
+
+			return false, nil
+		})
+	}()
+
 	if combined, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("%s", combined)
 	}
-	p.Info("Built local kind cluster in %s", time.Since(start).String())
+
+	p.Infof("Built local kind cluster in %s\n", utils.HumanDuration(time.Since(start)))
 
 	return p.ensureImages(ctx, name)
 }
@@ -184,7 +195,7 @@ func (p *providerImpl) Export(ctx context.Context, name string) (string, error) 
 		"kubeconfig",
 		"--name", name,
 	}
-	p.Info("Exporting kubeconfig from kind cluster: %q", name)
+	p.Infof("Exporting kubeconfig from kind cluster: %q\n", name)
 
 	combined, err := exec.CommandContext(ctx, p.path, args...).CombinedOutput()
 	if err != nil {
@@ -202,7 +213,7 @@ func (p *providerImpl) Has(ctx context.Context, name string) (bool, error) {
 		"get",
 		"clusters",
 	}
-	p.Info("Checking if kind cluster: %q already exists", name)
+	p.Infof("Checking if kind cluster: %q already exists\n", name)
 
 	combined, err := exec.CommandContext(ctx, p.path, args...).CombinedOutput()
 	if err != nil {
@@ -233,7 +244,7 @@ func (p *providerImpl) Stop(ctx context.Context, name string) error {
 		"stop",
 		"kore-control-plane",
 	}
-	p.Info("Ensuring the kind cluster: %q is stopped", name)
+	p.Infof("Ensuring the kind cluster: %q is stopped\n", name)
 
 	path, err := exec.LookPath("docker")
 	if err != nil {
@@ -253,12 +264,12 @@ func (p *providerImpl) Preflight(ctx context.Context) error {
 			return err
 		}
 		if found {
+			p.Infof("Kind binary requirement found\n")
 			p.path = path
 
 			return nil
 		}
-
-		p.Info("Kind binary not found in $PATH")
+		p.Infof("Kind binary not found in $PATH\n")
 
 		if p.options.AskConfirmation {
 			p.Infof("Download: %s (%s) (y/N)? ", getReleaseURL(), path)
@@ -266,7 +277,7 @@ func (p *providerImpl) Preflight(ctx context.Context) error {
 				return errors.New(`missing binary: "kind" in $PATH`)
 			}
 		}
-		p.Info("Attempting to download the kind binary")
+		p.Infof("Attempting to download the kind binary\n")
 
 		if err := utils.DownloadFile(ctx, path, getReleaseURL()); err != nil {
 			return err
@@ -275,15 +286,37 @@ func (p *providerImpl) Preflight(ctx context.Context) error {
 		if err := os.Chmod(path, os.FileMode(0500)); err != nil {
 			return err
 		}
+	} else {
+		p.Infof("Kind binary requirement found in $PATH\n")
 	}
+
 	p.path = path
 
 	_, err = exec.LookPath("docker")
 	if err != nil {
 		return errors.New("missing binary: docker in $PATH")
 	}
+	p.Infof("Docker binary requirement found in $PATH\n")
 
 	return nil
+}
+
+// GetKindConfiguration returns the kind config
+func GetKindConfiguration(options providers.CreateOptions) (string, error) {
+	tmpl, err := template.New("main").Parse(KindConfiguration)
+	if err != nil {
+		return "", err
+	}
+	values := map[string]interface{}{
+		"DisableUI": options.DisableUI,
+		"Image":     kindVersion,
+	}
+	b := &bytes.Buffer{}
+	if err := tmpl.Execute(b, values); err != nil {
+		return "", err
+	}
+
+	return b.String(), nil
 }
 
 func (p *providerImpl) ensureRunning(ctx context.Context, name string) error {
@@ -291,7 +324,7 @@ func (p *providerImpl) ensureRunning(ctx context.Context, name string) error {
 		"start",
 		"kore-control-plane",
 	}
-	p.Info("Ensuring the kind cluster: %q is running", name)
+	p.Infof("Ensuring the kind cluster: %q is running\n", name)
 
 	path, err := exec.LookPath("docker")
 	if err != nil {
@@ -305,13 +338,52 @@ func (p *providerImpl) ensureRunning(ctx context.Context, name string) error {
 	return p.ensureImages(ctx, name)
 }
 
+// KindImage returns the image without sha
+func KindImage() string {
+	return kindVersion
+}
+
+// KindImageShortName return the
+func KindImageShortName() string {
+	return strings.Split(kindVersion, "@")[0]
+}
+
+// hasDockerImage checks if the image exists
+func hasDockerImage(ctx context.Context, image string) (bool, error) {
+	args := []string{
+		"images",
+		"--format",
+		`"{{ .Repository }}:{{ .Tag }}"`,
+	}
+	image = strings.Split(image, "@")[0]
+
+	path, err := exec.LookPath("docker")
+	if err != nil {
+		return false, errors.New("missing binary: docker in $PATH")
+	}
+
+	combined, err := exec.CommandContext(ctx, path, args...).CombinedOutput()
+	if err != nil {
+		return false, nil
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(combined))
+	for scanner.Scan() {
+		if strings.HasPrefix(strings.ReplaceAll(scanner.Text(), `"`, ""), image) {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (p *providerImpl) ensureImages(ctx context.Context, name string) error {
 	if len(loadImages) == 0 {
 		return nil
 	}
 
 	for _, image := range loadImages {
-		p.Info("Attempting to load docker image: %s into cluster", image)
+		p.Infof("Attempting to load docker image: %s into cluster\n", image)
 
 		err := utils.RetryWithTimeout(ctx, 2*time.Minute, 5*time.Second, func() (bool, error) {
 			args := []string{

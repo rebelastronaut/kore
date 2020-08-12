@@ -19,7 +19,7 @@ package render
 import (
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/duration"
+	"github.com/appvia/kore/pkg/utils"
 )
 
 // Age formats to an age
@@ -30,7 +30,7 @@ func Age() PrinterColumnFormatter {
 			return "Invalid"
 		}
 
-		return duration.HumanDuration(time.Since(created))
+		return utils.HumanDuration(time.Since(created))
 	}
 }
 

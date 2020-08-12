@@ -14,30 +14,14 @@
  * limitations under the License.
  */
 
-package local
+package utils
 
-import (
-	"io"
+import "io"
 
-	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
-	"github.com/appvia/kore/pkg/utils"
-)
-
-type plogger struct {
-	cmdutil.Factory
-}
-
-// newLogger provides a logger
-func newLogger(factory cmdutil.Factory) utils.Logger {
-	return &plogger{Factory: factory}
-}
-
-// Infof prints the message
-func (p *plogger) Infof(message string, args ...interface{}) {
-	p.Printf("   ◉ "+message, args...)
-}
-
-// Stdout returns the writer
-func (p *plogger) Stdout() io.Writer {
-	return p.Writer()
+// Logger provides a logging interface
+type Logger interface {
+	// Infof provides local logging
+	Infof(string, ...interface{})
+	// Stdout returns the writer
+	Stdout() io.Writer
 }
