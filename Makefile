@@ -56,6 +56,10 @@ generate-assets:
 	@go generate ./pkg/kore/assets
 	@go generate -tags=dev ./pkg/kore/assets
 	@go generate ./pkg/security
+	@go generate ./pkg/persistence/migrations
+	@gofmt -s -w pkg/kore/assets
+	@gofmt -s -w pkg/security
+	@gofmt -s -w pkg/persistence/migrations
 
 check-generate-assets: generate-assets
 	@if [ $$(git status --porcelain pkg/apiclient | wc -l) -gt 0 ]; then \
@@ -440,15 +444,6 @@ schema-gen:
     -o pkg/register/assets.go \
     -prefix deploy deploy/crds
 	@gofmt -s -w pkg/register/assets.go
-
-db-migrations-gen:
-	@echo "--> Generating the Database Migrations"
-	@go run github.com/go-bindata/go-bindata/go-bindata \
-		-pkg migrations \
-    -nometadata \
-    -o pkg/persistence/migrations/zz_migrations.go \
-    -prefix "pkg/persistence/migrations/files" pkg/persistence/migrations/files/...
-	@gofmt -s -w pkg/persistence/migrations/zz_migrations.go
 
 register-gen:
 	@echo "--> Generating Schema register.go"
