@@ -170,10 +170,7 @@ func (o *LoginOptions) Run() error {
 
 		// check what are supported on the server
 		authenticators := []string{}
-		err = o.ClientWithEndpoint("/login/methods").
-			Result(&authenticators).
-			Get().
-			Error()
+		err = o.ClientWithEndpoint("/login/methods").Result(&authenticators).Get().Error()
 		if err != nil {
 			if client.IsNotFound(err) {
 				// backwards compatibility - /login/methods was introduced with
@@ -194,12 +191,12 @@ func (o *LoginOptions) Run() error {
 			}
 		}
 
-		if len(supported) == 1 {
-			// Only one supported, just use it.
-			method = supported[0]
-		} else if len(supported) == 0 {
+		switch len(supported) {
+		case 0:
 			return errors.New("no supported authentication providers available")
-		} else {
+		case 1:
+			method = supported[0]
+		default:
 			_, method, err = (&promptui.Select{
 				Label:        "Which method do you wish to use to login?",
 				Items:        supported,
