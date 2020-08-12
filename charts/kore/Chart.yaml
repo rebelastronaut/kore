@@ -3,4 +3,4 @@ name: kore
 description: A Helm chart for kore
 type: application
 version: 0.0.1
-appVersion: 0.0.9
+appVersion: 0.3.0

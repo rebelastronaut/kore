@@ -14,30 +14,14 @@
  * limitations under the License.
  */
 
-package local
+package authentication
 
-import (
-	"io"
-
-	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
-	"github.com/appvia/kore/pkg/utils"
+var (
+	// Plugins is a list of supported plugins
+	Plugins = []string{
+		"admintoken",
+		"jwt",
+		"localjwt",
+		"openid",
+	}
 )
-
-type plogger struct {
-	cmdutil.Factory
-}
-
-// newLogger provides a logger
-func newLogger(factory cmdutil.Factory) utils.Logger {
-	return &plogger{Factory: factory}
-}
-
-// Infof prints the message
-func (p *plogger) Infof(message string, args ...interface{}) {
-	p.Printf("   ◉ "+message, args...)
-}
-
-// Stdout returns the writer
-func (p *plogger) Stdout() io.Writer {
-	return p.Writer()
-}

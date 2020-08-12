@@ -460,6 +460,15 @@ crd-gen:
 	@rm -f deploy/crds/* 2>/dev/null || true
 	@go run sigs.k8s.io/controller-tools/cmd/controller-gen crd:trivialVersions=true,preserveUnknownFields=false paths=./pkg/apis/...  output:dir=deploy/crds
 
+helm-chart-gen:
+	@echo "--> Generating the Helm Chart bundle"
+	@mkdir -p pkg/cmd/kore/local/chart
+	@go run github.com/go-bindata/go-bindata/go-bindata \
+		-pkg chart \
+		-o pkg/cmd/kore/local/chart/zz_helm_chart.go \
+		-prefix charts/ charts/kore/...
+	@gofmt -s -w pkg/cmd/kore/local/chart/zz_helm_chart.go
+
 check-release-notes:
 	@echo "--> Verifying Release Notes"
 	@${MAKE} generate-release-notes

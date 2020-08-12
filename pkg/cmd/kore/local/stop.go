@@ -19,8 +19,8 @@ package local
 import (
 	"context"
 
-	"github.com/appvia/kore/pkg/cmd/kore/local/providers"
 	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
+	"github.com/appvia/kore/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -28,17 +28,16 @@ import (
 // StopOptions are the options for bringing down the cluster
 type StopOptions struct {
 	cmdutil.Factory
+	utils.Logger
 	// Name is an optional name for the resource
 	Name string
 	// Provider is the cloud provider to use
 	Provider string
-	// logger is a internal logger
-	logger providers.Logger
 }
 
 // NewCmdBootstrapStop creates and returns the bootstrap destroy command
 func NewCmdBootstrapStop(factory cmdutil.Factory) *cobra.Command {
-	o := &StopOptions{Factory: factory, logger: newProviderLogger(factory)}
+	o := &StopOptions{Factory: factory, Logger: newLogger(factory)}
 
 	command := &cobra.Command{
 		Use:     "stop",
