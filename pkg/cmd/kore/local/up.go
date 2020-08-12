@@ -26,12 +26,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/appvia/kore/pkg/client/config"
+	"github.com/appvia/kore/pkg/cmd/kore/local/chart"
 	"github.com/appvia/kore/pkg/cmd/kore/local/providers"
 	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
 	"github.com/appvia/kore/pkg/utils"
@@ -53,9 +55,15 @@ const (
 	valueFilePerms = os.FileMode(0600)
 )
 
+var (
+	// KoreHelmChartPath is the path to store the official helm chart
+	KoreHelmChartPath = path.Join(utils.UserHomeDir(), ".kore", "charts")
+)
+
 // UpOptions are the options for bootstrapping
 type UpOptions struct {
 	cmdutil.Factory
+	utils.Logger
 	// BinaryPath is the directory to place downloaded binaries
 	BinaryPath string
 	// Name is an optional name for the resource
@@ -102,14 +110,14 @@ func NewCmdBootstrapUp(factory cmdutil.Factory) *cobra.Command {
 		Use:     "up",
 		Short:   "Brings up kore on a local kubernetes cluster",
 		Long:    usage,
-		Example: "kore alpha local up <name> [options]",
+		Example: "kore alpha local up [options]",
 		Run:     cmdutil.DefaultRunFunc(o),
 	}
 
 	flags := command.Flags()
 	flags.StringVar(&o.Provider, "provider", "kind", "local kubernetes provider to use `NAME`")
-	flags.StringVar(&o.Release, "release", version.Tag, "chart version to use for deployment `CHART`")
-	flags.StringVar(&o.Version, "version", version.Tag, "kore version to deployment into cluster `VERSION`")
+	flags.StringVar(&o.Release, "release", "", "chart version to use for deployment `CHART`")
+	flags.StringVar(&o.Version, "version", version.Release, "kore version to deployment into cluster `VERSION`")
 	flags.StringVar(&o.ValuesFile, "values", os.ExpandEnv(filepath.Join(utils.UserHomeDir(), ".kore", "values.yaml")), "path to the file container helm values `PATH`")
 	flags.StringVar(&o.BinaryPath, "binary-path", filepath.Join(config.GetClientPath(), "build"), "path to place any downloaded binaries if requested `PATH`")
 	flags.BoolVar(&o.EnableDeploy, "enable-deploy", true, "indicates if we should deploy the kore application `BOOL`")
@@ -141,6 +149,7 @@ func (o *UpOptions) Validate() error {
 // Run implements the action
 func (o *UpOptions) Run() error {
 	o.Name = ClusterName
+	o.Logger = newLogger(o.Factory)
 
 	tasks := []TaskFunc{
 		o.EnsurePreflightChecks,
@@ -172,10 +181,12 @@ func (o *UpOptions) Run() error {
 // EnsurePreflightChecks is responsible for have everything moving forward
 func (o *UpOptions) EnsurePreflightChecks(ctx context.Context) error {
 	return (&Task{
-		Header:      "Provisioning Kore installation",
-		Description: "Passed preflight checks for installation",
+		Header:      "Performing preflight checks for installation",
+		Description: "Passed preflight checks for kore installation",
 		Handler: func(ctx context.Context) error {
 			for _, x := range []string{Kubectl} {
+				o.Infof("Checking for %s binary requirement\n", x)
+
 				if _, err := exec.LookPath(x); err != nil {
 					return fmt.Errorf("missing binary: %s in $PATH", x)
 				}
@@ -220,8 +231,8 @@ func (o *UpOptions) EnsureLocalKubernetes(ctx context.Context) error {
 	}
 
 	if err := (&Task{
-		Description: "Passed preflight checks for local cluster provider",
-
+		Header:      "Performing preflight checks for local cluster provider",
+		Description: "Passed preflight checks for cluster provider",
 		Handler: func(ctx context.Context) error {
 			return provider.Preflight(ctx)
 		},
@@ -259,7 +270,7 @@ func (o *UpOptions) EnsureLocalKubernetes(ctx context.Context) error {
 // EnsureKubernetesContext is responsible for setting the kubectl context
 func (o *UpOptions) EnsureKubernetesContext(ctx context.Context) error {
 	return (&Task{
-		Description: fmt.Sprintf("Configured the kubectl context: %s", o.ContextName),
+		Description: fmt.Sprintf("Switched the kubectl context: %q", o.ContextName),
 		Handler: func(ctx context.Context) error {
 			args := []string{
 				"config",
@@ -283,6 +294,7 @@ func (o *UpOptions) EnsureHelm(ctx context.Context) error {
 	}
 
 	err := (&Task{
+		Header: "Checking for Helm requirements",
 		Handler: func(ctx context.Context) error {
 			// @step: can we find helm in the search path?
 			path, err := exec.LookPath("helm")
@@ -343,13 +355,12 @@ func (o *UpOptions) EnsureHelmDownload(ctx context.Context) error {
 	path := filepath.Join(o.BinaryPath, "helm")
 
 	// @step: request permission from the user
-	logger := newProviderLogger(o.Factory)
-	logger.Info("Helm binary not found in $PATH")
+	o.Infof("Helm binary not found in $PATH\n")
 
 	if o.Force {
-		logger.Info("Downloading %s (%s)", release, path)
+		o.Infof("Downloading %s (%s)\n", release, path)
 	} else {
-		logger.Infof("Download %s (%s) y/N? ", release, path)
+		o.Infof("Download %s (%s) y/N? ", release, path)
 
 		if !utils.AskForConfirmation(os.Stdin) {
 			return fmt.Errorf("missing: %q not found in $PATH", "helm")
@@ -360,7 +371,7 @@ func (o *UpOptions) EnsureHelmDownload(ctx context.Context) error {
 	defer cancel()
 
 	if err := (&Task{
-		Header:      "Attempting to download helm release from github",
+		Header:      "Attempting to download helm release from Github",
 		Description: fmt.Sprintf("Downloaded the helm release (%s)", path),
 
 		Handler: func(ctx context.Context) error {
@@ -399,31 +410,27 @@ func (o *UpOptions) EnsureKoreRelease(ctx context.Context) error {
 		Header:      fmt.Sprintf("Attempting to deploy the Kore release %q", o.Version),
 		Description: "Deployed the Kore release into the cluster",
 		Handler: func(ctx context.Context) error {
-			logger := newProviderLogger(o.Factory)
+			// we default to the kore release path
+			chartURL := path.Join(KoreHelmChartPath, "kore")
+			if o.Release == "" {
+				o.Infof("Using the official Helm chart for deployment\n")
 
-			switch o.Release == version.Tag {
-			case true:
-				logger.Info("Using the official helm chart for deployment")
-			default:
-				logger.Info("Using the helm release: %s for deployment", o.Release)
-			}
+				// @step: remove anything from a previous installation
+				if exists, err := utils.DirExists(KoreHelmChartPath); err != nil {
+					return err
+				} else if exists {
+					if err := os.RemoveAll(KoreHelmChartPath); err != nil {
+						return err
+					}
+				}
+				if err := chart.RestoreAssets(KoreHelmChartPath, "kore"); err != nil {
+					return err
+				}
+				o.Infof("Kore Helm chart has been installed at %s\n", KoreHelmChartPath)
 
-			release, err := func() (string, error) {
-				if strings.HasPrefix(o.Release, "http") {
-					return o.Release, nil
-				}
-				found, err := utils.DirExists(o.Release)
-				if err != nil {
-					return "", err
-				}
-				if found {
-					return o.Release, err
-				}
-
-				return GetHelmReleaseURL(o.Release), nil
-			}()
-			if err != nil {
-				return err
+			} else {
+				o.Infof("Using the Helm release: %s for deployment\n", o.Release)
+				chartURL = o.Release
 			}
 
 			// ensure the namespace
@@ -443,6 +450,7 @@ func (o *UpOptions) EnsureKoreRelease(ctx context.Context) error {
 			interval := 2 * time.Second
 			timeout := 60 * time.Second
 
+			o.Infof("Waiting for kubernetes controlplane to become available\n")
 			if err := ksutils.WaitOnKubeAPI(ctx, client, interval, timeout); err != nil {
 				return errors.New("timed out waiting for the kubernetes api")
 			}
@@ -450,6 +458,7 @@ func (o *UpOptions) EnsureKoreRelease(ctx context.Context) error {
 			ns := &v1.Namespace{}
 			ns.Name = "kore"
 
+			o.Infof("Creating the %s namespace in cluster\n", ns.Name)
 			if _, err := client.CoreV1().Namespaces().Create(ctx, ns, metav1.CreateOptions{}); err != nil {
 				if !kerrors.IsAlreadyExists(err) {
 					return err
@@ -464,9 +473,10 @@ func (o *UpOptions) EnsureKoreRelease(ctx context.Context) error {
 				"--wait",
 				"--values", o.ValuesFile,
 				"kore",
-				release,
+				chartURL,
 			}
 
+			o.Infof("Deploying the kore installation to cluster\n")
 			combined, err := exec.CommandContext(ctx, o.HelmPath, args...).CombinedOutput()
 			if err != nil {
 				return fmt.Errorf("trying to deploy helm chart: %s", combined)
@@ -502,6 +512,7 @@ func (o *UpOptions) EnsureUP(ctx context.Context) error {
 				},
 			}
 
+			start := time.Now()
 			err := utils.WaitUntilComplete(ctx, timeout, interval, func() (bool, error) {
 				resp, err := hc.Get(o.getAPIUrl() + "/healthz")
 				if err == nil && resp.StatusCode == http.StatusOK {
@@ -513,6 +524,8 @@ func (o *UpOptions) EnsureUP(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("deployment unsuccessful, please check via kubectl -n kore get po")
 			}
+			o.Infof("Deployed Kore installation to cluster in %s\n",
+				utils.HumanDuration(time.Since(start)))
 
 			return nil
 		},

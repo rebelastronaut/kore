@@ -25,6 +25,7 @@ import (
 	"regexp"
 
 	cmdutil "github.com/appvia/kore/pkg/cmd/utils"
+	"github.com/appvia/kore/pkg/plugins/authentication"
 	"github.com/appvia/kore/pkg/utils"
 	"github.com/appvia/kore/pkg/utils/jsonutils"
 
@@ -43,6 +44,25 @@ func (o *UpOptions) SetHelmValue(key, value string) {
 	}
 
 	o.HelmValues = append(o.HelmValues, kv)
+}
+
+// HasAuthPlugin checks if the auth plugin is defined already
+func (o *UpOptions) HasAuthPlugin(values map[string]interface{}, name string) bool {
+	v, err := utils.MapLookup(values, "api", "auth_plugins")
+	if err == utils.ErrMapLookupNotFound {
+		return false
+	}
+	items, ok := v.([]interface{})
+	if !ok {
+		return false
+	}
+
+	var list []string
+	for _, x := range items {
+		list = append(list, fmt.Sprintf("%v", x))
+	}
+
+	return utils.Contains(name, list)
 }
 
 // GetHelmValues returns returns or prompts for the values
@@ -66,14 +86,19 @@ func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	o.SetHelmValue("api.auth_plugins.0", "admintoken")
-	o.SetHelmValue("api.auth_plugins.1", "jwt")
-	o.SetHelmValue("api.auth_plugins.2", "basicauth")
+	for _, x := range []string{"admintoken", "jwt", "basicauth"} {
+		if utils.Contains(x, authentication.Plugins) && !o.HasAuthPlugin(values, x) {
+			o.SetHelmValue("api.auth_plugins.-1", x)
+		}
+	}
 
 	// @step: inject the local admin - only if not set
 	if !o.EnableSSO {
+		o.Infof("Single-sign on is disabled, using kore managed users\n")
+
 		if v, err := utils.MapLookup(values, "api", "admin_pass"); err == utils.ErrMapLookupNotFound {
 			if o.LocalAdminPassword == "" {
+				o.Infof("Local admin not set, generating admin user password\n")
 				o.LocalAdminPassword = utils.Random(8)
 			}
 			o.SetHelmValue("api.admin_pass", o.LocalAdminPassword)
@@ -84,13 +109,17 @@ func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 
 	// @step: do we need to retrieve the idp settings
 	if o.EnableSSO {
+		o.Infof("Enabling single-sign on use kore users\n")
+
 		v, err := GetSingleSignOnValues()
 		if err != nil {
 			return nil, err
 		}
 		values["idp"] = v
 
-		o.SetHelmValue("api.auth_plugins.3", "openid")
+		if !o.HasAuthPlugin(values, "openid") {
+			o.SetHelmValue("api.auth_plugins.-1", "openid")
+		}
 	}
 
 	// @step: inject the flags if required
@@ -98,6 +127,7 @@ func (o *UpOptions) GetHelmValues(path string) (map[string]interface{}, error) {
 		for _, x := range []string{"api.version", "ui.version"} {
 			o.HelmValues = append(o.HelmValues, fmt.Sprintf("%s=%s", x, o.Version))
 		}
+		o.SetHelmValue("api.images.auth_proxy", "quay.io/appvia/auth-proxy:"+o.Version)
 	} else {
 		if !found {
 			for _, x := range []string{"api.version", "ui.version"} {
