@@ -74,7 +74,7 @@ Note: you can now view the UI from http://localhost:3000 _(credentials will be r
 
 You now have to login to be able to create teams and provision environments.
 
-This will use our Auth0 set up for IDP. As you're the only user, you'll be assigned Admin privileges.
+As you're the only user, you'll be assigned Admin privileges.
 
 ```shell script
 ✔ Please enter the Kore API (e.g https://api.example.com) : http://localhost:10080
