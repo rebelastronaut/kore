@@ -338,12 +338,12 @@ func (p *providerImpl) ensureRunning(ctx context.Context, name string) error {
 	return p.ensureImages(ctx, name)
 }
 
-// KindImage returns the image without sha
+// KindImage returns the full image
 func KindImage() string {
 	return kindVersion
 }
 
-// KindImageShortName return the
+// KindImageShortName return image minus any SHA
 func KindImageShortName() string {
 	return strings.Split(kindVersion, "@")[0]
 }
