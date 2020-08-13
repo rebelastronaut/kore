@@ -16,8 +16,8 @@
 
 package jsonschema
 
-//go:generate go run github.com/appvia/kore/cmd/struct-gen MetaSchemaDraft7Ext
 //nolint:unused,deadcode,varcheck
+//go:generate go run github.com/appvia/kore/cmd/struct-gen MetaSchemaDraft7Ext
 const metaSchemaDraft7Ext = `
 {
     "$schema": "http://json-schema.org/draft-07/schema#",

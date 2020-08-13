@@ -20,7 +20,7 @@ import (
 	aksv1alpha1 "github.com/appvia/kore/pkg/apis/aks/v1alpha1"
 )
 
-func ConvertAuthorizedMasterNetworks(v []AuthorizedMasterNetwork) []string {
+func ConvertAuthorizedMasterNetworks(v []ConfigurationAuthorizedMasterNetwork) []string {
 	res := make([]string, 0, len(v))
 	for _, e := range v {
 		res = append(res, e.Cidr)
@@ -28,7 +28,7 @@ func ConvertAuthorizedMasterNetworks(v []AuthorizedMasterNetwork) []string {
 	return res
 }
 
-func ConvertSSHPublicKeys(v []SSHPublicKey) []string {
+func ConvertSSHPublicKeys(v []ConfigurationSSHPublicKey) []string {
 	res := make([]string, 0, len(v))
 	for _, e := range v {
 		res = append(res, string(e))
@@ -36,7 +36,7 @@ func ConvertSSHPublicKeys(v []SSHPublicKey) []string {
 	return res
 }
 
-func ConvertLinuxProfile(v *LinuxProfile) *aksv1alpha1.LinuxProfile {
+func ConvertLinuxProfile(v *ConfigurationLinuxProfile) *aksv1alpha1.LinuxProfile {
 	if v == nil {
 		return nil
 	}
@@ -47,7 +47,7 @@ func ConvertLinuxProfile(v *LinuxProfile) *aksv1alpha1.LinuxProfile {
 	}
 }
 
-func ConvertWindowsProfile(v *WindowsProfile) *aksv1alpha1.WindowsProfile {
+func ConvertWindowsProfile(v *ConfigurationWindowsProfile) *aksv1alpha1.WindowsProfile {
 	if v == nil {
 		return nil
 	}
@@ -58,7 +58,7 @@ func ConvertWindowsProfile(v *WindowsProfile) *aksv1alpha1.WindowsProfile {
 	}
 }
 
-func ConvertNodePools(v []NodePool) []aksv1alpha1.AgentPoolProfile {
+func ConvertNodePools(v []ConfigurationNodePool) []aksv1alpha1.AgentPoolProfile {
 	res := make([]aksv1alpha1.AgentPoolProfile, 0, len(v))
 	for _, e := range v {
 		res = append(res, aksv1alpha1.AgentPoolProfile{
@@ -80,7 +80,7 @@ func ConvertNodePools(v []NodePool) []aksv1alpha1.AgentPoolProfile {
 	return res
 }
 
-func ConvertLabels(v map[string]Label) map[string]string {
+func ConvertLabels(v map[string]ConfigurationLabel) map[string]string {
 	res := make(map[string]string, len(v))
 	for k, e := range v {
 		res[k] = string(e)
@@ -88,7 +88,7 @@ func ConvertLabels(v map[string]Label) map[string]string {
 	return res
 }
 
-func ConvertTaints(v []Taint) []aksv1alpha1.NodeTaint {
+func ConvertTaints(v []ConfigurationTaint) []aksv1alpha1.NodeTaint {
 	res := make([]aksv1alpha1.NodeTaint, 0, len(v))
 	for _, e := range v {
 		res = append(res, aksv1alpha1.NodeTaint{

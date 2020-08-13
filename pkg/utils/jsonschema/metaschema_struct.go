@@ -2,73 +2,73 @@
 
 package jsonschema
 
-type Dependency interface{}
-
-type EnumItem interface{}
-
-type Example interface{}
-
 type MetaSchemaDraft7Ext struct {
-	AdditionalItems      interface{}                    `json:"additionalItems,omitempty"`
-	AdditionalProperties interface{}                    `json:"additionalProperties,omitempty"`
-	AllOf                SchemaArray                    `json:"allOf,omitempty"`
-	AnyOf                SchemaArray                    `json:"anyOf,omitempty"`
-	Comment              string                         `json:"$comment,omitempty"`
-	Const                interface{}                    `json:"const,omitempty"`
-	Contains             *MetaSchemaDraft7Ext           `json:"contains,omitempty"`
-	ContentEncoding      string                         `json:"contentEncoding,omitempty"`
-	ContentMediaType     string                         `json:"contentMediaType,omitempty"`
-	Default              interface{}                    `json:"default,omitempty"`
-	Definitions          map[string]MetaSchemaDraft7Ext `json:"definitions,omitempty"`
-	Dependencies         map[string]Dependency          `json:"dependencies,omitempty"`
-	Description          string                         `json:"description,omitempty"`
-	Else                 *MetaSchemaDraft7Ext           `json:"else,omitempty"`
-	Enum                 []EnumItem                     `json:"enum,omitempty"`
-	Examples             []Example                      `json:"examples,omitempty"`
-	ExclusiveMaximum     float64                        `json:"exclusiveMaximum,omitempty"`
-	ExclusiveMinimum     float64                        `json:"exclusiveMinimum,omitempty"`
-	Format               string                         `json:"format,omitempty"`
-	Id                   string                         `json:"$id,omitempty"`
-	Identifier           bool                           `json:"identifier,omitempty"`
-	If                   *MetaSchemaDraft7Ext           `json:"if,omitempty"`
-	Immutable            bool                           `json:"immutable,omitempty"`
-	Items                interface{}                    `json:"items,omitempty"`
-	MaxItems             NonNegativeInteger             `json:"maxItems,omitempty"`
-	MaxLength            NonNegativeInteger             `json:"maxLength,omitempty"`
-	MaxProperties        NonNegativeInteger             `json:"maxProperties,omitempty"`
-	Maximum              float64                        `json:"maximum,omitempty"`
-	MinItems             NonNegativeIntegerDefault0     `json:"minItems,omitempty"`
-	MinLength            NonNegativeIntegerDefault0     `json:"minLength,omitempty"`
-	MinProperties        NonNegativeIntegerDefault0     `json:"minProperties,omitempty"`
-	Minimum              float64                        `json:"minimum,omitempty"`
-	MultipleOf           float64                        `json:"multipleOf,omitempty"`
-	Not                  *MetaSchemaDraft7Ext           `json:"not,omitempty"`
-	OneOf                SchemaArray                    `json:"oneOf,omitempty"`
-	Pattern              string                         `json:"pattern,omitempty"`
-	PatternProperties    map[string]MetaSchemaDraft7Ext `json:"patternProperties,omitempty"`
-	Properties           map[string]MetaSchemaDraft7Ext `json:"properties,omitempty"`
-	PropertyNames        *MetaSchemaDraft7Ext           `json:"propertyNames,omitempty"`
-	ReadOnly             bool                           `json:"readOnly,omitempty"`
-	Ref                  string                         `json:"$ref,omitempty"`
-	Required             StringArray                    `json:"required,omitempty"`
-	Schema               string                         `json:"$schema,omitempty"`
-	Then                 *MetaSchemaDraft7Ext           `json:"then,omitempty"`
-	Title                string                         `json:"title,omitempty"`
-	Type                 interface{}                    `json:"type,omitempty"`
-	UniqueItems          bool                           `json:"uniqueItems,omitempty"`
-	WriteOnly            bool                           `json:"writeOnly,omitempty"`
+	AdditionalItems      interface{}                                   `json:"additionalItems,omitempty"`
+	AdditionalProperties interface{}                                   `json:"additionalProperties,omitempty"`
+	AllOf                MetaSchemaDraft7ExtSchemaArray                `json:"allOf,omitempty"`
+	AnyOf                MetaSchemaDraft7ExtSchemaArray                `json:"anyOf,omitempty"`
+	Comment              string                                        `json:"$comment,omitempty"`
+	Const                interface{}                                   `json:"const,omitempty"`
+	Contains             *MetaSchemaDraft7Ext                          `json:"contains,omitempty"`
+	ContentEncoding      string                                        `json:"contentEncoding,omitempty"`
+	ContentMediaType     string                                        `json:"contentMediaType,omitempty"`
+	Default              interface{}                                   `json:"default,omitempty"`
+	Definitions          map[string]MetaSchemaDraft7Ext                `json:"definitions,omitempty"`
+	Dependencies         map[string]MetaSchemaDraft7ExtDependency      `json:"dependencies,omitempty"`
+	Description          string                                        `json:"description,omitempty"`
+	Else                 *MetaSchemaDraft7Ext                          `json:"else,omitempty"`
+	Enum                 []MetaSchemaDraft7ExtEnumItem                 `json:"enum,omitempty"`
+	Examples             []MetaSchemaDraft7ExtExample                  `json:"examples,omitempty"`
+	ExclusiveMaximum     float64                                       `json:"exclusiveMaximum,omitempty"`
+	ExclusiveMinimum     float64                                       `json:"exclusiveMinimum,omitempty"`
+	Format               string                                        `json:"format,omitempty"`
+	Id                   string                                        `json:"$id,omitempty"`
+	Identifier           bool                                          `json:"identifier,omitempty"`
+	If                   *MetaSchemaDraft7Ext                          `json:"if,omitempty"`
+	Immutable            bool                                          `json:"immutable,omitempty"`
+	Items                interface{}                                   `json:"items,omitempty"`
+	MaxItems             MetaSchemaDraft7ExtNonNegativeInteger         `json:"maxItems,omitempty"`
+	MaxLength            MetaSchemaDraft7ExtNonNegativeInteger         `json:"maxLength,omitempty"`
+	MaxProperties        MetaSchemaDraft7ExtNonNegativeInteger         `json:"maxProperties,omitempty"`
+	Maximum              float64                                       `json:"maximum,omitempty"`
+	MinItems             MetaSchemaDraft7ExtNonNegativeIntegerDefault0 `json:"minItems,omitempty"`
+	MinLength            MetaSchemaDraft7ExtNonNegativeIntegerDefault0 `json:"minLength,omitempty"`
+	MinProperties        MetaSchemaDraft7ExtNonNegativeIntegerDefault0 `json:"minProperties,omitempty"`
+	Minimum              float64                                       `json:"minimum,omitempty"`
+	MultipleOf           float64                                       `json:"multipleOf,omitempty"`
+	Not                  *MetaSchemaDraft7Ext                          `json:"not,omitempty"`
+	OneOf                MetaSchemaDraft7ExtSchemaArray                `json:"oneOf,omitempty"`
+	Pattern              string                                        `json:"pattern,omitempty"`
+	PatternProperties    map[string]MetaSchemaDraft7Ext                `json:"patternProperties,omitempty"`
+	Properties           map[string]MetaSchemaDraft7Ext                `json:"properties,omitempty"`
+	PropertyNames        *MetaSchemaDraft7Ext                          `json:"propertyNames,omitempty"`
+	ReadOnly             bool                                          `json:"readOnly,omitempty"`
+	Ref                  string                                        `json:"$ref,omitempty"`
+	Required             MetaSchemaDraft7ExtStringArray                `json:"required,omitempty"`
+	Schema               string                                        `json:"$schema,omitempty"`
+	Then                 *MetaSchemaDraft7Ext                          `json:"then,omitempty"`
+	Title                string                                        `json:"title,omitempty"`
+	Type                 interface{}                                   `json:"type,omitempty"`
+	UniqueItems          bool                                          `json:"uniqueItems,omitempty"`
+	WriteOnly            bool                                          `json:"writeOnly,omitempty"`
 }
 
-type NonNegativeInteger int64
+type MetaSchemaDraft7ExtDependency interface{}
 
-type NonNegativeIntegerDefault0 interface{}
+type MetaSchemaDraft7ExtEnumItem interface{}
 
-type NonNegativeIntegerDefault0Embedded1 interface{}
+type MetaSchemaDraft7ExtExample interface{}
 
-type SchemaArray []MetaSchemaDraft7Ext
+type MetaSchemaDraft7ExtNonNegativeInteger int64
 
-type SimpleTypes interface{}
+type MetaSchemaDraft7ExtNonNegativeIntegerDefault0 interface{}
 
-type StringArray []StringArrayItem
+type MetaSchemaDraft7ExtNonNegativeIntegerDefault0Embedded1 interface{}
 
-type StringArrayItem string
+type MetaSchemaDraft7ExtSchemaArray []MetaSchemaDraft7Ext
+
+type MetaSchemaDraft7ExtSimpleTypes interface{}
+
+type MetaSchemaDraft7ExtStringArray []MetaSchemaDraft7ExtStringArrayItem
+
+type MetaSchemaDraft7ExtStringArrayItem string
