@@ -9,7 +9,7 @@ We'll showcase how Kore can give you a head start with setting up [clusters](htt
 
 ## Getting Started
 
-- [Docker](#docker)
+- [Prerequisites](#prerequisites)
 - [Start Kore Locally with CLI](#start-kore-locally-with-cli)
 - [Login as Admin with CLI](#login-as-admin-with-cli)
 - [Create a Team with CLI](#create-a-team-with-cli)
@@ -18,12 +18,12 @@ We'll showcase how Kore can give you a head start with setting up [clusters](htt
 - [Deploy An App to the Sandbox](#deploy-an-app-to-the-sandbox)
 - [Cleaning Up](#cleaning-up)
 
-### Docker
+### Prerequisites
 
-Please ensure you have the following installed on your machine,
+Please ensure you have the following installed on your machine:
 
-- Docker: installation instructions can be found [here](https://docs.docker.com/install/)
-- Kubectl: installation instructions can be found [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- Docker: see [Docker installation instructions](https://docs.docker.com/install/)
+- Kubectl: see [Kubectl installation instructions](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 ### Run Kore locally
 
@@ -67,7 +67,7 @@ Access the Kore portal via http://localhost:3000 [ admin | VssJHJVQ ]
 Configure your CLI via $ kore login -a http://localhost:10080
 ```
 
-Note: you can now view the UI from http://localhost:3000 _(credentials will be rendered to screen)_, or use the CLI below.
+You can now view the UI at http://localhost:3000 using the credentials output above, or use the CLI as described below.
 
 ### Login as Admin with CLI
 
@@ -82,7 +82,7 @@ Please confirm password for  : ********
 $ kore whoami
 ```
 
-Note you can also enable single-sign-on for the UI and all clusters; an example of how to configure an IDP provider can be found [here](/doc/setup-auth0.md). To enable the feature on the local demo add `kore alpha local up --enable-sso` which will prompt for your OpenID settings _(you can do this as any point)_.
+You can also enable single-sign-on for the UI and all clusters; see [an example of how to configure an IDP provider](/doc/setup-auth0.md). To enable the feature on the local demo add `kore alpha local up --enable-sso` which will prompt for your OpenID settings _(you can do this at any point)_.
 
 ### Create a Team with CLI
 
@@ -108,7 +108,7 @@ $ kore get teams team-appvia
 We now need to give Kore the credentials it needs to build a cluster on our behalf. This command imports a set of credentials into kore
 and allows your new team to use them to make clusters.
 
-We'll then use these to create a cluster to host our sandbox environment. You can follow [here](/doc/setup-gcp.md) to see how to configure a token, but essentially we need the service account json which has owner in the project.
+We'll then use these to create a cluster to host our sandbox environment. See a [guide to configuring a token for GCP](/doc/setup-gcp.md) - we'll need the service account JSON which has owner privileges in the project.
 
 - GKE Project ID.
 - Path to the service account key JSON file.
@@ -125,7 +125,7 @@ $ kore create gkecredentials gke --description "GKE Credentials" -p <gcp-project
 
 ### Provision a Sandbox Env with CLI
 
-Its time to use the Kore CLI To provision our Sandbox environment,
+It's time to use the Kore CLI To provision our Sandbox environment,
 
 ```shell script
 $ kore create cluster appvia-trial -t team-appvia --plan gke-development -a gke --namespaces sandbox
