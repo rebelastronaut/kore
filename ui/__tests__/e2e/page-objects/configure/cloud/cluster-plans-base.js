@@ -40,6 +40,10 @@ export class ConfigureCloudClusterPlansBase extends ConfigureCloudPage {
   }
 
   async viewPlanConfig() {
+    await Promise.all([
+      this.p.waitForSelector('#plan_summary'),
+      this.p.waitForSelector('#plan_config')
+    ])
     await this.p.evaluate(() => {
       document.querySelector('#plan_config').scrollIntoView()
     })

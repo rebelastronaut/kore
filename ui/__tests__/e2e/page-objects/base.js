@@ -17,13 +17,6 @@ export class BasePage {
     return this.pagePath.replace('/', '').replace(/\//g,'-')
   }
 
-  async screenshot(filename) {
-    await this.p.screenshot({
-      fullPage: true,
-      path: `__tests__/e2e/screenshots/${filename}.png`
-    })
-  }
-
   verifyPageURL() {
     expect(this.p.url()).toBe(`${testUrl}${this.pagePath}`)
   }
@@ -55,24 +48,12 @@ export class BasePage {
   }
 
   async visitPage(query = '') {
-    try {
-      await this.p.goto(`${testUrl}${this.pagePath}${query}`)
-      await this.p.waitForSelector('body')
-    } catch (error) {
-      const filename = this.getFileName()
-      console.log(`Exception caught in visitPage, taking screenshot ${filename}.png. Error is: ${error}`)
-      await this.screenshot(`failed-visit-${filename}`)
-    }
+    await this.p.goto(`${testUrl}${this.pagePath}${query}`)
+    await this.p.waitForSelector('body')
   }
 
   async getHeading() {
-    try {
-      return await this.p.$eval('h1', el => el.innerHTML)
-    } catch (error) {
-      const filename = `failed-getHeading-${this.getFileName()}`
-      console.log(`Exception caught in getHeading on ${this.p.url()}, taking screenshot ${filename}.png. Error is: ${error}`)
-      await this.screenshot(filename)
-    }
+    return await this.p.$eval('h1', el => el.innerHTML)
   }
 
   async clickPrimaryButton(options) {

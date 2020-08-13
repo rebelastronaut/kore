@@ -4,6 +4,7 @@ const { ConfigureCloudGCPProjects } = require('./page-objects/configure/cloud/GC
 const { ConfigureCloudGCPClusterPlans } = require('./page-objects/configure/cloud/GCP/cluster-plans')
 const { ConfigureCloudGCPClusterPolicies } = require('./page-objects/configure/cloud/GCP/cluster-policies')
 const { ConfigureCloudClusterPoliciesBase } = require('./page-objects/configure/cloud/cluster-policies-base')
+const { retry } = require('./page-objects/utils')
 
 const page = global.page
 
@@ -232,8 +233,10 @@ describe('Configure Cloud - GCP', () => {
     })
 
     it('allows copying of a plan', async() => {
-      await clusterPlansPage.copy('gke-development')
-      await expect(page).toMatch('New GKE plan')
+      await retry(async () => {
+        await clusterPlansPage.copy('gke-development')
+        await expect(page).toMatch('New GKE plan')
+      })
       await expect(page).toMatch('Copy of plan "GKE Development Cluster"')
       await clusterPlansPage.save()
       await expect(page).toMatch('GKE plan created successfully')
@@ -324,8 +327,10 @@ describe('Configure Cloud - GCP', () => {
     })
 
     it('allows copying of a policy', async() => {
-      await policiesPage.copy('default-gke')
-      await expect(page).toMatch('New GKE policy')
+      await retry(async () => {
+        await policiesPage.copy('default-gke')
+        await expect(page).toMatch('New GKE policy')
+      })
       await expect(page).toMatch('Copy of policy "Default plan policy for GKE clusters"')
       await policiesPage.save()
       await expect(page).toMatch('Policy created successfully')
