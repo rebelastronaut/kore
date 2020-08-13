@@ -63,14 +63,21 @@ func NewResourceParams(service *servicesv1.Service, config *AppConfiguration) Re
 }
 
 func CreateSystemServiceFromPlan(servicePlan servicesv1.ServicePlan, cluster corev1.Ownership, name, namespace string) servicesv1.Service {
-	config := &AppConfiguration{}
+	if servicePlan.Spec.Kind != ServiceKindApp {
+		panic(fmt.Errorf("CreateSystemServiceFromPlan can only be used for app service kinds, got %q", servicePlan.Spec.Kind))
+	}
+	config := &AppV1{}
 	if err := servicePlan.Spec.GetConfiguration(config); err != nil {
-		// This should not happen
+		panic(err)
+	}
+
+	resources := kubernetes.Objects{}
+	if err := resources.UnmarshalYAML([]byte(config.Resources)); err != nil {
 		panic(err)
 	}
 
 	clusterNamespace := servicePlan.Name
-	for _, resource := range config.Resources {
+	for _, resource := range resources {
 		if ns, ok := resource.(*v1.Namespace); ok {
 			clusterNamespace = ns.Name
 		}
@@ -204,33 +211,45 @@ func ensureResource(ctx kore.Context, client client.Client, original runtime.Obj
 func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppConfiguration, error) {
 	switch service.Spec.Kind {
 	case ServiceKindApp:
-		config := &AppConfiguration{}
-		if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, config); err != nil {
+		config := &AppV1{}
+		secrets, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, config)
+		if err != nil {
 			return nil, err
 		}
-		return config, nil
+
+		resources := kubernetes.Objects{}
+		if err := resources.UnmarshalYAML([]byte(config.Resources)); err != nil {
+			return nil, err
+		}
+
+		return &AppConfiguration{
+			Resources: resources,
+			Values:    config.Values,
+			Secrets:   secrets,
+		}, nil
 	case ServiceKindHelmApp:
-		helmConfig := &HelmAppConfiguration{}
-		if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, helmConfig); err != nil {
+		helmConfig := &HelmAppV1{}
+		secrets, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, helmConfig)
+		if err != nil {
 			return nil, err
 		}
 
 		var chart map[string]interface{}
-		if helmConfig.Source.HelmRepository != nil {
+		if helmConfig.Source.Helm != nil {
 			chart = map[string]interface{}{
-				"repository": helmConfig.Source.HelmRepository.URL,
-				"version":    helmConfig.Source.HelmRepository.Version,
-				"name":       helmConfig.Source.HelmRepository.Name,
+				"repository": helmConfig.Source.Helm.URL,
+				"version":    helmConfig.Source.Helm.Version,
+				"name":       helmConfig.Source.Helm.Name,
 			}
 		}
-		if helmConfig.Source.GitRepository != nil {
+		if helmConfig.Source.Git != nil {
 			if chart != nil {
 				return nil, fmt.Errorf("only one Helm chart source should be defined")
 			}
 			chart = map[string]interface{}{
-				"git":  helmConfig.Source.GitRepository.URL,
-				"path": helmConfig.Source.GitRepository.Path,
-				"ref":  helmConfig.Source.GitRepository.Ref,
+				"git":  helmConfig.Source.Git.URL,
+				"path": helmConfig.Source.Git.Path,
+				"ref":  helmConfig.Source.Git.Ref,
 			}
 		}
 		if chart == nil {
@@ -256,6 +275,14 @@ func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppCon
 			},
 		}}
 
+		var resourceKinds []metav1.GroupKind
+		for _, rk := range helmConfig.ResourceKinds {
+			resourceKinds = append(resourceKinds, metav1.GroupKind{
+				Group: rk.Group,
+				Kind:  rk.Kind,
+			})
+		}
+
 		app := &applicationv1beta.Application{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Application",
@@ -266,12 +293,17 @@ func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppCon
 				Namespace: service.Spec.ClusterNamespace,
 			},
 			Spec: applicationv1beta.ApplicationSpec{
-				ComponentGroupKinds: helmConfig.ResourceKinds,
+				ComponentGroupKinds: resourceKinds,
 			},
 		}
+
 		if helmConfig.ResourceSelector != nil {
+			matchLabels := map[string]string{}
+			for k, v := range helmConfig.ResourceSelector.MatchLabels {
+				matchLabels[k] = string(v)
+			}
 			app.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: helmConfig.ResourceSelector.MatchLabels,
+				MatchLabels: matchLabels,
 			}
 		} else {
 			app.Spec.Selector = &metav1.LabelSelector{
@@ -282,11 +314,12 @@ func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppCon
 		}
 
 		return &AppConfiguration{
-			Resources: []runtime.Object{
+			Resources: kubernetes.Objects{
 				helmRelease,
 				app,
 			},
-			Values: nil,
+			Values:  nil,
+			Secrets: secrets,
 		}, nil
 	default:
 		panic(fmt.Errorf("unexpected service kind: %s", service.Spec.Kind))

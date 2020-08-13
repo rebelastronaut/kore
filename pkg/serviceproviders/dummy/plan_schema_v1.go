@@ -16,9 +16,9 @@
 
 package dummy
 
-//go:generate go run github.com/appvia/kore/cmd/struct-gen PlanSchema
-const planSchema = `{
-	"$id": "https://appvia.io/kore/schemas/services/dummy/dummy.json",
+//go:generate go run github.com/appvia/kore/cmd/struct-gen PlanSchemaV1
+const planSchemaV1 = `{
+	"$id": "https://appvia.io/kore/schemas/servicekind/dummy/v1.json",
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"description": "Dummy service plan schema",
 	"type": "object",

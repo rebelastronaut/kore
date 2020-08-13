@@ -77,7 +77,7 @@ type ObjectWithConfigurationFrom interface {
 	GetConfigurationFrom() []corev1.ConfigurationFromSource
 }
 
-func ParseObjectConfiguration(ctx context.Context, client client.Client, o ObjectWithConfiguration, v interface{}) error {
+func ParseObjectConfiguration(ctx context.Context, client client.Client, o ObjectWithConfiguration, v interface{}) (secrets map[string]interface{}, _ error) {
 	var configFromSource []corev1.ConfigurationFromSource
 	if o, ok := o.(ObjectWithConfigurationFrom); ok {
 		configFromSource = o.GetConfigurationFrom()
@@ -92,7 +92,7 @@ func ParseConfiguration(
 	config *apiextv1.JSON,
 	configFromSource []corev1.ConfigurationFromSource,
 	v interface{},
-) error {
+) (secrets map[string]interface{}, _ error) {
 	if config == nil || len(config.Raw) == 0 {
 		config = &apiextv1.JSON{Raw: []byte(`{}`)}
 	}
@@ -115,12 +115,12 @@ func ParseConfiguration(
 
 			secret, err := cachedSecrets.getIfExists(ctx, client, secretNsName)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if secret == nil {
 				if !cfs.SecretKeyRef.Optional {
-					return fmt.Errorf("failed to load secret %s/%s: does not exist", secretNsName.Namespace, secretNsName.Name)
+					return nil, fmt.Errorf("failed to load secret %s/%s: does not exist", secretNsName.Namespace, secretNsName.Name)
 				} else {
 					continue
 				}
@@ -129,23 +129,31 @@ func ParseConfiguration(
 			value, ok := secret.Spec.Data[cfs.SecretKeyRef.Key]
 			if !ok {
 				if !cfs.SecretKeyRef.Optional {
-					return fmt.Errorf("key %q does not exist in secret %s/%s", cfs.SecretKeyRef.Key, secret.Namespace, secret.Name)
+					return nil, fmt.Errorf("key %q does not exist in secret %s/%s", cfs.SecretKeyRef.Key, secret.Namespace, secret.Name)
 				} else {
 					continue
 				}
 			}
 
 			if document, err = jsonutils.SetJSONProperty(document, cfs.Path, value); err != nil {
-				return fmt.Errorf("%q is invalid: %w", cfs.Path, err)
+				return nil, fmt.Errorf("%q is invalid: %w", cfs.Path, err)
 			}
 		default:
-			return fmt.Errorf("configuration source definition is invalid, reference is missing for %s", cfs.Path)
+			return nil, fmt.Errorf("configuration source definition is invalid, reference is missing for %s", cfs.Path)
 		}
 	}
 
 	if err := json.Unmarshal(document, v); err != nil {
-		return fmt.Errorf("failed to unmarshal the configuration: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal the configuration: %w", err)
 	}
 
-	return nil
+	secretsWrapper := struct {
+		Secrets map[string]interface{} `json:"secrets"`
+	}{}
+
+	if err := json.Unmarshal(document, &secretsWrapper); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal the configuration: %w", err)
+	}
+
+	return secretsWrapper.Secrets, nil
 }

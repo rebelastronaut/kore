@@ -162,7 +162,7 @@ func (p *serviceProvidersImpl) Update(ctx context.Context, provider *servicesv1.
 	}
 
 	config := map[string]interface{}{}
-	if err := configuration.ParseObjectConfiguration(ctx, p.Store().RuntimeClient(), provider, &config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, p.Store().RuntimeClient(), provider, &config); err != nil {
 		return fmt.Errorf("failed to parse service provider configuration: %s", err)
 	}
 

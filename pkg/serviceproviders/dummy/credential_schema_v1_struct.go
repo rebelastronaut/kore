@@ -3,6 +3,6 @@
 package dummy
 
 // Dummy service plan credentials schema
-type CredentialSchema struct {
+type CredentialSchemaV1 struct {
 	Bar string `json:"bar"`
 }

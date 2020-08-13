@@ -17,9 +17,6 @@
 package application_test
 
 import (
-	"fmt"
-
-	v1 "github.com/appvia/kore/pkg/apis/services/v1"
 	"github.com/appvia/kore/pkg/serviceproviders/application"
 	"github.com/appvia/kore/pkg/utils/jsonschema"
 
@@ -32,19 +29,7 @@ var _ = Describe("ServicePlans", func() {
 		plans := application.GetDefaultPlans()
 
 		for _, plan := range plans {
-			schema, err := func(p v1.ServicePlan) (string, error) {
-				switch p.Spec.Kind {
-				case application.ServiceKindHelmApp:
-					return application.HelmAppSchema, nil
-				case application.ServiceKindApp:
-					return application.AppSchema, nil
-				default:
-					return "", fmt.Errorf("invalid service type %s", plan.Spec.Kind)
-				}
-			}(plan)
-			Expect(err).ToNot(HaveOccurred())
-
-			err = jsonschema.Validate(schema, plan.Name, plan.Spec.Configuration)
+			err := jsonschema.Validate(plan.Spec.Schema, plan.Name, plan.Spec.Configuration)
 			Expect(err).ToNot(HaveOccurred(), "%s plan is not valid: %s", plan.Name, err)
 
 		}

@@ -19,6 +19,8 @@ package application
 import (
 	"fmt"
 
+	"github.com/appvia/kore/pkg/utils/jsonutils"
+
 	"github.com/appvia/kore/pkg/utils"
 
 	clustersv1 "github.com/appvia/kore/pkg/apis/clusters/v1"
@@ -70,7 +72,7 @@ func (p Provider) Catalog(ctx kore.Context, provider *servicesv1.ServiceProvider
 					Summary:              "Kubernetes Application",
 					Enabled:              false,
 					ServiceAccessEnabled: false,
-					Schema:               AppSchema,
+					Schema:               string(jsonutils.MustCompact([]byte(appSchemaV1))),
 				},
 			},
 			{
@@ -90,7 +92,7 @@ func (p Provider) Catalog(ctx kore.Context, provider *servicesv1.ServiceProvider
 					Summary:              "Kubernetes Helm Application",
 					Enabled:              true,
 					ServiceAccessEnabled: false,
-					Schema:               HelmAppSchema,
+					Schema:               string(jsonutils.MustCompact([]byte(helmAppSchemaV1))),
 				},
 			},
 		},

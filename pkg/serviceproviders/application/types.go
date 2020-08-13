@@ -17,52 +17,30 @@
 package application
 
 import (
-	"strconv"
+	"fmt"
 
 	corev1 "github.com/appvia/kore/pkg/apis/core/v1"
-
-	"sigs.k8s.io/yaml"
+	"github.com/appvia/kore/pkg/utils/kubernetes"
 )
-
-type YAMLMap map[string]interface{}
-
-func (y YAMLMap) MarshalJSON() ([]byte, error) {
-	if len(y) == 0 {
-		return []byte(`""`), nil
-	}
-
-	yamlData, err := yaml.Marshal(map[string]interface{}(y))
-	if err != nil {
-		return nil, err
-	}
-
-	return []byte(strconv.Quote(string(yamlData))), nil
-}
-
-func (y *YAMLMap) UnmarshalJSON(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-
-	raw, err := strconv.Unquote(string(data))
-	if err != nil {
-		return err
-	}
-
-	if raw == "" {
-		return nil
-	}
-
-	res := map[string]interface{}{}
-	if err := yaml.Unmarshal([]byte(raw), &res); err != nil {
-		return err
-	}
-
-	*y = res
-
-	return nil
-}
 
 type ProviderData struct {
 	Resources []corev1.Ownership `json:"resources,omitempty"`
+}
+
+type AppConfiguration struct {
+	Resources kubernetes.Objects
+	Values    map[string]interface{}
+	Secrets   map[string]interface{}
+}
+
+func (a AppConfiguration) CompileResources(params ResourceParams) (kubernetes.Objects, error) {
+	var compiledResources kubernetes.Objects
+	for _, r := range a.Resources {
+		compiled, err := compileResource(r.DeepCopyObject(), params)
+		if err != nil {
+			return nil, fmt.Errorf("compiling resource %v failed: %w", r, err)
+		}
+		compiledResources = append(compiledResources, compiled)
+	}
+	return compiledResources, nil
 }

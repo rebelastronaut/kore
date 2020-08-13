@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-package dummy
+package application
 
-//go:generate go run github.com/appvia/kore/cmd/struct-gen ProviderSchemaV2
-const providerSchemaV2 = `{
-	"$id": "https://appvia.io/kore/schemas/serviceprovider/dummy/v2.json",
+//go:generate go run github.com/appvia/kore/cmd/struct-gen AppV1
+const appSchemaV1 = `{
+	"$id": "https://appvia.io/kore/schemas/servicekind/app/v1.json",
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"description": "Dummy service plan schema",
+	"description": "Kubernetes Application defined by raw resources",
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
-		"iAmDummy",
-		"iAmVersionTwo"
+		"resources"
 	],
 	"properties": {
-		"iAmDummy": {
+		"resources": {
 			"type": "string",
-			"minLength": 1
+			"format": "multiline",
+			"description": "Kubernetes resource definitions in YAML format. It supports Go text/template expressions. Values can be referenced as '{{ .Values.<parameter name> }}'."
 		},
-		"iAmVersionTwo": {
-			"type": "string",
-			"minLength": 1
+		"values": {
+			"type": "object",
+			"description": "A set of key-values to use as template parameters in the Kubernetes resoure defintions.",
+			"default": {}
 		}
 	}
 }`

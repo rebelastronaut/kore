@@ -18,6 +18,7 @@ package application
 
 import (
 	servicev1 "github.com/appvia/kore/pkg/apis/services/v1"
+	"github.com/appvia/kore/pkg/utils/jsonutils"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -71,6 +72,7 @@ func GetDefaultPlans() []servicev1.ServicePlan {
 						}
 					}`),
 				},
+				Schema: string(jsonutils.MustCompact([]byte(helmAppSchemaV1))),
 			},
 		},
 		{
@@ -113,6 +115,7 @@ func GetDefaultPlans() []servicev1.ServicePlan {
 						}
 					}`),
 				},
+				Schema: string(jsonutils.MustCompact([]byte(helmAppSchemaV1))),
 			},
 		},
 	}

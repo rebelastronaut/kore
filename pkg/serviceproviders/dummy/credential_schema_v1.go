@@ -16,9 +16,9 @@
 
 package dummy
 
-//go:generate go run github.com/appvia/kore/cmd/struct-gen CredentialSchema
-const credentialSchema = `{
-	"$id": "https://appvia.io/kore/schemas/services/dummy/dummy-credentials.json",
+//go:generate go run github.com/appvia/kore/cmd/struct-gen CredentialSchemaV1
+const credentialSchemaV1 = `{
+	"$id": "https://appvia.io/kore/schemas/servicecredential/dummy/v1.json",
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"description": "Dummy service plan credentials schema",
 	"type": "object",

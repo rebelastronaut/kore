@@ -35,7 +35,6 @@ func (d DummyFactory) Type() string {
 func (d DummyFactory) JSONSchemas() map[string]string {
 	return map[string]string{
 		"https://appvia.io/kore/schemas/serviceprovider/dummy/v1.json": providerSchemaV1,
-		"https://appvia.io/kore/schemas/serviceprovider/dummy/v2.json": providerSchemaV2,
 	}
 }
 

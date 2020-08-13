@@ -47,7 +47,7 @@ func (p ProviderFactory) Create(ctx kore.Context, serviceProvider *servicesv1.Se
 	var config = ProviderConfiguration{}
 	config.Name = serviceProvider.Name
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, &config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, &config); err != nil {
 		return nil, fmt.Errorf("failed to process service provider configuration: %w", err)
 	}
 

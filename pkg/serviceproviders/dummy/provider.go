@@ -19,6 +19,8 @@ package dummy
 import (
 	"strings"
 
+	"github.com/appvia/kore/pkg/utils/jsonutils"
+
 	servicesv1 "github.com/appvia/kore/pkg/apis/services/v1"
 	"github.com/appvia/kore/pkg/kore"
 
@@ -65,8 +67,8 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
 				ServiceAccessEnabled: true,
-				Schema:               planSchema,
-				CredentialSchema:     credentialSchema,
+				Schema:               string(jsonutils.MustCompact([]byte(planSchemaV1))),
+				CredentialSchema:     string(jsonutils.MustCompact([]byte(credentialSchemaV1))),
 			},
 		})
 
@@ -107,7 +109,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
 				ServiceAccessEnabled: true,
-				Schema:               planSchema,
+				Schema:               string(jsonutils.MustCompact([]byte(planSchemaV1))),
 			},
 		})
 
@@ -128,7 +130,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
 				ServiceAccessEnabled: false,
-				Schema:               planSchema,
+				Schema:               string(jsonutils.MustCompact([]byte(planSchemaV1))),
 			},
 		})
 	}
@@ -150,10 +152,12 @@ func (d Dummy) plans() []servicesv1.ServicePlan {
 				Namespace: "kore",
 			},
 			Spec: servicesv1.ServicePlanSpec{
-				Kind:        serviceKind.Name,
-				DisplayName: "Default",
-				Summary:     serviceKind.Labels[kore.Label("platform")] + " dummy service plan used for testing",
-				Description: "Testing, testing, 1, 2, 3",
+				Kind:             serviceKind.Name,
+				DisplayName:      "Default",
+				Summary:          serviceKind.Labels[kore.Label("platform")] + " dummy service plan used for testing",
+				Description:      "Testing, testing, 1, 2, 3",
+				Schema:           serviceKind.Spec.Schema,
+				CredentialSchema: serviceKind.Spec.CredentialSchema,
 			},
 		}
 		if serviceKind.Spec.Schema != "" {

@@ -69,7 +69,7 @@ func (d ProviderFactory) Create(ctx kore.Context, serviceProvider *servicesv1.Se
 		serviceProvider.Spec.Configuration.Raw = bytes.ReplaceAll(serviceProvider.Spec.Configuration.Raw, []byte("aws_secret_access_key"), []byte("awsSecretAccessKey"))
 	}
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
 		return nil, fmt.Errorf("failed to process aws-servicebroker configuration: %w", err)
 	}
 
@@ -135,7 +135,7 @@ func (d ProviderFactory) Create(ctx kore.Context, serviceProvider *servicesv1.Se
 func (d ProviderFactory) SetUp(ctx kore.Context, serviceProvider *servicesv1.ServiceProvider) (complete bool, _ error) {
 	var config = DefaultProviderConfiguration()
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
 		return false, fmt.Errorf("failed to process aws-servicebroker configuration: %w", err)
 	}
 
@@ -207,7 +207,7 @@ func (d ProviderFactory) SetUp(ctx kore.Context, serviceProvider *servicesv1.Ser
 func (d ProviderFactory) TearDown(ctx kore.Context, serviceProvider *servicesv1.ServiceProvider) (complete bool, _ error) {
 	var config = DefaultProviderConfiguration()
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
 		return false, fmt.Errorf("failed to process aws-servicebroker configuration: %w", err)
 	}
 

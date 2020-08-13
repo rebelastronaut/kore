@@ -16,32 +16,10 @@
 
 package application
 
-const AppSchema = `
+//go:generate go run github.com/appvia/kore/cmd/struct-gen HelmAppV1
+const helmAppSchemaV1 = `
 {
-    "$id": "https://appvia.io/kore/schemas/services/application/app.json",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "Kubernetes Application defined by raw resources",
-    "type": "object",
-    "additionalProperties": false,
-    "required": [
-        "resources"
-    ],
-    "properties": {
-        "resources": {
-            "type": "string",
-            "format": "multiline"
-        },
-        "values": {
-            "type": "string",
-            "format": "multiline"
-        }
-    }
-}
-`
-
-const HelmAppSchema = `
-{
-	"$id": "https://appvia.io/kore/schemas/services/application/helm-app.json",
+	"$id": "https://appvia.io/kore/schemas/servicekind/helm-app/v2.json",
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"description": "Kubernetes Application defined by a Helm package",
 	"type": "object",
@@ -115,8 +93,9 @@ const HelmAppSchema = `
 			}
 		},
 		"values": {
-			"type": "string",
-			"format": "multiline"
+			"type": "object",
+			"description": "A set of key-values to use as template parameters in the Kubernetes resoure defintions.",
+			"default": {}
 		},
 		"resourceKinds": {
 			"type": "array",
