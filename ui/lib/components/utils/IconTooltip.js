@@ -12,7 +12,7 @@ const IconTooltip = ({ icon, text, color, placement, onClick }) => {
 }
 
 IconTooltip.propTypes = {
-  icon: PropTypes.string.isRequired,
+  icon: PropTypes.string,
   text: PropTypes.string.isRequired,
   color: PropTypes.string,
   placement: PropTypes.string,
