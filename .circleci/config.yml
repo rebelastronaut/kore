@@ -322,6 +322,8 @@ jobs:
             NODE_ENV: development
           command: |
             make test-e2e
+      - store_artifacts:
+          path: ./ui/__tests__/e2e/screenshots
 
   release-ui:
     environment:

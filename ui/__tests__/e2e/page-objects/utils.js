@@ -71,3 +71,15 @@ export async function popConfirmYes(pg, textToCheck) {
 export async function waitForDrawerOpenClose(pg) {
   await pg.waitFor(drawerOpenClosePause)
 }
+
+/**
+ * Retry the passing in async function once if it fails
+ * @param func
+ */
+export async function retry(func) {
+  try {
+    await func()
+  } catch (e) {
+    await func()
+  }
+}

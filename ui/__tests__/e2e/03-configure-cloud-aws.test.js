@@ -3,6 +3,7 @@ const { ConfigureCloudAWSAccounts } = require('./page-objects/configure/cloud/AW
 const { ConfigureCloudAWSClusterPlans } = require('./page-objects/configure/cloud/AWS/cluster-plans')
 const { ConfigureCloudAWSClusterPolicies } = require('./page-objects/configure/cloud/AWS/cluster-policies')
 const { ConfigureCloudClusterPoliciesBase } = require('./page-objects/configure/cloud/cluster-policies-base')
+const { retry } = require('./page-objects/utils')
 
 const page = global.page
 
@@ -160,8 +161,10 @@ describe('Configure Cloud - AWS', () => {
     })
 
     it('allows copying of a plan', async() => {
-      await awsClusterPlansPage.copy('eks-development')
-      await expect(page).toMatch('New EKS plan')
+      await retry(async () => {
+        await awsClusterPlansPage.copy('eks-development')
+        await expect(page).toMatch('New EKS plan')
+      })
       await expect(page).toMatch('Copy of plan "EKS Development Cluster"')
       await awsClusterPlansPage.save()
       await expect(page).toMatch('EKS plan created successfully')
@@ -252,8 +255,10 @@ describe('Configure Cloud - AWS', () => {
     })
 
     it('allows copying of a policy', async() => {
-      await policiesPage.copy('default-eks')
-      await expect(page).toMatch('New EKS policy')
+      await retry(async () => {
+        await policiesPage.copy('default-eks')
+        await expect(page).toMatch('New EKS policy')
+      })
       await expect(page).toMatch('Copy of policy "Default plan policy for EKS clusters"')
       await policiesPage.save()
       await expect(page).toMatch('Policy created successfully')
