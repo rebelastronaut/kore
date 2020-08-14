@@ -89,6 +89,8 @@ type Interface interface {
 	Plans() Plans
 	// Plans returns the plans interface
 	PlanPolicies() PlanPolicies
+	// ServiceCatalogs returns the service catalog manager
+	ServiceCatalogs() ServiceCatalogs
 	// ServicePlans returns the interface for service plans
 	ServicePlans() ServicePlans
 	// ServiceKinds returns the interface for service plans

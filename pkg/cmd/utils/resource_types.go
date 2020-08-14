@@ -378,6 +378,22 @@ var (
 			},
 		},
 		{
+			Name:         "servicecatalog",
+			GroupVersion: servicesv1.GroupVersion.String(),
+			Kind:         "ServiceCatalog",
+			Scope:        GlobalScope,
+			ShortName:    "svccat",
+			FeatureGate:  kore.FeatureGateServices,
+			Printer: []Column{
+				{"Name", "metadata.name", ""},
+				{"Title", "spec.displayName", ""},
+				{"Summary", "spec.summary", ""},
+				{"URL", "spec.url", ""},
+				{"Status", "status.status", ""},
+				{"Age", "metadata.creationTimestamp", "age"},
+			},
+		},
+		{
 			Name:         "servicekind",
 			GroupVersion: servicesv1.GroupVersion.String(),
 			Kind:         "ServiceKind",

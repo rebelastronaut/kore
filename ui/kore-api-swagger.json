@@ -3820,6 +3820,190 @@
         }
       }
     },
+    "/api/v1alpha1/servicecatalogs": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Returns all the available service catalogs",
+        "operationId": "ListServiceCatalogs",
+        "responses": {
+          "200": {
+            "description": "A list of service catalogs",
+            "schema": {
+              "$ref": "#/definitions/v1.ServiceCatalogList"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1alpha1/servicecatalogs/{name}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Returns a specific service catalog",
+        "operationId": "GetServiceCatalog",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of the service catalog you wish to retrieve",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contains the service catalog definition",
+            "schema": {
+              "$ref": "#/definitions/v1.ServiceCatalog"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "404": {
+            "description": "the service catalog with the given name doesn't exist"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Creates or updates a service catalog",
+        "operationId": "UpdateServiceCatalog",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of the service catalog you wish to create or update",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "The specification for the service catalog you are creating or updating",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1.ServiceCatalog"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contains the service catalog definition",
+            "schema": {
+              "$ref": "#/definitions/v1.ServiceCatalog"
+            }
+          },
+          "400": {
+            "description": "Validation error of supplied parameters/body",
+            "schema": {
+              "$ref": "#/definitions/validation.Error"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Deletes a service catalog",
+        "operationId": "DeleteServiceCatalog",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "The name of the service catalog you wish to delete",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "description": "If true then all objects owned by this object will be deleted too.",
+            "name": "cascade",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contains the service catalog definition",
+            "schema": {
+              "$ref": "#/definitions/v1.ServiceCatalog"
+            }
+          },
+          "400": {
+            "description": "Validation error of supplied parameters/body",
+            "schema": {
+              "$ref": "#/definitions/validation.Error"
+            }
+          },
+          "401": {
+            "description": "If not authenticated"
+          },
+          "403": {
+            "description": "If authenticated but not authorized"
+          },
+          "404": {
+            "description": "the service catalog with the given name doesn't exist"
+          },
+          "500": {
+            "description": "A generic API error containing the cause of the error",
+            "schema": {
+              "$ref": "#/definitions/apiserver.Error"
+            }
+          }
+        }
+      }
+    },
     "/api/v1alpha1/servicekinds": {
       "get": {
         "consumes": [
@@ -10108,6 +10292,85 @@
         },
         "status": {
           "$ref": "#/definitions/v1.ServiceStatus"
+        }
+      }
+    },
+    "v1.ServiceCatalog": {
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1.ObjectMeta"
+        },
+        "spec": {
+          "$ref": "#/definitions/v1.ServiceCatalogSpec"
+        },
+        "status": {
+          "$ref": "#/definitions/v1.ServiceCatalogStatus"
+        }
+      }
+    },
+    "v1.ServiceCatalogList": {
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "apiVersion": {
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1.ServiceCatalog"
+          }
+        },
+        "kind": {
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/v1.ListMeta"
+        }
+      }
+    },
+    "v1.ServiceCatalogSpec": {
+      "required": [
+        "summary",
+        "url",
+        "serviceKindPrefix"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "serviceKindPrefix": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "v1.ServiceCatalogStatus": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
         }
       }
     },
