@@ -401,7 +401,7 @@ func handleLoginCallback(req *http.Request, resp http.ResponseWriter) (*apiserve
 	}
 
 	// @step: send back the html
-	shutdown := `<html><body><script>window.close();</script></body></html>`
+	shutdown := `<html><body><script>window.close();</script><p style="font-family: arial, sans-serif; text-align: center; font-size: 20px; margin-top: 100px; font-weight: bold;">You are now logged in to the Kore CLI, you can safely close this tab and return to the terminal.</p></body></html>`
 	if _, err := resp.Write([]byte(shutdown)); err != nil {
 		return nil, err
 	}
