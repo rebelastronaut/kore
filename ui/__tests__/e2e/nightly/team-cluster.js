@@ -187,7 +187,6 @@ export class TeamCluster {
           teamPage.verifyPageURL()
         })
 
-        // overall timeout of 10 minutes
         it('deletes the cluster', async () => {
           await teamPage.deleteCluster(clusterName)
           await teamPage.deleteClusterConfirm()
@@ -195,7 +194,7 @@ export class TeamCluster {
           await teamPage.checkForClusterStatus(clusterName, 'Deleting')
           console.log('Requested deletion of cluster', clusterName)
 
-          // wait up to 9 minutes for the cluster to be deleted
+          // wait slightly less than the cluster delete timeout to give the rest of the test a chance
           await teamPage.waitForClusterDeleted(clusterName, this.clusterDeleteTimeout - 30)
           await expect(page).toMatch(`Cluster successfully deleted: ${clusterName}`)
           console.log('Cluster deleted successfully', clusterName)
@@ -204,7 +203,7 @@ export class TeamCluster {
         it('navigates to the team page and shows no cluster', async () => {
           await teamPage.visitPage()
           teamPage.verifyPageURL()
-          await expect(page).toMatch('No clusters found for this team')
+          await expect(page).toMatch('No clusters found for this team', { timeout: 10000 })
           console.log('No clusters found for team', teamID)
         })
       })
