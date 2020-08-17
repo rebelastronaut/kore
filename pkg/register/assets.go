@@ -8236,8 +8236,14 @@ spec:
                 kind
               minLength: 1
               type: string
+            type:
+              description: Type is the service type, used by the service providers
+                to decide how to handle the service kind
+              minLength: 1
+              type: string
           required:
           - summary
+          - type
           type: object
       type: object
   version: v1
@@ -8540,8 +8546,8 @@ spec:
             status:
               description: Status is the overall status of the service
               type: string
-            supportedKinds:
-              description: SupportedKinds contains all the supported service kinds
+            supportedTypes:
+              description: SupportedTypes contains all the supported service types
               items:
                 type: string
               type: array

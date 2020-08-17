@@ -402,6 +402,7 @@ var (
 			FeatureGate:  kore.FeatureGateServices,
 			Printer: []Column{
 				{"Name", "metadata.name", ""},
+				{"Type", "spec.type", ""},
 				{"Title", "spec.displayName", ""},
 				{"Summary", "spec.summary", ""},
 				{"Platform", "metadata.labels.kore\\.appvia\\.io/platform", ""},

@@ -130,7 +130,8 @@ type ServiceProviders interface {
 type serviceProvidersImpl struct {
 	Interface
 	providers       map[string]ServiceProvider
-	providersByKind map[string]ServiceProvider
+	providersByType map[string]ServiceProvider
+	serviceKindType map[string]string
 	providersLock   sync.Mutex
 }
 
@@ -197,6 +198,17 @@ func (p *serviceProvidersImpl) CheckDelete(ctx context.Context, serviceProvider 
 	if !opts.Cascade {
 		var dependents []kubernetes.DependentReference
 
+		serviceKinds, err := p.ServiceKinds().List(ctx, func(sk servicesv1.ServiceKind) bool {
+			return utils.Contains(sk.Spec.Type, serviceProvider.Status.SupportedTypes)
+		})
+		if err != nil {
+			return fmt.Errorf("failed to list service kinds: %w", err)
+		}
+		var serviceKindNames []string
+		for _, sk := range serviceKinds.Items {
+			serviceKindNames = append(serviceKindNames, sk.Name)
+		}
+
 		teamList, err := p.Teams().List(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to list teams: %w", err)
@@ -204,7 +216,7 @@ func (p *serviceProvidersImpl) CheckDelete(ctx context.Context, serviceProvider 
 
 		for _, team := range teamList.Items {
 			services, err := p.Teams().Team(team.Name).Services().List(ctx, func(s servicesv1.Service) bool {
-				return utils.Contains(s.Spec.Kind, serviceProvider.Status.SupportedKinds)
+				return utils.Contains(s.Spec.Kind, serviceKindNames)
 			})
 			if err != nil {
 				return fmt.Errorf("failed to list services: %w", err)
@@ -348,11 +360,11 @@ func (p *serviceProvidersImpl) register(ctx Context, serviceProvider *servicesv1
 	}
 	p.providers[serviceProvider.Name] = provider
 
-	if p.providersByKind == nil {
-		p.providersByKind = map[string]ServiceProvider{}
+	if p.providersByType == nil {
+		p.providersByType = map[string]ServiceProvider{}
 	}
-	for _, kind := range serviceProvider.Status.SupportedKinds {
-		p.providersByKind[kind] = provider
+	for _, serviceType := range serviceProvider.Status.SupportedTypes {
+		p.providersByType[serviceType] = provider
 	}
 
 	return provider, nil
@@ -388,15 +400,16 @@ func (p *serviceProvidersImpl) Catalog(ctx Context, serviceProvider *servicesv1.
 		return ServiceProviderCatalog{}, fmt.Errorf("failed to fetch service catalog from service provider: %w", err)
 	}
 
-	var supportedKinds []string
+	var supportedKinds, supportedTypes []string
 	for _, kind := range catalog.Kinds {
 		supportedKinds = append(supportedKinds, kind.Name)
+		supportedTypes = append(supportedTypes, kind.Spec.Type)
 	}
 
-	for _, kind := range supportedKinds {
-		if rp, registered := p.providersByKind[kind]; registered {
+	for _, st := range supportedTypes {
+		if rp, registered := p.providersByType[st]; registered {
 			if rp.Name() != serviceProvider.Name {
-				return ServiceProviderCatalog{}, fmt.Errorf("service kind is already registered by an other service provider: %s", rp.Name())
+				return ServiceProviderCatalog{}, fmt.Errorf("service type %q is already registered by an other service provider: %s", st, rp.Name())
 			}
 		}
 	}
@@ -418,8 +431,15 @@ func (p *serviceProvidersImpl) Unregister(ctx Context, serviceProvider *services
 	p.providersLock.Lock()
 	defer p.providersLock.Unlock()
 
-	for _, kind := range serviceProvider.Status.SupportedKinds {
-		if err := p.unregisterKind(ctx, kind, true); err != nil {
+	serviceKinds, err := p.ServiceKinds().List(ctx, func(sk servicesv1.ServiceKind) bool {
+		return kubernetes.HasOwnerReference(&sk, serviceProvider)
+	})
+	if err != nil {
+		return false, fmt.Errorf("failed to list the service kinds: %w", err)
+	}
+
+	for _, kind := range serviceKinds.Items {
+		if err := p.unregisterKind(ctx, kind.Name, true); err != nil {
 			return false, err
 		}
 	}
@@ -448,12 +468,16 @@ func (p *serviceProvidersImpl) unregisterKind(ctx context.Context, kind string, 
 		}
 	}
 
-	_, err = p.ServiceKinds().Delete(ctx, kind, DeleteOptionSkipCheck(skipCheck))
+	serviceKind, err := p.ServiceKinds().Delete(ctx, kind, DeleteOptionSkipCheck(skipCheck))
 	if err != nil && err != ErrNotFound {
 		return fmt.Errorf("failed to delete service kind: %w", err)
 	}
 
-	delete(p.providersByKind, kind)
+	delete(p.serviceKindType, kind)
+
+	if serviceKind != nil {
+		delete(p.providersByType, serviceKind.Spec.Type)
+	}
 
 	return nil
 }
@@ -462,13 +486,28 @@ func (p *serviceProvidersImpl) GetProviderForKind(ctx Context, kind string) (Ser
 	p.providersLock.Lock()
 	defer p.providersLock.Unlock()
 
-	provider, ok := p.providersByKind[kind]
+	serviceType := p.serviceKindType[kind]
+
+	if serviceType == "" {
+		serviceKind, err := p.ServiceKinds().Get(ctx, kind)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get service kind: %w", err)
+		}
+		if p.serviceKindType == nil {
+			p.serviceKindType = map[string]string{}
+		}
+
+		serviceType = serviceKind.Spec.Type
+		p.serviceKindType[kind] = serviceType
+	}
+
+	provider, ok := p.providersByType[serviceType]
 	if ok {
 		return provider, nil
 	}
 
 	providerList, err := p.List(ctx, func(provider servicesv1.ServiceProvider) bool {
-		return utils.Contains(kind, provider.Status.SupportedKinds)
+		return utils.Contains(serviceType, provider.Status.SupportedTypes)
 	})
 	if err != nil {
 		return nil, err

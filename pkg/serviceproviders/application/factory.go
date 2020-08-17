@@ -169,14 +169,14 @@ func (d Factory) createPlan(info os.FileInfo) (*servicesv1.ServicePlan, error) {
 			APIVersion: servicesv1.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      ServiceKindApp + "-" + info.Name(),
+			Name:      ServiceTypeApp + "-" + info.Name(),
 			Namespace: "kore",
 			Annotations: map[string]string{
 				kore.AnnotationSystem: "true",
 			},
 		},
 		Spec: servicesv1.ServicePlanSpec{
-			Kind:        ServiceKindApp,
+			Kind:        ServiceTypeApp,
 			Labels:      nil,
 			Description: fmt.Sprintf("%s application", info.Name()),
 			Summary:     fmt.Sprintf("%s application", info.Name()),

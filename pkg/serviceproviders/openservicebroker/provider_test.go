@@ -305,6 +305,7 @@ var _ = Describe("Provider", func() {
 					},
 				},
 				Spec: servicesv1.ServiceKindSpec{
+					Type:                 "service-1",
 					DisplayName:          "service-1 displayName",
 					Summary:              "service-1 description",
 					Description:          "service-1 longDescription",
@@ -327,6 +328,7 @@ var _ = Describe("Provider", func() {
 					},
 				},
 				Spec: servicesv1.ServiceKindSpec{
+					Type:                 "service-2",
 					DisplayName:          "service-2 displayName",
 					Summary:              "service-2 description",
 					Description:          "service-2 longDescription",

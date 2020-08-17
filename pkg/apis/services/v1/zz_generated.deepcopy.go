@@ -573,8 +573,8 @@ func (in *ServiceProviderStatus) DeepCopyInto(out *ServiceProviderStatus) {
 			}
 		}
 	}
-	if in.SupportedKinds != nil {
-		in, out := &in.SupportedKinds, &out.SupportedKinds
+	if in.SupportedTypes != nil {
+		in, out := &in.SupportedTypes, &out.SupportedTypes
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}

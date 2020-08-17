@@ -57,8 +57,8 @@ class V1ServiceProviderStatus {
             if (data.hasOwnProperty('status')) {
                 obj['status'] = ApiClient.convertToType(data['status'], 'String');
             }
-            if (data.hasOwnProperty('supportedKinds')) {
-                obj['supportedKinds'] = ApiClient.convertToType(data['supportedKinds'], ['String']);
+            if (data.hasOwnProperty('supportedTypes')) {
+                obj['supportedTypes'] = ApiClient.convertToType(data['supportedTypes'], ['String']);
             }
         }
         return obj;
@@ -106,15 +106,15 @@ class V1ServiceProviderStatus {
 /**
      * @return {Array.<String>}
      */
-    getSupportedKinds() {
-        return this.supportedKinds;
+    getSupportedTypes() {
+        return this.supportedTypes;
     }
 
     /**
-     * @param {Array.<String>} supportedKinds
+     * @param {Array.<String>} supportedTypes
      */
-    setSupportedKinds(supportedKinds) {
-        this['supportedKinds'] = supportedKinds;
+    setSupportedTypes(supportedTypes) {
+        this['supportedTypes'] = supportedTypes;
     }
 
 }
@@ -135,9 +135,9 @@ V1ServiceProviderStatus.prototype['message'] = undefined;
 V1ServiceProviderStatus.prototype['status'] = undefined;
 
 /**
- * @member {Array.<String>} supportedKinds
+ * @member {Array.<String>} supportedTypes
  */
-V1ServiceProviderStatus.prototype['supportedKinds'] = undefined;
+V1ServiceProviderStatus.prototype['supportedTypes'] = undefined;
 
 
 

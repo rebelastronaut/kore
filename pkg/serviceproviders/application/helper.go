@@ -63,7 +63,7 @@ func NewResourceParams(service *servicesv1.Service, config *AppConfiguration) Re
 }
 
 func CreateSystemServiceFromPlan(servicePlan servicesv1.ServicePlan, cluster corev1.Ownership, name, namespace string) servicesv1.Service {
-	if servicePlan.Spec.Kind != ServiceKindApp {
+	if servicePlan.Spec.Kind != ServiceTypeApp {
 		panic(fmt.Errorf("CreateSystemServiceFromPlan can only be used for app service kinds, got %q", servicePlan.Spec.Kind))
 	}
 	config := &AppV1{}
@@ -209,8 +209,13 @@ func ensureResource(ctx kore.Context, client client.Client, original runtime.Obj
 }
 
 func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppConfiguration, error) {
-	switch service.Spec.Kind {
-	case ServiceKindApp:
+	kind, err := ctx.Kore().ServiceKinds().Get(ctx, service.Spec.Kind)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service kind %q: %w", service.Spec.Kind, err)
+	}
+
+	switch kind.Spec.Type {
+	case ServiceTypeApp:
 		config := &AppV1{}
 		secrets, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, config)
 		if err != nil {
@@ -227,7 +232,7 @@ func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppCon
 			Values:    config.Values,
 			Secrets:   secrets,
 		}, nil
-	case ServiceKindHelmApp:
+	case ServiceTypeHelmApp:
 		helmConfig := &HelmAppV1{}
 		secrets, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, helmConfig)
 		if err != nil {
@@ -322,6 +327,6 @@ func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppCon
 			Secrets: secrets,
 		}, nil
 	default:
-		panic(fmt.Errorf("unexpected service kind: %s", service.Spec.Kind))
+		panic(fmt.Errorf("unexpected service type: %s", kind.Spec.Type))
 	}
 }

@@ -21,6 +21,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/appvia/kore/pkg/utils"
+
 	"github.com/appvia/kore/pkg/kore"
 
 	corev1 "github.com/appvia/kore/pkg/apis/core/v1"
@@ -91,13 +93,15 @@ func (c *Controller) Reconcile(ctx kore.Context, request reconcile.Request) (rec
 					return reconcile.Result{}, fmt.Errorf("failed to load service catalog: %w", err)
 				}
 
-				var supportedKinds []string
+				var supportedTypes []string
 				for _, kind := range catalog.Kinds {
-					supportedKinds = append(supportedKinds, kind.Name)
+					if !utils.Contains(kind.Spec.Type, supportedTypes) {
+						supportedTypes = append(supportedTypes, kind.Spec.Type)
+					}
 				}
-				sort.Strings(supportedKinds)
+				sort.Strings(supportedTypes)
 
-				serviceProvider.Status.SupportedKinds = supportedKinds
+				serviceProvider.Status.SupportedTypes = supportedTypes
 
 				kinds := map[string]*servicesv1.ServiceKind{}
 				for _, kind := range catalog.Kinds {
