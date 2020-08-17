@@ -20,6 +20,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/appvia/kore/pkg/utils/validation"
+	"k8s.io/apimachinery/pkg/api/equality"
+
 	"github.com/appvia/kore/pkg/apiserver/params"
 
 	"github.com/appvia/kore/pkg/apiserver/filters"
@@ -175,6 +178,13 @@ func (p serviceKindsHandler) updateServiceKind(req *restful.Request, resp *restf
 		if existing == nil {
 			writeError(req, resp, fmt.Errorf("creating new service kinds are not allowed"), http.StatusMethodNotAllowed)
 			return nil
+		}
+
+		existing.Spec.Enabled = kind.Spec.Enabled
+
+		if !equality.Semantic.DeepEqual(existing.Spec, kind.Spec) {
+			return validation.NewError("%q failed validation", kind.Name).
+				WithFieldErrorf(validation.FieldRoot, validation.NotAllowed, "only the enabled field can be modified")
 		}
 
 		if err := p.ServiceKinds().Update(req.Request.Context(), kind); err != nil {

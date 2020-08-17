@@ -107,6 +107,7 @@ require (
 	github.com/urfave/cli/v2 v2.1.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
+	golang.org/x/mod v0.3.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
