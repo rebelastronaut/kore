@@ -212,13 +212,30 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service, 
 	if existing != nil {
 		verr := validation.NewError("service has failed validation")
 		if existing.Spec.Kind != service.Spec.Kind {
-			verr.AddFieldErrorf("kind", validation.ReadOnly, "can not be changed after a service was created")
+			verr.AddFieldErrorf("spec.kind", validation.ReadOnly, "can not be changed after a service was created")
 		}
 		if existing.Spec.Plan != service.Spec.Plan {
-			verr.AddFieldErrorf("plan", validation.ReadOnly, "can not be changed after a service was created")
+			verr.AddFieldErrorf("spec.plan", validation.ReadOnly, "can not be changed after a service was created")
 		}
 		if verr.HasErrors() {
 			return verr
+		}
+	}
+
+	if existing == nil && serviceKind.Annotations[AnnotationInstallOnce] == AnnotationValueTrue {
+		services, err := s.List(ctx, func(srv servicesv1.Service) bool {
+			return srv.Spec.Kind == serviceKind.Name && srv.Spec.Cluster.Equals(service.Spec.Cluster)
+		})
+		if err != nil {
+			return fmt.Errorf("failed to list services: %w", err)
+		}
+		if len(services.Items) > 0 {
+			return validation.NewError("service has failed validation").WithFieldErrorf(
+				validation.FieldRoot,
+				validation.NotAllowed,
+				"only one service can be installed of %s kind",
+				service.Spec.Kind,
+			)
 		}
 	}
 

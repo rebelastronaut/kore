@@ -261,7 +261,7 @@ func (c *catalogComponent) annotationsAndLabelsFromChart(chart ChartVersion) (ma
 		}
 		switch k {
 		case kore.Label("schema"), kore.Label("displayName"), kore.Label("longDescription"):
-		case kore.AnnotationSystem, kore.AnnotationReadOnly:
+		case kore.AnnotationSystem, kore.AnnotationReadOnly, kore.AnnotationInstallOnce:
 			annotations[k] = v
 		default:
 			labels[k] = v
