@@ -10523,11 +10523,11 @@
     },
     "v1.StaticOIDCIDP": {
       "required": [
+        "clientScopes",
+        "userClaims",
         "clientID",
         "clientSecret",
-        "issuer",
-        "clientScopes",
-        "userClaims"
+        "issuer"
       ],
       "properties": {
         "clientID": {
@@ -12659,9 +12659,6 @@
         "assetIdentifier": {
           "type": "string"
         },
-        "koreIdentifier": {
-          "type": "string"
-        },
         "name": {
           "type": "string"
         },
@@ -12787,6 +12784,9 @@
           "items": {
             "$ref": "#/definitions/v1beta1.Asset"
           }
+        },
+        "koreIdentifier": {
+          "type": "string"
         }
       }
     },

@@ -33,6 +33,7 @@ api:
   endpoint:
     url: http://localhost:10080
     detect: false
+  kore_instance_identifier: ""
   images: {}
   ingress:
     enabled: false

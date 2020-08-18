@@ -128,6 +128,11 @@ func Options() []cli.Flag {
 			Usage:   "List of feature gates to disable/enable, as key-value pairs, e.g. 'services=true' `GATES`",
 			EnvVars: []string{"KORE_FEATURE_GATES"},
 		},
+		&cli.StringFlag{
+			Name:    "kore-instance-identifier",
+			Usage:   "Instance identifier for this kore instance, must be a unique 20 char string. Leave unspecified to assign a new unique identifier. Keep same if rebuilding Kore to ensure continuity of costs data.",
+			EnvVars: []string{"KORE_INSTANCE_IDENTIFIER"},
+		},
 
 		//
 		// @related to the user management service
