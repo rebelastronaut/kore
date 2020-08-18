@@ -117,13 +117,13 @@ class AWSOrganizationForm extends VerifiedAllocatedResourceForm {
                   Kore can create AWS accounts within your AWS Organization as required for teams.
                 </Paragraph>
                 <Paragraph>
-                  See <a target="_blank" rel="noopener noreferrer" style={{ textDecoration:'underline' }} href="https://docs.appvia.io/kore/guide/admin/aws_accounting/#1-pre-requisites">AWS Account Management pre-requisites</a>.
+                  See <a target="_blank" rel="noopener noreferrer" style={{ textDecoration:'underline' }} href="https://docs.appvia.io/kore/operators/accounts/aws_accounting/#1-pre-requisites">AWS Account Management pre-requisites</a>.
                 </Paragraph>
                 <Paragraph>
                   Providing these details grants Kore the ability to create Accounts for teams within the AWS organization. Teams will then be able to provision clusters within their Accounts.
                 </Paragraph>
                 <Paragraph style={{ marginBottom: 0 }}>
-                  See <a target="_blank" rel="noopener noreferrer" style={{ textDecoration:'underline' }} href="https://docs.appvia.io/kore/guide/admin/aws_accounting/#aws-account-factory-access">AWS Account Factory Access</a> for how to obtain suitable access details.
+                  See <a target="_blank" rel="noopener noreferrer" style={{ textDecoration:'underline' }} href="https://docs.appvia.io/kore/operators/accounts/aws_accounting/#aws-account-factory-access">AWS Account Factory Access</a> for how to obtain suitable access details.
                 </Paragraph>
               </>
             }
@@ -231,7 +231,7 @@ class AWSOrganizationForm extends VerifiedAllocatedResourceForm {
                   The organization account owner for all Kore provisioned accounts.
                 </Paragraph>
                 <Paragraph style={{ marginBottom: 0 }}>
-                  See <a target="_blank" rel="noopener noreferrer" style={{ textDecoration:'underline' }} href="https://docs.appvia.io/kore/guide/admin/aws_accounting/#sso-user-for-aws-account-administration">SSO User for AWS Account Administration</a> for more details.
+                  See <a target="_blank" rel="noopener noreferrer" style={{ textDecoration:'underline' }} href="https://docs.appvia.io/kore/operators/accounts/aws_accounting/#sso-user-for-aws-account-administration">SSO User for AWS Account Administration</a> for more details.
                 </Paragraph>
               </>
             }
