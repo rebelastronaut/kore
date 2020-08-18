@@ -66,11 +66,12 @@ type FakeServices struct {
 		result1 *v1.ServiceList
 		result2 error
 	}
-	UpdateStub        func(context.Context, *v1.Service) error
+	UpdateStub        func(context.Context, *v1.Service, bool) error
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 *v1.Service
+		arg3 bool
 	}
 	updateReturns struct {
 		result1 error
@@ -337,17 +338,18 @@ func (fake *FakeServices) ListReturnsOnCall(i int, result1 *v1.ServiceList, resu
 	}{result1, result2}
 }
 
-func (fake *FakeServices) Update(arg1 context.Context, arg2 *v1.Service) error {
+func (fake *FakeServices) Update(arg1 context.Context, arg2 *v1.Service, arg3 bool) error {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 *v1.Service
-	}{arg1, arg2})
-	fake.recordInvocation("Update", []interface{}{arg1, arg2})
+		arg3 bool
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3})
 	fake.updateMutex.Unlock()
 	if fake.UpdateStub != nil {
-		return fake.UpdateStub(arg1, arg2)
+		return fake.UpdateStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
@@ -362,17 +364,17 @@ func (fake *FakeServices) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeServices) UpdateCalls(stub func(context.Context, *v1.Service) error) {
+func (fake *FakeServices) UpdateCalls(stub func(context.Context, *v1.Service, bool) error) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeServices) UpdateArgsForCall(i int) (context.Context, *v1.Service) {
+func (fake *FakeServices) UpdateArgsForCall(i int) (context.Context, *v1.Service, bool) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeServices) UpdateReturns(result1 error) {
