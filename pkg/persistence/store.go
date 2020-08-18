@@ -71,9 +71,8 @@ func New(config Config) (Interface, error) {
 
 	log.Info("performing go-migrate database migrations")
 	if err := Migrations("kore", config.Driver, config.StoreURL); err != nil {
-		if err != migrate.ErrNoChange {
-			return nil, err
-		}
+		log.WithError(err).Error("trying to perform database migrations")
+		return nil, err
 	}
 
 	return &storeImpl{dbc: db, config: config}, nil
@@ -111,9 +110,7 @@ func Migrations(dbname, driver, databaseURL string) error {
 	}
 	defer m.Close()
 
-	if err := m.Up(); err != nil {
-		log.WithError(err).Error("trying to perform database migrations")
-
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return err
 	}
 
