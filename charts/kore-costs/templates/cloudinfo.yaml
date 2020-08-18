@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudinfo
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: cloudinfo
+    app.kubernetes.io/name: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: cloudinfo
+      app.kubernetes.io/name: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        name: cloudinfo
+        app.kubernetes.io/name: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: cloudinfo
+          image: quay.io/appvia/cloudinfo:0.16.0
+          args: ["cloudinfo", "--scrape=true", "--config=/etc/cloudinfo/secrets/config.yaml", "--listen-address=0.0.0.0:8000", "--metrics-address=0.0.0.0:9000"]
+          volumeMounts:
+            - name: secretconfig
+              mountPath: /etc/cloudinfo/secrets
+              readOnly: true
+          env:
+            - name: VAULT_SKIP_VERIFY
+              value: "true"
+            - name: VALUES_HASH
+              value: "{{ .Values | toJson | sha256sum }}"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9000
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: http
+      volumes:
+        - name: secretconfig
+          secret:
+            secretName: cloudinfo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudinfo
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: cloudinfo
+    app.kubernetes.io/name: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: cloudinfo
+      port: 80
+      targetPort: 8000
+  selector:
+    name: cloudinfo
