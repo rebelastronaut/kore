@@ -155,7 +155,14 @@ func (t teamAssetsImpl) StoreAssetCost(ctx context.Context, cost *model.TeamAsse
 	timed := prometheus.NewTimer(setLatency)
 	defer timed.ObserveDuration()
 
-	return t.conn.Create(cost).Error
+	return t.conn.
+		FirstOrCreate(&model.TeamAssetCost{}, &model.TeamAssetCost{
+			CostIdentifier:  cost.CostIdentifier,
+			AssetIdentifier: cost.AssetIdentifier,
+			TeamIdentifier:  cost.TeamIdentifier,
+		}).
+		Update(cost).
+		Error
 }
 
 func (t teamAssetsImpl) StoreAssetCosts(ctx context.Context, costs []*model.TeamAssetCost) error {
@@ -164,7 +171,14 @@ func (t teamAssetsImpl) StoreAssetCosts(ctx context.Context, costs []*model.Team
 
 	return t.conn.Transaction(func(tx *gorm.DB) error {
 		for _, cost := range costs {
-			err := tx.Create(cost).Error
+			err := tx.Model(&model.TeamAssetCost{}).
+				FirstOrCreate(&model.TeamAssetCost{}, &model.TeamAssetCost{
+					CostIdentifier:  cost.CostIdentifier,
+					AssetIdentifier: cost.AssetIdentifier,
+					TeamIdentifier:  cost.TeamIdentifier,
+				}).
+				Update(cost).
+				Error
 			if err != nil {
 				return err
 			}
