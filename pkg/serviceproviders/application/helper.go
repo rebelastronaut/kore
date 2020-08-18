@@ -288,43 +288,47 @@ func getAppConfiguration(ctx kore.Context, service *servicesv1.Service) (*AppCon
 			})
 		}
 
-		app := &applicationv1beta.Application{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Application",
-				APIVersion: applicationv1beta.GroupVersion.String(),
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      service.Name,
-				Namespace: service.Spec.ClusterNamespace,
-			},
-			Spec: applicationv1beta.ApplicationSpec{
-				ComponentGroupKinds: resourceKinds,
-			},
+		resources := kubernetes.Objects{
+			helmRelease,
 		}
 
-		if helmConfig.ResourceSelector != nil {
-			matchLabels := map[string]string{}
-			for k, v := range helmConfig.ResourceSelector.MatchLabels {
-				matchLabels[k] = string(v)
-			}
-			app.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: matchLabels,
-			}
-		} else {
-			app.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app.kubernetes.io/name": service.Name,
+		if len(helmConfig.ResourceKinds) > 0 {
+			app := &applicationv1beta.Application{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Application",
+					APIVersion: applicationv1beta.GroupVersion.String(),
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      service.Name,
+					Namespace: service.Spec.ClusterNamespace,
+				},
+				Spec: applicationv1beta.ApplicationSpec{
+					ComponentGroupKinds: resourceKinds,
 				},
 			}
+
+			if helmConfig.ResourceSelector != nil {
+				matchLabels := map[string]string{}
+				for k, v := range helmConfig.ResourceSelector.MatchLabels {
+					matchLabels[k] = string(v)
+				}
+				app.Spec.Selector = &metav1.LabelSelector{
+					MatchLabels: matchLabels,
+				}
+			} else {
+				app.Spec.Selector = &metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app.kubernetes.io/name": service.Name,
+					},
+				}
+			}
+			resources = append(resources, app)
 		}
 
 		return &AppConfiguration{
-			Resources: kubernetes.Objects{
-				helmRelease,
-				app,
-			},
-			Values:  nil,
-			Secrets: secrets,
+			Resources: resources,
+			Values:    nil,
+			Secrets:   secrets,
 		}, nil
 	default:
 		panic(fmt.Errorf("unexpected service type: %s", kind.Spec.Type))
