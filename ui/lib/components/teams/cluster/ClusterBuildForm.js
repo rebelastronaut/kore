@@ -134,6 +134,7 @@ class ClusterBuildForm extends React.Component {
       selectedCloud: cloud,
       selectedProvider: publicRuntimeConfig.clusterProviderMap[cloud],
       planValues: null,
+      formErrorMessage: false,
       validationErrors: null
     })
   }
