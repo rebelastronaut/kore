@@ -44,6 +44,14 @@ func Compact(j []byte) ([]byte, error) {
 	return json.Marshal(wrapMap(data))
 }
 
+func MustCompact(j []byte) []byte {
+	res, err := Compact(j)
+	if err != nil {
+		panic(fmt.Errorf("json compact failed: %w", err))
+	}
+	return res
+}
+
 func wrapMap(m map[string]interface{}) sortedMap {
 	for k, v := range m {
 		if vm, ok := v.(map[string]interface{}); ok {

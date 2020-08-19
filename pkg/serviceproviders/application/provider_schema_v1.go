@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package register
+package application
 
-import (
-	_ "github.com/appvia/kore/pkg/serviceproviders/application"
-	_ "github.com/appvia/kore/pkg/serviceproviders/awsservicebroker"
-	_ "github.com/appvia/kore/pkg/serviceproviders/dummy"
-	_ "github.com/appvia/kore/pkg/serviceproviders/openservicebroker"
-)
+const providerSchemaV1 = `{
+	"$id": "https://appvia.io/kore/schemas/serviceprovider/application/v1.json",
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"description": "Kubernetes Application provider",
+	"type": "object",
+	"additionalProperties": false
+}
+`

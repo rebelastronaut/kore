@@ -75,7 +75,7 @@ func (p *Provider) Reconcile(
 	}
 
 	config := map[string]interface{}{}
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, &config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, &config); err != nil {
 		return reconcile.Result{}, controllers.NewCriticalError(fmt.Errorf("failed to unmarshal service configuration: %w", err))
 	}
 
@@ -146,7 +146,7 @@ func (p *Provider) update(
 	}
 
 	config := map[string]interface{}{}
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, &config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), service, &config); err != nil {
 		return reconcile.Result{}, controllers.NewCriticalError(fmt.Errorf("failed to unmarshal service configuration"))
 	}
 

@@ -68,8 +68,8 @@ type ServiceProviderCatalog struct {
 type ServiceProviderFactory interface {
 	// Type returns the service provider type
 	Type() string
-	// JSONSchema returns the JSON schema for the provider's configuration
-	JSONSchema() string
+	// JSONSchemas returns all JSON schema versions for the provider's configuration
+	JSONSchemas() map[string]string
 	// Create creates the provider
 	Create(Context, *servicesv1.ServiceProvider) (ServiceProvider, error)
 	// SetUp makes sure all provider dependencies are created
@@ -162,11 +162,17 @@ func (p *serviceProvidersImpl) Update(ctx context.Context, provider *servicesv1.
 	}
 
 	config := map[string]interface{}{}
-	if err := configuration.ParseObjectConfiguration(ctx, p.Store().RuntimeClient(), provider, &config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, p.Store().RuntimeClient(), provider, &config); err != nil {
 		return fmt.Errorf("failed to parse service provider configuration: %s", err)
 	}
 
-	if err := jsonschema.Validate(factory.JSONSchema(), "provider", config); err != nil {
+	jsonSchema := factory.JSONSchemas()[provider.Spec.ConfigurationSchema]
+	if jsonSchema == "" {
+		return validation.NewError("%q failed validation", provider.Name).
+			WithFieldErrorf("spec.configurationSchema", validation.InvalidValue, "%q is not a registered JSON schema", provider.Spec.ConfigurationSchema)
+	}
+
+	if err := jsonschema.Validate(jsonSchema, "provider", config); err != nil {
 		return err
 	}
 

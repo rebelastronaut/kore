@@ -45,7 +45,7 @@ func ApplyServicePlanToAppService(ctx kore.Context, service *servicesv1.Service,
 
 	switch servicePlan.Spec.Kind {
 	case application.ServiceKindApp:
-		config := &application.AppConfiguration{}
+		config := &application.AppV1{}
 		if err := servicePlan.Spec.GetConfiguration(config); err != nil {
 			return err
 		}
@@ -53,7 +53,7 @@ func ApplyServicePlanToAppService(ctx kore.Context, service *servicesv1.Service,
 		return service.Spec.SetConfiguration(config)
 
 	case application.ServiceKindHelmApp:
-		config := &application.HelmAppConfiguration{}
+		config := &application.HelmAppV1{}
 		if err := servicePlan.Spec.GetConfiguration(config); err != nil {
 			return err
 		}

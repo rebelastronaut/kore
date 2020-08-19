@@ -53,116 +53,11 @@ func (d ProviderFactory) Type() string {
 	return "aws-servicebroker"
 }
 
-func (d ProviderFactory) JSONSchema() string {
-	return `{
-		"$id": "https://appvia.io/kore/schemas/serviceprovider/aws-servicebroker.json",
-		"$schema": "http://json-schema.org/draft-07/schema#",
-		"description": "This is a custom service provider for aws-servicebroker (https://github.com/awslabs/aws-servicebroker)",
-		"type": "object",
-		"additionalProperties": false,
-		"required": [
-			"awsAccessKeyID",
-			"awsSecretAccessKey"
-		],
-		"properties": {
-			"chartRepositoryType": {
-				"type": "string",
-				"enum": ["git", "helm"]
-			},
-			"chartRepository": {
-				"type": "string",
-				"minLength": 1
-			},
-			"chartVersion": {
-				"type": "string",
-				"minLength": 1
-			},
-			"chartRepositoryRef": {
-				"type": "string",
-				"minLength": 1
-			},
-			"chartRepositoryPath": {
-				"type": "string",
-				"minLength": 1
-			},
-			"region": {
-				"type": "string",
-				"default": "us-east-1",
-				"minLength": 1
-			},
-			"tableName": {
-				"type": "string",
-				"default": "aws-service-broker",
-				"minLength": 1
-			},
-			"s3BucketName": {
-				"type": "string",
-				"default": "awsservicebroker",
-				"minLength": 1
-			},
-			"s3BucketRegion": {
-				"type": "string",
-				"default": "us-east-1",
-				"minLength": 1
-			},
-			"s3BucketKey": {
-				"type": "string",
-				"default": "templates/latest/"
-			},
-			"awsAccessKeyID": {
-				"type": "string",
-				"minLength": 1
-			},
-			"awsSecretAccessKey": {
-				"type": "string",
-				"minLength": 1
-			},
-			"awsIAMRoleName": {
-				"type": "string",
-				"minLength": 1,
-				"default": "aws-service-broker"
-			},
-			"allowEmptyCredentialSchema": {
-				"type": "boolean",
-				"default": false
-			},
-			"defaultPlans": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"includeKinds": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"excludeKinds": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"includePlans": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"excludePlans": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			}
-		}
-	}`
+// JSONSchemas returns all JSON schema versions for the provider's configuration
+func (d ProviderFactory) JSONSchemas() map[string]string {
+	return map[string]string{
+		"https://appvia.io/kore/schemas/serviceprovider/aws-servicebroker/v1.json": providerSchemaV1,
+	}
 }
 
 func (d ProviderFactory) Create(ctx kore.Context, serviceProvider *servicesv1.ServiceProvider) (_ kore.ServiceProvider, _ error) {
@@ -174,7 +69,7 @@ func (d ProviderFactory) Create(ctx kore.Context, serviceProvider *servicesv1.Se
 		serviceProvider.Spec.Configuration.Raw = bytes.ReplaceAll(serviceProvider.Spec.Configuration.Raw, []byte("aws_secret_access_key"), []byte("awsSecretAccessKey"))
 	}
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
 		return nil, fmt.Errorf("failed to process aws-servicebroker configuration: %w", err)
 	}
 
@@ -240,7 +135,7 @@ func (d ProviderFactory) Create(ctx kore.Context, serviceProvider *servicesv1.Se
 func (d ProviderFactory) SetUp(ctx kore.Context, serviceProvider *servicesv1.ServiceProvider) (complete bool, _ error) {
 	var config = DefaultProviderConfiguration()
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
 		return false, fmt.Errorf("failed to process aws-servicebroker configuration: %w", err)
 	}
 
@@ -312,7 +207,7 @@ func (d ProviderFactory) SetUp(ctx kore.Context, serviceProvider *servicesv1.Ser
 func (d ProviderFactory) TearDown(ctx kore.Context, serviceProvider *servicesv1.ServiceProvider) (complete bool, _ error) {
 	var config = DefaultProviderConfiguration()
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, config); err != nil {
 		return false, fmt.Errorf("failed to process aws-servicebroker configuration: %w", err)
 	}
 

@@ -17,6 +17,8 @@
 package application_test
 
 import (
+	"encoding/json"
+
 	"github.com/appvia/kore/pkg/serviceproviders/application"
 	"github.com/appvia/kore/pkg/utils/jsonschema"
 
@@ -24,15 +26,21 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ServicePlans", func() {
-	It("All plans should be valid", func() {
-		plans := application.GetDefaultPlans()
+var _ = Describe("Factory", func() {
+	It("should have valid JSON schemas", func() {
+		factory := application.Factory{}
+		for id, schema := range factory.JSONSchemas() {
+			schemaObj := jsonschema.MetaSchemaDraft7Ext{}
+			err := json.Unmarshal([]byte(schema), &schemaObj)
+			var context string
+			if err != nil {
+				if jsonErr, ok := err.(*json.SyntaxError); ok {
+					context = schema[jsonErr.Offset : jsonErr.Offset+100]
+				}
+			}
+			Expect(err).ToNot(HaveOccurred(), "error at: %s", context)
 
-		for _, plan := range plans {
-			err := jsonschema.Validate(plan.Spec.Schema, plan.Name, plan.Spec.Configuration)
-			Expect(err).ToNot(HaveOccurred(), "%s plan is not valid: %s", plan.Name, err)
-
+			Expect(id).To(Equal(schemaObj.Id), "map key must match $id in schema")
 		}
 	})
-
 })

@@ -8361,6 +8361,11 @@ spec:
                 - secretKeyRef
                 type: object
               type: array
+            configurationSchema:
+              description: ConfigurationSchema is the $id of the configuration's JSON
+                schema
+              minLength: 1
+              type: string
             description:
               description: Description is a detailed description of the service provider
               type: string
@@ -8373,6 +8378,7 @@ spec:
               minLength: 1
               type: string
           required:
+          - configurationSchema
           - summary
           - type
           type: object

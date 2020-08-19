@@ -10,3 +10,4 @@ spec:
   summary: Dummy service provider for testing
   configuration:
     iAmDummy: "yes"
+  configurationSchema: https://appvia.io/kore/schemas/serviceprovider/dummy/v1.json

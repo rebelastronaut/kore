@@ -8305,8 +8305,8 @@
     },
     "kore.ServicePlanDetails": {
       "required": [
-        "kind",
         "summary",
+        "kind",
         "editableParams"
       ],
       "properties": {
@@ -10415,7 +10415,8 @@
     "v1.ServiceProviderSpec": {
       "required": [
         "type",
-        "summary"
+        "summary",
+        "configurationSchema"
       ],
       "properties": {
         "configuration": {
@@ -10426,6 +10427,9 @@
           "items": {
             "$ref": "#/definitions/v1.ConfigurationFromSource"
           }
+        },
+        "configurationSchema": {
+          "type": "string"
         },
         "description": {
           "type": "string"

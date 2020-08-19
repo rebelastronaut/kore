@@ -268,7 +268,20 @@ var _ = Describe("Cluster Controller", func() {
 		}
 
 		servicePlans = &korefakes.FakeServicePlans{}
-		servicePlans.GetReturns(&servicesv1.ServicePlan{}, nil)
+
+		// This is currently not required for the test, so we return a reasonable, but empty plan for any request
+		servicePlans.GetReturns(&servicesv1.ServicePlan{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ServicePlan",
+				APIVersion: servicesv1.GroupVersion.String(),
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "testname",
+			},
+			Spec: servicesv1.ServicePlanSpec{
+				Kind: "app",
+			},
+		}, nil)
 
 		test.Kore.ServicePlansReturns(servicePlans)
 

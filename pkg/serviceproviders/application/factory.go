@@ -18,10 +18,14 @@ package application
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
-	"regexp"
 	"strings"
+
+	"github.com/appvia/kore/pkg/utils/jsonutils"
+
+	"github.com/appvia/kore/pkg/utils/kubernetes"
+
+	"github.com/appvia/kore/pkg/utils"
 
 	servicesv1 "github.com/appvia/kore/pkg/apis/services/v1"
 	"github.com/appvia/kore/pkg/kore"
@@ -29,7 +33,6 @@ import (
 
 	koreschema "github.com/appvia/kore/pkg/schema"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	appv1beta1 "sigs.k8s.io/application/api/v1beta1"
 )
 
@@ -44,8 +47,11 @@ func (d Factory) Type() string {
 	return Type
 }
 
-func (d Factory) JSONSchema() string {
-	return ProviderSchema
+// JSONSchemas returns all JSON schema versions for the provider's configuration
+func (d Factory) JSONSchemas() map[string]string {
+	return map[string]string{
+		"https://appvia.io/kore/schemas/serviceprovider/application/v1.json": providerSchemaV1,
+	}
 }
 
 func (d Factory) Create(ctx kore.Context, provider *servicesv1.ServiceProvider) (kore.ServiceProvider, error) {
@@ -96,10 +102,11 @@ func (d Factory) DefaultProviders() []servicesv1.ServiceProvider {
 				},
 			},
 			Spec: servicesv1.ServiceProviderSpec{
-				Type:          Type,
-				Summary:       "Kubernetes Application provider",
-				Description:   "The service provider will deploy one or more Kubernetes resources and an Application type for monitoring purposes",
-				Configuration: nil,
+				Type:                Type,
+				Summary:             "Kubernetes Application provider",
+				Description:         "The service provider will deploy one or more Kubernetes resources and an Application type for monitoring purposes",
+				Configuration:       nil,
+				ConfigurationSchema: "https://appvia.io/kore/schemas/serviceprovider/application/v1.json",
 			},
 		},
 	}
@@ -116,7 +123,7 @@ func (d Factory) createPlan(info os.FileInfo) (*servicesv1.ServicePlan, error) {
 		return nil, err
 	}
 
-	var resources []runtime.Object
+	var resources kubernetes.Objects
 	var app *appv1beta1.Application
 
 	for _, fileInfo := range files {
@@ -129,13 +136,10 @@ func (d Factory) createPlan(info os.FileInfo) (*servicesv1.ServicePlan, error) {
 			return nil, err
 		}
 
-		content, err := ioutil.ReadAll(file)
+		documents, err := utils.YAMLDocuments(file)
 		if err != nil {
 			return nil, err
 		}
-
-		splitter := regexp.MustCompile("(?m)^---\n")
-		documents := splitter.Split(string(content), -1)
 
 		for _, document := range documents {
 			if strings.TrimSpace(document) == "" {
@@ -176,12 +180,17 @@ func (d Factory) createPlan(info os.FileInfo) (*servicesv1.ServicePlan, error) {
 			Labels:      nil,
 			Description: fmt.Sprintf("%s application", info.Name()),
 			Summary:     fmt.Sprintf("%s application", info.Name()),
+			Schema:      string(jsonutils.MustCompact([]byte(appSchemaV1))),
 		},
 	}
 
-	if err := plan.Spec.SetConfiguration(AppConfiguration{
-		Resources: resources,
-		Secrets:   map[string]interface{}{},
+	resourcesEncoded, err := resources.MarshalYAML()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := plan.Spec.SetConfiguration(AppV1{
+		Resources: string(resourcesEncoded),
 	}); err != nil {
 		return nil, err
 	}

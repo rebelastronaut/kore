@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-package register
+package dummy
 
-import (
-	_ "github.com/appvia/kore/pkg/serviceproviders/application"
-	_ "github.com/appvia/kore/pkg/serviceproviders/awsservicebroker"
-	_ "github.com/appvia/kore/pkg/serviceproviders/dummy"
-	_ "github.com/appvia/kore/pkg/serviceproviders/openservicebroker"
-)
+//go:generate go run github.com/appvia/kore/cmd/struct-gen PlanSchemaV1
+const planSchemaV1 = `{
+	"$id": "https://appvia.io/kore/schemas/servicekind/dummy/v1.json",
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"description": "Dummy service plan schema",
+	"type": "object",
+	"additionalProperties": false,
+	"required": [
+		"foo"
+	],
+	"properties": {
+		"foo": {
+			"type": "string",
+			"minLength": 1
+		}
+	}
+}`

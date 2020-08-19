@@ -2,28 +2,13 @@
 
 package aks
 
-// The networks which are allowed to connect to this cluster (e.g. via kubectl).
-type AuthProxyAllowedIP string
-
-// The networks which are allowed to access the master control plane.
-type AuthorizedMasterNetwork struct {
-	Cidr string `json:"cidr"`
-	Name string `json:"name"`
-}
-
-// Users who should be allowed to access this cluster.
-type ClusterUser struct {
-	Roles    []Role `json:"roles"`
-	Username string `json:"username"`
-}
-
 type Configuration struct {
 	// AuthProxyAllowedIps The networks which are allowed to connect to this cluster (e.g. via kubectl).
-	AuthProxyAllowedIps []AuthProxyAllowedIP `json:"authProxyAllowedIPs"`
+	AuthProxyAllowedIps []ConfigurationAuthProxyAllowedIP `json:"authProxyAllowedIPs"`
 	// AuthorizedMasterNetworks The networks which are allowed to access the master control plane.
-	AuthorizedMasterNetworks []AuthorizedMasterNetwork `json:"authorizedMasterNetworks"`
+	AuthorizedMasterNetworks []ConfigurationAuthorizedMasterNetwork `json:"authorizedMasterNetworks"`
 	// ClusterUsers Users who should be allowed to access this cluster.
-	ClusterUsers []ClusterUser `json:"clusterUsers,omitempty"`
+	ClusterUsers []ConfigurationClusterUser `json:"clusterUsers,omitempty"`
 	// DNSPrefix DNS name prefix to use with the hosted Kubernetes API server FQDN.
 	DNSPrefix string `json:"dnsPrefix"`
 	// DefaultTeamRole The default role that team members have on this cluster.
@@ -31,31 +16,46 @@ type Configuration struct {
 	// Description Meaningful description of this cluster.
 	Description string `json:"description"`
 	// Domain The domain for this cluster.
-	Domain                    string        `json:"domain"`
-	EnableDefaultTrafficBlock bool          `json:"enableDefaultTrafficBlock,omitempty"`
-	EnablePodSecurityPolicy   bool          `json:"enablePodSecurityPolicy,omitempty"`
-	InheritTeamMembers        bool          `json:"inheritTeamMembers,omitempty"`
-	LinuxProfile              *LinuxProfile `json:"linuxProfile,omitempty"`
-	NetworkPlugin             string        `json:"networkPlugin"`
-	NetworkPolicy             string        `json:"networkPolicy,omitempty"`
-	NodePools                 []NodePool    `json:"nodePools"`
-	PrivateClusterEnabled     bool          `json:"privateClusterEnabled,omitempty"`
+	Domain                    string                     `json:"domain"`
+	EnableDefaultTrafficBlock bool                       `json:"enableDefaultTrafficBlock,omitempty"`
+	EnablePodSecurityPolicy   bool                       `json:"enablePodSecurityPolicy,omitempty"`
+	InheritTeamMembers        bool                       `json:"inheritTeamMembers,omitempty"`
+	LinuxProfile              *ConfigurationLinuxProfile `json:"linuxProfile,omitempty"`
+	NetworkPlugin             string                     `json:"networkPlugin"`
+	NetworkPolicy             string                     `json:"networkPolicy,omitempty"`
+	NodePools                 []ConfigurationNodePool    `json:"nodePools"`
+	PrivateClusterEnabled     bool                       `json:"privateClusterEnabled,omitempty"`
 	// Region Geographical location for this cluster
 	Region string `json:"region"`
 	// Version Kubernetes version
-	Version        string          `json:"version"`
-	WindowsProfile *WindowsProfile `json:"windowsProfile,omitempty"`
+	Version        string                       `json:"version"`
+	WindowsProfile *ConfigurationWindowsProfile `json:"windowsProfile,omitempty"`
+}
+
+// The networks which are allowed to connect to this cluster (e.g. via kubectl).
+type ConfigurationAuthProxyAllowedIP string
+
+// The networks which are allowed to access the master control plane.
+type ConfigurationAuthorizedMasterNetwork struct {
+	Cidr string `json:"cidr"`
+	Name string `json:"name"`
+}
+
+// Users who should be allowed to access this cluster.
+type ConfigurationClusterUser struct {
+	Roles    []ConfigurationRole `json:"roles"`
+	Username string              `json:"username"`
 }
 
 // A set of labels to help Kubernetes workloads find this group
-type Label string
+type ConfigurationLabel string
 
-type LinuxProfile struct {
-	AdminUsername string         `json:"adminUsername"`
-	SSHPublicKeys []SSHPublicKey `json:"sshPublicKeys"`
+type ConfigurationLinuxProfile struct {
+	AdminUsername string                      `json:"adminUsername"`
+	SSHPublicKeys []ConfigurationSSHPublicKey `json:"sshPublicKeys"`
 }
 
-type NodePool struct {
+type ConfigurationNodePool struct {
 
 	// DiskSize The amount of storage in GiB provisioned on the nodes in this group
 	DiskSize int64 `json:"diskSize"`
@@ -64,7 +64,7 @@ type NodePool struct {
 	// ImageType The image type used by the nodes
 	ImageType string `json:"imageType"`
 	// Labels A set of labels to help Kubernetes workloads find this group
-	Labels map[string]Label `json:"labels,omitempty"`
+	Labels map[string]ConfigurationLabel `json:"labels,omitempty"`
 	// MachineType The type of nodes used for this node pool
 	MachineType string `json:"machineType"`
 	// MaxPodsPerNode The maximum number of pods that can be scheduled onto each node of this pool - if left blank, it will set this automatically based on the machine type
@@ -82,17 +82,17 @@ type NodePool struct {
 	// Size How many nodes to build when provisioning this pool - if autoscaling enabled, this will be the initial size
 	Size int64 `json:"size"`
 	// Taints A collection of kubernetes taints to add on the nodes.
-	Taints []Taint `json:"taints,omitempty"`
+	Taints []ConfigurationTaint `json:"taints,omitempty"`
 	// Version Node pool version, blank to use same version as cluster (recommended).
 	Version string `json:"version,omitempty"`
 }
 
-type Role string
+type ConfigurationRole string
 
-type SSHPublicKey string
+type ConfigurationSSHPublicKey string
 
 // A collection of kubernetes taints to add on the nodes.
-type Taint struct {
+type ConfigurationTaint struct {
 	// Effect The chosen effect of the taint
 	Effect string `json:"effect"`
 	// Key Taint key
@@ -101,7 +101,7 @@ type Taint struct {
 	Value string `json:"value"`
 }
 
-type WindowsProfile struct {
+type ConfigurationWindowsProfile struct {
 	AdminPassword string `json:"adminPassword"`
 	AdminUsername string `json:"adminUsername"`
 }

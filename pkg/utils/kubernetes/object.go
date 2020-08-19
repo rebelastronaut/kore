@@ -17,10 +17,16 @@
 package kubernetes
 
 import (
+	"bytes"
 	"fmt"
+	"regexp"
+	"strings"
+
+	applicationv1beta "sigs.k8s.io/application/api/v1beta1"
+	"sigs.k8s.io/yaml"
 
 	corev1 "github.com/appvia/kore/pkg/apis/core/v1"
-	schema2 "github.com/appvia/kore/pkg/schema"
+	koreschema "github.com/appvia/kore/pkg/schema"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -47,7 +53,7 @@ type ObjectWithStatusComponents interface {
 
 // NewObject creates a new object given the GVK definition
 func NewObject(gvk schema.GroupVersionKind) (Object, error) {
-	ro, err := schema2.GetScheme().New(gvk)
+	ro, err := koreschema.GetScheme().New(gvk)
 	if err != nil {
 		return nil, err
 	}
@@ -57,4 +63,54 @@ func NewObject(gvk schema.GroupVersionKind) (Object, error) {
 	}
 
 	return nil, fmt.Errorf("%T object doesn't implement kubernetes.Object", ro)
+}
+
+type Objects []runtime.Object
+
+func (o Objects) Application() *applicationv1beta.Application {
+	for _, res := range o {
+		if app, ok := res.(*applicationv1beta.Application); ok {
+			return app
+		}
+	}
+	return nil
+}
+
+func (o Objects) MarshalYAML() ([]byte, error) {
+	buf := bytes.NewBuffer(make([]byte, 0, 16384))
+	for _, obj := range o {
+		yamlData, err := yaml.Marshal(obj)
+		if err != nil {
+			return nil, err
+		}
+		buf.WriteString("---\n")
+		buf.Write(yamlData)
+		buf.WriteRune('\n')
+	}
+	return buf.Bytes(), nil
+}
+
+func (o *Objects) UnmarshalYAML(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	documents := regexp.MustCompile("(?m)^---\n").Split(string(data), -1)
+
+	var objects []runtime.Object
+	for _, document := range documents {
+		if strings.TrimSpace(document) == "" {
+			continue
+		}
+
+		obj, err := koreschema.DecodeYAML([]byte(document))
+		if err != nil {
+			return err
+		}
+
+		objects = append(objects, obj)
+	}
+
+	*o = objects
+	return nil
 }

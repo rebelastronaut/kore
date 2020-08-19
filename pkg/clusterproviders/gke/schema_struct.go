@@ -2,30 +2,15 @@
 
 package gke
 
-// The networks which are allowed to connect to this cluster (e.g. via kubectl).
-type AuthProxyAllowedIP string
-
-// The networks which are allowed to access the master control plane.
-type AuthorizedMasterNetwork struct {
-	Cidr string `json:"cidr"`
-	Name string `json:"name"`
-}
-
-// Users who should be allowed to access this cluster, will override any default role set above for these users
-type ClusterUser struct {
-	Roles    []Role `json:"roles"`
-	Username string `json:"username"`
-}
-
 // GKE Cluster Plan Schema
 type Configuration struct {
 
 	// AuthProxyAllowedIPRanges The networks which are allowed to connect to this cluster (e.g. via kubectl).
-	AuthProxyAllowedIPRanges []AuthProxyAllowedIP `json:"authProxyAllowedIPs"`
+	AuthProxyAllowedIPRanges []ConfigurationAuthProxyAllowedIP `json:"authProxyAllowedIPs"`
 	// AuthorizedMasterNetworks The networks which are allowed to access the master control plane.
-	AuthorizedMasterNetworks []AuthorizedMasterNetwork `json:"authorizedMasterNetworks"`
+	AuthorizedMasterNetworks []ConfigurationAuthorizedMasterNetwork `json:"authorizedMasterNetworks"`
 	// ClusterUsers Users who should be allowed to access this cluster, will override any default role set above for these users
-	ClusterUsers []ClusterUser `json:"clusterUsers,omitempty"`
+	ClusterUsers []ConfigurationClusterUser `json:"clusterUsers,omitempty"`
 	// DefaultTeamRole The role that team members will have on this cluster if 'inherit team members' enabled
 	DefaultTeamRole string `json:"defaultTeamRole,omitempty"`
 	// Description Meaningful description of this cluster.
@@ -61,8 +46,8 @@ type Configuration struct {
 	// MaxSize DEPRECATED: Set max size on node pool instead
 	MaxSize int64 `json:"maxSize,omitempty"`
 	// Network DEPRECATED: It is not supported to specify a custom network. This property will be ignored.
-	Network   string     `json:"network,omitempty"`
-	NodePools []NodePool `json:"nodePools,omitempty"`
+	Network   string                  `json:"network,omitempty"`
+	NodePools []ConfigurationNodePool `json:"nodePools,omitempty"`
 	// Region Geographical location for this cluster
 	Region string `json:"region"`
 	// ReleaseChannel Follow a GKE release channel to control the auto-upgrade of your cluster - if set, auto-upgrade will be true on all node groups
@@ -75,10 +60,25 @@ type Configuration struct {
 	Version string `json:"version"`
 }
 
-// A set of labels to help Kubernetes workloads find this group
-type Label string
+// The networks which are allowed to connect to this cluster (e.g. via kubectl).
+type ConfigurationAuthProxyAllowedIP string
 
-type NodePool struct {
+// The networks which are allowed to access the master control plane.
+type ConfigurationAuthorizedMasterNetwork struct {
+	Cidr string `json:"cidr"`
+	Name string `json:"name"`
+}
+
+// Users who should be allowed to access this cluster, will override any default role set above for these users
+type ConfigurationClusterUser struct {
+	Roles    []ConfigurationRole `json:"roles"`
+	Username string              `json:"username"`
+}
+
+// A set of labels to help Kubernetes workloads find this group
+type ConfigurationLabel string
+
+type ConfigurationNodePool struct {
 
 	// DiskSize The amount of storage in GiB provisioned on the nodes in this group
 	DiskSize int64 `json:"diskSize"`
@@ -91,7 +91,7 @@ type NodePool struct {
 	// ImageType The image type used by the nodes
 	ImageType string `json:"imageType"`
 	// Labels A set of labels to help Kubernetes workloads find this group
-	Labels map[string]Label `json:"labels,omitempty"`
+	Labels map[string]ConfigurationLabel `json:"labels,omitempty"`
 	// MachineType The type of nodes used for this node pool
 	MachineType string `json:"machineType"`
 	// MaxPodsPerNode The maximum number of pods that can be scheduled onto each node of this pool
@@ -107,15 +107,15 @@ type NodePool struct {
 	// Size How many nodes to build when provisioning this pool - if autoscaling enabled, this will be the initial size
 	Size int64 `json:"size"`
 	// Taints A collection of kubernetes taints to add on the nodes.
-	Taints []Taint `json:"taints,omitempty"`
+	Taints []ConfigurationTaint `json:"taints,omitempty"`
 	// Version Node pool version, blank to use same version as cluster (recommended); must be blank if cluster follows a release channel. Must be within 2 minor versions of the master version (e.g. for master version 1.16, this must be 1.14, 1.15 or 1.16) or 1 minor version if auto-upgrade enabled
 	Version string `json:"version"`
 }
 
-type Role string
+type ConfigurationRole string
 
 // A collection of kubernetes taints to add on the nodes.
-type Taint struct {
+type ConfigurationTaint struct {
 	// Effect The chosen effect of the taint
 	Effect string `json:"effect"`
 	Key    string `json:"key"`

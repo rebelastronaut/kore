@@ -121,6 +121,7 @@ func (c *Controller) Reconcile(ctx kore.Context, request reconcile.Request) (rec
 						return reconcile.Result{}, fmt.Errorf("failed to create or update service kind %q: %w", kind.Name, err)
 					}
 
+					kind.SetGroupVersionKind(servicesv1.ServiceKindGVK)
 					kinds[kind.Name] = kind.DeepCopy()
 				}
 

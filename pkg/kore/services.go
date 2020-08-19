@@ -313,7 +313,7 @@ func (s *servicesImpl) validateConfiguration(ctx context.Context, service, exist
 	}
 
 	serviceConfig := make(map[string]interface{})
-	if err := configuration.ParseObjectConfiguration(ctx, s.Store().RuntimeClient(), service, &serviceConfig); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, s.Store().RuntimeClient(), service, &serviceConfig); err != nil {
 		return fmt.Errorf("failed to parse service configuration values: %s", err)
 	}
 

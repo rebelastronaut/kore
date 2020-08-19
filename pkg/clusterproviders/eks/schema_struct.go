@@ -2,26 +2,14 @@
 
 package eks
 
-// The networks which are allowed to connect to this cluster (e.g. via kubectl).
-type AuthProxyAllowedIP string
-
-// A collection of network cidr allowed to speak the EKS control plan
-type AuthorizedMasterNetwork string
-
-// Users who should be allowed to access this cluster, will override any default role set above for these users
-type ClusterUser struct {
-	Roles    []Role `json:"roles"`
-	Username string `json:"username"`
-}
-
 // EKS Cluster Plan Schema
 type Configuration struct {
 	// AuthProxyAllowedIPRanges The networks which are allowed to connect to this cluster (e.g. via kubectl).
-	AuthProxyAllowedIPRanges []AuthProxyAllowedIP `json:"authProxyAllowedIPs"`
+	AuthProxyAllowedIPRanges []ConfigurationAuthProxyAllowedIP `json:"authProxyAllowedIPs"`
 	// AuthorizedMasterNetworks A collection of network cidr allowed to speak the EKS control plan
-	AuthorizedMasterNetworks []AuthorizedMasterNetwork `json:"authorizedMasterNetworks,omitempty"`
+	AuthorizedMasterNetworks []ConfigurationAuthorizedMasterNetwork `json:"authorizedMasterNetworks,omitempty"`
 	// ClusterUsers Users who should be allowed to access this cluster, will override any default role set above for these users
-	ClusterUsers []ClusterUser `json:"clusterUsers,omitempty"`
+	ClusterUsers []ConfigurationClusterUser `json:"clusterUsers,omitempty"`
 	// DefaultTeamRole The role that team members will have on this cluster if 'inherit team members' enabled
 	DefaultTeamRole string `json:"defaultTeamRole,omitempty"`
 	// Description Meaningful description of this cluster.
@@ -30,8 +18,8 @@ type Configuration struct {
 	Domain                    string `json:"domain"`
 	EnableDefaultTrafficBlock bool   `json:"enableDefaultTrafficBlock"`
 	// InheritTeamMembers Whether team members will all have access to this cluster by default
-	InheritTeamMembers bool        `json:"inheritTeamMembers"`
-	NodeGroups         []NodeGroup `json:"nodeGroups"`
+	InheritTeamMembers bool                     `json:"inheritTeamMembers"`
+	NodeGroups         []ConfigurationNodeGroup `json:"nodeGroups"`
 	// PrivateIpv4Cidr The range of IPv4 addresses for your EKS cluster in CIDR block format
 	PrivateIpv4Cidr string `json:"privateIPV4Cidr"`
 	// Region The AWS region in which this cluster will reside
@@ -40,10 +28,22 @@ type Configuration struct {
 	Version string `json:"version"`
 }
 
-// A set of labels to help Kubernetes workloads find this group
-type Label string
+// The networks which are allowed to connect to this cluster (e.g. via kubectl).
+type ConfigurationAuthProxyAllowedIP string
 
-type NodeGroup struct {
+// A collection of network cidr allowed to speak the EKS control plan
+type ConfigurationAuthorizedMasterNetwork string
+
+// Users who should be allowed to access this cluster, will override any default role set above for these users
+type ConfigurationClusterUser struct {
+	Roles    []ConfigurationRole `json:"roles"`
+	Username string              `json:"username"`
+}
+
+// A set of labels to help Kubernetes workloads find this group
+type ConfigurationLabel string
+
+type ConfigurationNodeGroup struct {
 
 	// ComputeType Whether this node group is for general purpose or GPU workloads
 	ComputeType string `json:"amiType,omitempty"`
@@ -55,7 +55,7 @@ type NodeGroup struct {
 	EnableAutoscaler bool   `json:"enableAutoscaler,omitempty"`
 	InstanceType     string `json:"instanceType"`
 	// Labels A set of labels to help Kubernetes workloads find this group
-	Labels map[string]Label `json:"labels,omitempty"`
+	Labels map[string]ConfigurationLabel `json:"labels,omitempty"`
 	// MaxSize The maximum nodes this group should contain (if auto-scale enabled)
 	MaxSize int64 `json:"maxSize,omitempty"`
 	// MinSize The minimum nodes this group should contain (if auto-scale enabled)
@@ -64,13 +64,13 @@ type NodeGroup struct {
 	// ReleaseVersion Blank to use latest (recommended), if set must be for same Kubernetes version as the top-level plan version and for the same AMI type as specified for this node group.
 	ReleaseVersion string `json:"releaseVersion,omitempty"`
 	// SSHSecurityGroups Reference to security groups from which SSH access is permitted - must exist and be in same region as this cluster
-	SSHSecurityGroups []SSHSourceSecurityGroup `json:"sshSourceSecurityGroups,omitempty"`
-	Tags              map[string]Tag           `json:"tags,omitempty"`
+	SSHSecurityGroups []ConfigurationSSHSourceSecurityGroup `json:"sshSourceSecurityGroups,omitempty"`
+	Tags              map[string]ConfigurationTag           `json:"tags,omitempty"`
 }
 
-type Role string
+type ConfigurationRole string
 
 // Reference to security groups from which SSH access is permitted - must exist and be in same region as this cluster
-type SSHSourceSecurityGroup string
+type ConfigurationSSHSourceSecurityGroup string
 
-type Tag string
+type ConfigurationTag string

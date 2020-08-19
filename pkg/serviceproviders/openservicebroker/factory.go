@@ -36,123 +36,18 @@ func (p ProviderFactory) Type() string {
 	return "osb"
 }
 
-func (p ProviderFactory) JSONSchema() string {
-	return `{
-		"$id": "https://appvia.io/kore/schemas/serviceprovider/osb.json",
-		"$schema": "http://json-schema.org/draft-07/schema#",
-		"description": "Open Service Broker Provider configuration schema",
-		"type": "object",
-		"additionalProperties": false,
-		"required": [
-			"url"
-		],
-		"properties": {
-			"enable_alpha_features": {
-				"type": "boolean"
-			},
-			"url": {
-				"type": "string",
-				"minLength": 1
-			},
-			"api_version": {
-				"type": "string",
-				"minLength": 1
-			},
-			"insecure": {
-				"type": "boolean"
-			},
-			"ca_data": {
-				"type": "string"
-			},
-			"auth_config": {
-				"type": "object",
-				"additionalProperties": false,
-				"properties": {
-					"basic_auth_config": {
-						"type": "object",
-						"additionalProperties": false,
-						"required": [
-							"username",
-							"password"
-						],
-						"properties": {
-							"username": {
-								"type": "string",
-								"minLength": 1
-							},
-							"password": {
-								"type": "string"
-							}
-						}
-					},
-					"bearer_config": {
-						"type": "object",
-						"additionalProperties": false,
-						"required": [
-							"token"
-						],
-						"properties": {
-							"token": {
-								"type": "string",
-								"minLength": 1
-							}
-						}
-					}
-				}
-			},
-			"allowEmptyCredentialSchema": {
-				"type": "boolean",
-				"default": false
-			},
-			"defaultPlans": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"includeKinds": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"excludeKinds": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"includePlans": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"excludePlans": {
-				"type": "array",
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			"platformMapping": {
-				"type": "object",
-				"minProperties": 1,
-				"additionalProperties": { "type": "string" }
-			}
-		}
-	}`
+// JSONSchemas returns all JSON schema versions for the provider's configuration
+func (d ProviderFactory) JSONSchemas() map[string]string {
+	return map[string]string{
+		"https://appvia.io/kore/schemas/serviceprovider/osb/v1.json": providerSchemaV1,
+	}
 }
 
 func (p ProviderFactory) Create(ctx kore.Context, serviceProvider *servicesv1.ServiceProvider) (kore.ServiceProvider, error) {
 	var config = ProviderConfiguration{}
 	config.Name = serviceProvider.Name
 
-	if err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, &config); err != nil {
+	if _, err := configuration.ParseObjectConfiguration(ctx, ctx.Client(), serviceProvider, &config); err != nil {
 		return nil, fmt.Errorf("failed to process service provider configuration: %w", err)
 	}
 

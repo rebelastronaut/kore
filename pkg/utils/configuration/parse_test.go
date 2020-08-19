@@ -75,6 +75,7 @@ var _ = Describe("ParseObjectConfiguration", func() {
 	var o *testObject
 	var parseErr error
 	var secretData map[string]string
+	var secrets map[string]interface{}
 
 	BeforeEach(func() {
 		client = &controllersfakes.FakeClient{}
@@ -130,7 +131,7 @@ var _ = Describe("ParseObjectConfiguration", func() {
 
 		logger := logrus.New()
 		logger.Out = GinkgoWriter
-		parseErr = configuration.ParseObjectConfiguration(context.Background(), client, o, v)
+		secrets, parseErr = configuration.ParseObjectConfiguration(context.Background(), client, o, v)
 	})
 
 	It("should parse the configuration from the secrets", func() {
@@ -428,6 +429,22 @@ var _ = Describe("ParseObjectConfiguration", func() {
 
 		It("should default to the objects namespace", func() {
 			Expect(parseErr).To(MatchError("failed to load secret testobjectns/testsecret: does not exist"))
+		})
+	})
+
+	When("the secret is not directly referenced in the configuration", func() {
+		BeforeEach(func() {
+			o.Spec.ConfigurationFrom[0].Path = "secrets.param2"
+		})
+
+		It("should set param2 on secrets", func() {
+			Expect(parseErr).ToNot(HaveOccurred())
+			Expect(v).To(Equal(&testConfig{
+				Param1: "value1",
+			}))
+			Expect(secrets).To(Equal(map[string]interface{}{
+				"param2": "secretvalue2",
+			}))
 		})
 	})
 })

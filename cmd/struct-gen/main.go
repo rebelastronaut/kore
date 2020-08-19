@@ -119,6 +119,8 @@ func run() error {
 		"struct-gen",
 		"--root-type",
 		structName,
+		"--prefix",
+		structName,
 		"--ptr-for-omit",
 		f.Name(),
 	)
