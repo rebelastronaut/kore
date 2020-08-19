@@ -25,10 +25,10 @@ import (
 	clustersv1 "github.com/appvia/kore/pkg/apis/clusters/v1"
 	core "github.com/appvia/kore/pkg/apis/core/v1"
 	orgv1 "github.com/appvia/kore/pkg/apis/org/v1"
+	servicesv1 "github.com/appvia/kore/pkg/apis/services/v1"
 	"github.com/appvia/kore/pkg/kore/assets"
 	"github.com/appvia/kore/pkg/persistence/model"
 	"github.com/appvia/kore/pkg/store"
-
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -221,6 +221,27 @@ func (h *hubImpl) Setup(ctx context.Context) error {
 
 	if err := h.ensureTeamsAndClustersIdentified(ctx); err != nil {
 		return err
+	}
+
+	if h.config.ServiceCatalogURL != "" {
+		serviceCatalog := &servicesv1.ServiceCatalog{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ServiceCatalog",
+				APIVersion: servicesv1.GroupVersion.String(),
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "kore",
+				Namespace: HubNamespace,
+			},
+			Spec: servicesv1.ServiceCatalogSpec{
+				DisplayName: "Kore Service Catalog",
+				Summary:     "Provides main Kore services",
+				URL:         h.config.ServiceCatalogURL,
+			},
+		}
+		if err := h.serviceCatalogs.Update(ctx, serviceCatalog); err != nil {
+			return fmt.Errorf("failed to create kore service catalog: %w", err)
+		}
 	}
 
 	return nil
