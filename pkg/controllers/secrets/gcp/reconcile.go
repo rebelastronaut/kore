@@ -42,7 +42,7 @@ var (
 	// ErrMultipleOrganizations indicates the service account as multiple orgs associated
 	ErrMultipleOrganizations = errors.New("multiple gcp organizations associated to service account")
 	// ErrMissingServiceAccountKey indicates the service account is missing
-	ErrMissingServiceAccountKey = errors.New("secret does not have a 'key' field holding the service account")
+	ErrMissingServiceAccountKey = errors.New("secret does not have a 'service_account_key' field holding the service account")
 )
 
 // Reconcile ensures the clusters roles across all the managed clusters
@@ -87,7 +87,7 @@ func (a ctrl) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 		secret.Status.Verified = utils.BoolPtr(false)
 
 		// @step: check the key is set
-		sa, found := copied.Spec.Data["key"]
+		sa, found := copied.Spec.Data["service_account_key"]
 		if !found {
 			return reconcile.Result{}, ErrMissingServiceAccountKey
 		}

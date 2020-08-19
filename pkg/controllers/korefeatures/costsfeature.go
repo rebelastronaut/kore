@@ -54,7 +54,7 @@ func (c *Controller) getCostsServices(ctx kore.Context, config *configv1.KoreFea
 			service.Spec.ConfigurationFrom,
 			config.Spec.Configuration["gcp_credentials"],
 			"secrets.gcp_credentials",
-			"key")
+			"service_account_key")
 	}
 
 	if config.Spec.Configuration["aws_credentials"] != "" {
