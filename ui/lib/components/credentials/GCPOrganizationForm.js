@@ -19,7 +19,7 @@ class GCPOrganizationForm extends VerifiedAllocatedResourceForm {
     const secretName = resourceName
     const teamResources = KoreApi.resources().team(this.props.team)
     if (!this.props.data || this.state.replaceKey) {
-      const secretData = { key: btoa(values.account) }
+      const secretData = { service_account_key: btoa(values.account) }
       const secretResource = teamResources.generateSecretResource(secretName, 'gcp-org', `GCP admin project Service Account for ${values.parentID}`, secretData)
       await api.UpdateTeamSecret(this.props.team, secretName, secretResource)
     }
