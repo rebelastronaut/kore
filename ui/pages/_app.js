@@ -65,7 +65,7 @@ class MyApp extends App {
       return false
     }
     try {
-      const result = await axios.get(`${window.location.origin}/session/user?requestedPath=${asPath}`)
+      const result = await axios.get(`${window.location.origin}/session/user${asPath ? `?requestedPath=${asPath}` : ''}`)
       return result.data
     } catch (err) {
       return false
