@@ -14,6 +14,10 @@ const prototypeList = [{
   title: 'Team notifications',
   description: 'Notifications and settings for teams. For settings, select "Notifications settings" from the settings dropdown in the top-right corner',
   path: '/prototype/teams/proto'
+}, {
+  title: 'Service catalog',
+  description: 'Cloud and in-cluster application service installation',
+  path: '/prototype/service-catalog'
 }]
 
 const PrototypeIndex = () => (
