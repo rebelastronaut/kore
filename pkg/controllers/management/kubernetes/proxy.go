@@ -97,7 +97,7 @@ func (a k8sCtrl) EnsureAPIService(
 		provider.Namespace = cluster.Spec.Provider.Namespace
 		provider.Name = cluster.Spec.Provider.Name
 
-		found, err := kubernetes.GetIfExists(ctx, cc, provider)
+		found, err := kubernetes.GetIfExists(ctx, a.mgr.GetClient(), provider)
 		if err != nil || !found {
 			logger.WithError(err).Error("trying to retrieve cloud provider spec")
 
@@ -148,6 +148,7 @@ func (a k8sCtrl) EnsureAPIService(
 
 		return err
 	}
+
 	resources, err := utils.YAMLDocuments(generated)
 	if err != nil {
 		logger.WithError(err).Error("trying to split the documents")
