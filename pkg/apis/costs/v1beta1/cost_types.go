@@ -25,8 +25,6 @@ import (
 type Asset struct {
 	// Tags are a set of tags which can be used to identify this asset
 	Tags map[string]string `json:"tags,omitempty"`
-	// KoreIdentifier is the unique identifier for this instance of kore
-	KoreIdentifier string `json:"koreIdentifier,omitempty"`
 	// TeamIdentifier is the unique identifier for the team that owns this asset
 	TeamIdentifier string `json:"teamIdentifier,omitempty"`
 	// AssetIdentifier is the unique identifier for this asset
@@ -41,6 +39,9 @@ type Asset struct {
 // provider
 // +k8s:openapi-gen=false
 type AssetList struct {
+	// KoreIdentifier is the unique identifier for this instance of kore
+	KoreIdentifier string `json:"koreIdentifier,omitempty"`
+	// Items are the assets which should be monitored for costs
 	Items []Asset `json:"items"`
 }
 

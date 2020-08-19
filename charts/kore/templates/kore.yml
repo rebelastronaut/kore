@@ -131,6 +131,10 @@ spec:
           - name: KORE_FEATURE_GATES
             value: "{{ join "," .Values.api.feature_gates }}"
           {{- end }}
+          {{- if .Values.api.kore_instance_identifier }}
+          - name: KORE_INSTANCE_IDENTIFIER
+            value: "{{ .Values.api.kore_instance_identifier }}"
+          {{- end }}
           - name: VERBOSE
             value: "{{ .Values.api.verbose }}"
           - name: ENABLE_PROFILING

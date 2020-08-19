@@ -182,4 +182,8 @@ type Config struct {
 	LocalJWTPublicKey string `json:"local-jwt-public-key,omitempty"`
 	// Metadata is the configuration for the metadata engine
 	Metadata metadata.Config `json:"metadata,omitempty"`
+	// KoreInstanceIdentifier is a unique identifier for this instance of kore - leave blank for
+	// a new one to be assigned, keep the same for continuity of costs data when rebuilding an
+	// instance of kore.
+	KoreInstanceIdentifier string `json:"kore-instance-identifier,omitempty"`
 }

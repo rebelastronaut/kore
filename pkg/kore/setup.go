@@ -282,10 +282,39 @@ func (h hubImpl) ensureHubTeam(ctx context.Context, name, description string) er
 		"team": name,
 	}).Info("provisioning the default kore team in api")
 
+	var labels map[string]string = nil
+	if name == HubAdminTeam {
+		if h.config.KoreInstanceIdentifier != "" {
+			log.WithFields(log.Fields{
+				"team":               name,
+				"instanceIdentifier": h.config.KoreInstanceIdentifier,
+			}).Info("using specified kore instance identifier")
+			// Check kore instance identifier is persisted
+			tn, err := h.persistenceMgr.TeamAssets().GetTeamNameForIdentity(ctx, h.config.KoreInstanceIdentifier)
+			if err != nil {
+				if !h.persistenceMgr.IsNotFound(err) {
+					return fmt.Errorf("Failed to check identifier for team %s: %v", name, err)
+				}
+				err := h.persistenceMgr.TeamAssets().RecordTeamIdentity(ctx, h.config.KoreInstanceIdentifier, name)
+				if err != nil {
+					return fmt.Errorf("Failed to persist identifier for team %s: %v", name, err)
+				}
+			} else {
+				if tn != name {
+					return fmt.Errorf("specified KoreInstanceIdentifier %s is already assigned to another team %s", h.config.KoreInstanceIdentifier, tn)
+				}
+			}
+			labels = map[string]string{
+				LabelTeamIdentifier: h.config.KoreInstanceIdentifier,
+			}
+		}
+	}
+
 	_, err := h.Teams().Update(nc, &orgv1.Team{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: HubNamespace,
+			Labels:    labels,
 		},
 		Spec: orgv1.TeamSpec{
 			Description: description,

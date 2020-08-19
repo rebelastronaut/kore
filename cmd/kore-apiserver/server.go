@@ -101,6 +101,7 @@ func invoke(ctx *cli.Context) error {
 			Metadata: metadata.Config{
 				CloudinfoURL: ctx.String("cloud-info-url"),
 			},
+			KoreInstanceIdentifier: ctx.String("kore-instance-identifier"),
 		},
 		PersistenceMgr: persistence.Config{
 			EnableLogging: ctx.Bool("enable-user-db-logging"),

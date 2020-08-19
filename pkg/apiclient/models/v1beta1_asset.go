@@ -18,9 +18,6 @@ type V1beta1Asset struct {
 	// asset identifier
 	AssetIdentifier string `json:"assetIdentifier,omitempty"`
 
-	// kore identifier
-	KoreIdentifier string `json:"koreIdentifier,omitempty"`
-
 	// name
 	Name string `json:"name,omitempty"`
 

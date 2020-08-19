@@ -53,6 +53,9 @@ class V1beta1AssetList {
             if (data.hasOwnProperty('items')) {
                 obj['items'] = ApiClient.convertToType(data['items'], [V1beta1Asset]);
             }
+            if (data.hasOwnProperty('koreIdentifier')) {
+                obj['koreIdentifier'] = ApiClient.convertToType(data['koreIdentifier'], 'String');
+            }
         }
         return obj;
     }
@@ -70,6 +73,19 @@ class V1beta1AssetList {
     setItems(items) {
         this['items'] = items;
     }
+/**
+     * @return {String}
+     */
+    getKoreIdentifier() {
+        return this.koreIdentifier;
+    }
+
+    /**
+     * @param {String} koreIdentifier
+     */
+    setKoreIdentifier(koreIdentifier) {
+        this['koreIdentifier'] = koreIdentifier;
+    }
 
 }
 
@@ -77,6 +93,11 @@ class V1beta1AssetList {
  * @member {Array.<module:model/V1beta1Asset>} items
  */
 V1beta1AssetList.prototype['items'] = undefined;
+
+/**
+ * @member {String} koreIdentifier
+ */
+V1beta1AssetList.prototype['koreIdentifier'] = undefined;
 
 
 

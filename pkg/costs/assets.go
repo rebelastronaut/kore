@@ -34,7 +34,7 @@ import (
 // Assets provides management over which assets/resources are known to kore, and the known costs
 // for those assets provided by a cost provider
 type Assets interface {
-	ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) ([]costsv1.Asset, error)
+	ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) (*costsv1.AssetList, error)
 	ListCosts(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) (*costsv1.AssetCostList, error)
 	OverallCostsSummary(ctx context.Context, from time.Time, to time.Time, filters ...persistence.TeamAssetFilterFunc) (*costsv1.OverallCostSummary, error)
 	TeamCostsSummary(ctx context.Context, teamIdentifier string, from time.Time, to time.Time, filters ...persistence.TeamAssetFilterFunc) (*costsv1.TeamCostSummary, error)
@@ -54,7 +54,7 @@ type assetsImpl struct {
 	persistence       persistence.TeamAssets
 }
 
-func (a *assetsImpl) ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) ([]costsv1.Asset, error) {
+func (a *assetsImpl) ListAssets(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) (*costsv1.AssetList, error) {
 	assets, err := a.persistence.ListAssets(ctx, filters...)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,10 @@ func (a *assetsImpl) ListAssets(ctx context.Context, filters ...persistence.Team
 	for ind, asset := range assets {
 		results[ind] = a.fromTeamAssetModel(asset)
 	}
-	return results, nil
+	return &costsv1.AssetList{
+		KoreIdentifier: a.getKoreIdentifier(),
+		Items:          results,
+	}, nil
 }
 
 func (a *assetsImpl) ListCosts(ctx context.Context, filters ...persistence.TeamAssetFilterFunc) (*costsv1.AssetCostList, error) {

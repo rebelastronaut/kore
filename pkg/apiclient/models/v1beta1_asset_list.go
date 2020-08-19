@@ -22,6 +22,9 @@ type V1beta1AssetList struct {
 	// items
 	// Required: true
 	Items []*V1beta1Asset `json:"items"`
+
+	// kore identifier
+	KoreIdentifier string `json:"koreIdentifier,omitempty"`
 }
 
 // Validate validates this v1beta1 asset list
