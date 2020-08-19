@@ -63,6 +63,9 @@ class V1alpha1EKSSpec {
             if (data.hasOwnProperty('credentials')) {
                 obj['credentials'] = V1Ownership.constructFromObject(data['credentials']);
             }
+            if (data.hasOwnProperty('enablePrivateNetwork')) {
+                obj['enablePrivateNetwork'] = ApiClient.convertToType(data['enablePrivateNetwork'], 'Boolean');
+            }
             if (data.hasOwnProperty('region')) {
                 obj['region'] = ApiClient.convertToType(data['region'], 'String');
             }
@@ -120,6 +123,19 @@ class V1alpha1EKSSpec {
      */
     setCredentials(credentials) {
         this['credentials'] = credentials;
+    }
+/**
+     * @return {Boolean}
+     */
+    getEnablePrivateNetwork() {
+        return this.enablePrivateNetwork;
+    }
+
+    /**
+     * @param {Boolean} enablePrivateNetwork
+     */
+    setEnablePrivateNetwork(enablePrivateNetwork) {
+        this['enablePrivateNetwork'] = enablePrivateNetwork;
     }
 /**
      * @return {String}
@@ -203,6 +219,11 @@ V1alpha1EKSSpec.prototype['cluster'] = undefined;
  * @member {module:model/V1Ownership} credentials
  */
 V1alpha1EKSSpec.prototype['credentials'] = undefined;
+
+/**
+ * @member {Boolean} enablePrivateNetwork
+ */
+V1alpha1EKSSpec.prototype['enablePrivateNetwork'] = undefined;
 
 /**
  * @member {String} region

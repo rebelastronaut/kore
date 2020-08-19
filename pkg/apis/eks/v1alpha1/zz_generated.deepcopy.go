@@ -339,6 +339,11 @@ func (in *EKSSpec) DeepCopyInto(out *EKSSpec) {
 		copy(*out, *in)
 	}
 	out.Cluster = in.Cluster
+	if in.EnablePrivateNetwork != nil {
+		in, out := &in.EnablePrivateNetwork, &out.EnablePrivateNetwork
+		*out = new(bool)
+		**out = **in
+	}
 	if in.SubnetIDs != nil {
 		in, out := &in.SubnetIDs, &out.SubnetIDs
 		*out = make([]string, len(*in))

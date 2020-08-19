@@ -27,6 +27,9 @@ type V1alpha1EKSSpec struct {
 	// Required: true
 	Credentials *V1Ownership `json:"credentials"`
 
+	// enable private network
+	EnablePrivateNetwork bool `json:"enablePrivateNetwork,omitempty"`
+
 	// region
 	// Required: true
 	Region *string `json:"region"`

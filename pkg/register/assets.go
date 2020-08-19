@@ -904,6 +904,11 @@ spec:
               - namespace
               - version
               type: object
+            enablePrivateNetwork:
+              description: EnablePrivateNetwork indicates if the EKS should have public
+                networking enabled or not - note at present peering is not provided
+                but must be implemented outside of Kore
+              type: boolean
             region:
               description: Region is the AWS region to launch this cluster within
               type: string
