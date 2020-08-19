@@ -264,11 +264,10 @@ const schema = `
 			"type": "boolean",
 			"default": false
 		},
-		"enablePrivateNetwork", {
+		"enablePrivateNetwork": {
 			"type": "boolean",
-			"description": "the cluster should be entirely private with no public endpoints (peering must be setup separately)",
-			"immutable": true,
-			"default": false,
+			"description": "The cluster should be entirely private with no public endpoints (peering must be setup separately)",
+			"default": false
 		}
 	},
 	"if": {
