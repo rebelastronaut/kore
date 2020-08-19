@@ -109,3 +109,7 @@ tags
 .idea/*
 # End of https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
 /core
+
+# Charts
+charts/index.yaml
+charts/*.tgz
