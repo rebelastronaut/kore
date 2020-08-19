@@ -558,11 +558,6 @@ func (c *Client) createClusterInput() *awseks.CreateClusterInput {
 		tags[k] = aws.String(v)
 	}
 
-	enablePublicEndpoint := true
-	if utils.BoolValue(c.cluster.Spec.EnablePrivateNetwork) {
-		enablePublicEndpoint = false
-	}
-
 	d := &awseks.CreateClusterInput{
 		Name:    aws.String(c.cluster.Name),
 		RoleArn: aws.String(c.cluster.Status.RoleARN),
@@ -570,7 +565,7 @@ func (c *Client) createClusterInput() *awseks.CreateClusterInput {
 		ResourcesVpcConfig: &awseks.VpcConfigRequest{
 			SecurityGroupIds:      aws.StringSlice(c.cluster.Spec.SecurityGroupIDs),
 			SubnetIds:             aws.StringSlice(c.cluster.Spec.SubnetIDs),
-			EndpointPublicAccess:  aws.Bool(enablePublicEndpoint),
+			EndpointPublicAccess:  aws.Bool(!utils.BoolValue(c.cluster.Spec.EnablePrivateNetwork)),
 			EndpointPrivateAccess: aws.Bool(true),
 		},
 		Tags: tags,

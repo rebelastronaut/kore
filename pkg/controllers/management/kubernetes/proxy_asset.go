@@ -68,9 +68,9 @@ metadata:
     external-dns.alpha.kubernetes.io/hostname: api.{{ .Domain }}
     {{- if eq .Provider "EKS" }}
     service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
-		{{- if .PrivateNetworking }}
-		service.beta.kubernetes.io/aws-load-balancer-internal: "true"
-		{{- end }}
+    {{- if .PrivateNetworking }}
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    {{- end }}
     {{- end }}
   name: proxy
   namespace: {{ .Namespace }}
