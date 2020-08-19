@@ -24,6 +24,9 @@ import (
 	"time"
 
 	clustersv1 "github.com/appvia/kore/pkg/apis/clusters/v1"
+	eksv1alpha1 "github.com/appvia/kore/pkg/apis/eks/v1alpha1"
+	"github.com/appvia/kore/pkg/clusterproviders/eks"
+	"github.com/appvia/kore/pkg/clusterproviders/gke"
 	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/schema"
 	"github.com/appvia/kore/pkg/utils"
@@ -63,27 +66,50 @@ func (a k8sCtrl) EnsureAPIService(
 
 	// @step: build the context for the template
 	params := map[string]interface{}{
-		"AllowedIPs":  cluster.Spec.AuthProxyAllowedIPs,
-		"CACert":      a.CertificateAuthority(),
-		"ClientID":    a.Config().IDPClientID,
-		"Deployment":  "oidc-proxy",
-		"Domain":      cluster.Spec.Domain,
-		"Hostname":    a.APIHostname(cluster),
-		"Image":       a.Config().AuthProxyImage,
-		"MaxReplicas": 10,
-		"Name":        cluster.Name,
-		"Namespace":   kore.HubNamespace,
-		"OpenID":      a.Config().HasOpenID(),
-		"Provider":    cluster.Spec.Provider.Kind,
-		"Replicas":    2,
-		"ServerURL":   a.Config().IDPServerURL,
-		"Team":        cluster.Namespace,
-		"TLSKey":      "",
-		"TLSCert":     "",
-		"UserClaims":  a.Config().IDPUserClaims,
+		"AllowedIPs":        cluster.Spec.AuthProxyAllowedIPs,
+		"CACert":            a.CertificateAuthority(),
+		"ClientID":          a.Config().IDPClientID,
+		"Deployment":        "oidc-proxy",
+		"Domain":            cluster.Spec.Domain,
+		"Hostname":          a.APIHostname(cluster),
+		"Image":             a.Config().AuthProxyImage,
+		"MaxReplicas":       10,
+		"Name":              cluster.Name,
+		"Namespace":         kore.HubNamespace,
+		"OpenID":            a.Config().HasOpenID(),
+		"PrivateNetworking": false,
+		"Provider":          cluster.Spec.Provider.Kind,
+		"Replicas":          2,
+		"ServerURL":         a.Config().IDPServerURL,
+		"TLSCert":           "",
+		"TLSKey":            "",
+		"Team":              cluster.Namespace,
+		"UserClaims":        a.Config().IDPUserClaims,
 	}
 	if cluster.Spec.AuthProxyImage != "" {
 		params["Image"] = cluster.Spec.AuthProxyImage
+	}
+
+	// @step: retrieve any cloud specific options
+	switch cluster.Spec.Provider.Kind {
+	case eks.Kind:
+		provider := &eksv1alpha1.EKS{}
+		provider.Namespace = cluster.Spec.Provider.Namespace
+		provider.Name = cluster.Spec.Provider.Name
+
+		found, err := kubernetes.GetIfExists(ctx, cc, provider)
+		if err != nil || !found {
+			logger.WithError(err).Error("trying to retrieve cloud provider spec")
+
+			return err
+		}
+		// @note: I think it's fair to say if you've enabled private networking you
+		// don't want the auth-proxy to be public either.
+		params["PrivateNetworking"] = utils.BoolValue(provider.Spec.EnablePrivateNetwork)
+
+	case gke.Kind:
+		// should this be private on PrivateNetworking or PrivateEndpoint i'm guessing
+		// the later
 	}
 
 	// @step: does the tls secret already exist

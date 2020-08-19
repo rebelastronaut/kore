@@ -237,8 +237,13 @@ func (c *Client) Update(ctx context.Context) (bool, error) {
 		}
 	}
 
+	publicEndpoint := aws.BoolValue(state.ResourcesVpcConfig.EndpointPublicAccess)
+
 	// @check if the public endpoint has changed
-	if !aws.BoolValue(state.ResourcesVpcConfig.EndpointPublicAccess) {
+	switch {
+	case utils.BoolValue(c.cluster.Spec.EnablePrivateNetwork) && publicEndpoint:
+		update.ResourcesVpcConfig.EndpointPublicAccess = aws.Bool(false)
+	case !utils.BoolValue(c.cluster.Spec.EnablePrivateNetwork) && !publicEndpoint:
 		update.ResourcesVpcConfig.EndpointPublicAccess = aws.Bool(true)
 	}
 
@@ -552,6 +557,12 @@ func (c *Client) createClusterInput() *awseks.CreateClusterInput {
 	for k, v := range c.cluster.Spec.Tags {
 		tags[k] = aws.String(v)
 	}
+
+	enablePublicEndpoint := true
+	if utils.BoolValue(c.cluster.Spec.EnablePrivateNetwork) {
+		enablePublicEndpoint = false
+	}
+
 	d := &awseks.CreateClusterInput{
 		Name:    aws.String(c.cluster.Name),
 		RoleArn: aws.String(c.cluster.Status.RoleARN),
@@ -559,7 +570,7 @@ func (c *Client) createClusterInput() *awseks.CreateClusterInput {
 		ResourcesVpcConfig: &awseks.VpcConfigRequest{
 			SecurityGroupIds:      aws.StringSlice(c.cluster.Spec.SecurityGroupIDs),
 			SubnetIds:             aws.StringSlice(c.cluster.Spec.SubnetIDs),
-			EndpointPublicAccess:  aws.Bool(true),
+			EndpointPublicAccess:  aws.Bool(enablePublicEndpoint),
 			EndpointPrivateAccess: aws.Bool(true),
 		},
 		Tags: tags,

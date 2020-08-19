@@ -263,6 +263,12 @@ const schema = `
 		"enableDefaultTrafficBlock": {
 			"type": "boolean",
 			"default": false
+		},
+		"enablePrivateNetwork", {
+			"type": "boolean",
+			"description": "the cluster should be entirely private with no public endpoints (peering must be setup separately)",
+			"immutable": true,
+			"default": false,
 		}
 	},
 	"if": {

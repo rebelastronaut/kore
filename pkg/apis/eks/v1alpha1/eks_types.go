@@ -40,6 +40,11 @@ type EKSSpec struct {
 	// Region is the AWS region to launch this cluster within
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+	// EnablePrivateNetwork indicates if the EKS should have public networking
+	// enabled or not - note at present peering is not provided but must be
+	// implemented outside of Kore
+	// +kubebuilder:validation:Optional
+	EnablePrivateNetwork *bool `json:"enablePrivateNetwork,omitempty"`
 	// SubnetIds is a list of subnet IDs
 	// +kubebuilder:validation:Required
 	SubnetIDs []string `json:"subnetIDs"`

@@ -21,10 +21,9 @@ import (
 	"errors"
 	"reflect"
 
-	v1 "github.com/appvia/kore/pkg/apis/core/v1"
-
 	clustersv1 "github.com/appvia/kore/pkg/apis/clusters/v1"
 	configv1 "github.com/appvia/kore/pkg/apis/config/v1"
+	v1 "github.com/appvia/kore/pkg/apis/core/v1"
 	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/utils/kubernetes"
 
