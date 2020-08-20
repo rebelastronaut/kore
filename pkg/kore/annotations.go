@@ -25,3 +25,12 @@ const (
 	AnnotationValueTrue   = "true"
 	AnnotationValueFalse  = "false"
 )
+
+// Annotations are the list of known annotations
+var Annotations = []string{
+	AnnotationOwner,
+	AnnotationSystem,
+	AnnotationReadOnly,
+	AnnotationPriority,
+	AnnotationInstallOnce,
+}

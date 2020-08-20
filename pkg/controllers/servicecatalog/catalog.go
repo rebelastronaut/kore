@@ -28,6 +28,7 @@ import (
 	servicesv1 "github.com/appvia/kore/pkg/apis/services/v1"
 	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/serviceproviders/application"
+	"github.com/appvia/kore/pkg/utils"
 	"github.com/appvia/kore/pkg/utils/httputils"
 	"github.com/appvia/kore/pkg/utils/jsonschema"
 	"github.com/appvia/kore/pkg/utils/kubernetes"
@@ -255,13 +256,16 @@ func (c *catalogComponent) updateSchema(schema string, chart ChartVersion) (stri
 func (c *catalogComponent) annotationsAndLabelsFromChart(chart ChartVersion) (map[string]string, map[string]string) {
 	annotations := map[string]string{}
 	labels := map[string]string{}
+
+	ignoreAnnotations := []string{kore.Label("schema"), kore.Label("displayName"), kore.Label("longDescription")}
+
 	for k, v := range chart.Annotations {
 		if !strings.HasPrefix(k, kore.Label("")) {
 			continue
 		}
-		switch k {
-		case kore.Label("schema"), kore.Label("displayName"), kore.Label("longDescription"):
-		case kore.AnnotationSystem, kore.AnnotationReadOnly, kore.AnnotationInstallOnce:
+		switch {
+		case utils.Contains(k, ignoreAnnotations):
+		case utils.Contains(k, kore.Annotations):
 			annotations[k] = v
 		default:
 			labels[k] = v
@@ -269,6 +273,7 @@ func (c *catalogComponent) annotationsAndLabelsFromChart(chart ChartVersion) (ma
 	}
 
 	annotations[kore.AnnotationReadOnly] = kore.AnnotationValueTrue
+	labels[kore.LabelPlatform] = "Kubernetes"
 
 	return annotations, labels
 }

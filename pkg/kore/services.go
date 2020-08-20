@@ -192,15 +192,15 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service, 
 		return err
 	}
 
-	if serviceKind.Labels[Label("platform")] == "Kubernetes" {
+	if serviceKind.Labels[LabelPlatform] == "Kubernetes" {
 		if service.Spec.ClusterNamespace == "" {
 			return validation.NewError("service has failed validation").
-				WithFieldError("clusterNamespace", validation.Required, "must be set")
+				WithFieldError("spec.clusterNamespace", validation.Required, "must be set")
 		}
 	} else {
 		if service.Spec.ClusterNamespace != "" {
 			return validation.NewError("service has failed validation").
-				WithFieldError("clusterNamespace", validation.NotAllowed, "should not be set for this service type")
+				WithFieldError("spec.clusterNamespace", validation.NotAllowed, "should not be set for this service type")
 		}
 	}
 
