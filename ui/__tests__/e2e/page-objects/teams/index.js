@@ -32,7 +32,7 @@ export class TeamPage extends BasePage {
   }
 
   async deleteCluster(name) {
-    expect(this.p).toClick(`#cluster_delete_${name}`)
+    expect(this.p).toClick(`#cluster_delete_${name}`, { timeout: 10000 })
   }
 
   async deleteClusterConfirm() {
