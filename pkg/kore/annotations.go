@@ -17,19 +17,21 @@
 package kore
 
 const (
-	AnnotationOwner       = "kore.appvia.io/owner"
-	AnnotationSystem      = "kore.appvia.io/system"
-	AnnotationReadOnly    = "kore.appvia.io/readonly"
-	AnnotationPriority    = "kore.appvia.io/priority"
-	AnnotationInstallOnce = "kore.appvia.io/installOnce"
-	AnnotationValueTrue   = "true"
-	AnnotationValueFalse  = "false"
+	AnnotationOwner           = "kore.appvia.io/owner"
+	AnnotationSystem          = "kore.appvia.io/system"
+	AnnotationSystemNamespace = "kore.appvia.io/systemNamespace"
+	AnnotationReadOnly        = "kore.appvia.io/readonly"
+	AnnotationPriority        = "kore.appvia.io/priority"
+	AnnotationInstallOnce     = "kore.appvia.io/installOnce"
+	AnnotationValueTrue       = "true"
+	AnnotationValueFalse      = "false"
 )
 
 // Annotations are the list of known annotations
 var Annotations = []string{
 	AnnotationOwner,
 	AnnotationSystem,
+	AnnotationSystemNamespace,
 	AnnotationReadOnly,
 	AnnotationPriority,
 	AnnotationInstallOnce,

@@ -204,6 +204,11 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service, 
 		}
 	}
 
+	if serviceKind.Annotations[AnnotationSystemNamespace] != "" && service.Spec.ClusterNamespace != serviceKind.Annotations[AnnotationSystemNamespace] {
+		return validation.NewError("service has failed validation").
+			WithFieldErrorf("spec.clusterNamespace", validation.NotAllowed, "must be %q", serviceKind.Annotations[AnnotationSystemNamespace])
+	}
+
 	existing, err := s.Get(ctx, service.Name)
 	if err != nil && err != ErrNotFound {
 		return err
