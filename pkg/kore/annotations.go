@@ -23,6 +23,7 @@ const (
 	AnnotationReadOnly        = "kore.appvia.io/readonly"
 	AnnotationPriority        = "kore.appvia.io/priority"
 	AnnotationInstallOnce     = "kore.appvia.io/installOnce"
+	AnnotationKeywords        = "kore.appvia.io/keywords"
 	AnnotationValueTrue       = "true"
 	AnnotationValueFalse      = "false"
 )
@@ -35,4 +36,5 @@ var Annotations = []string{
 	AnnotationReadOnly,
 	AnnotationPriority,
 	AnnotationInstallOnce,
+	AnnotationKeywords,
 }

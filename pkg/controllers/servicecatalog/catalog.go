@@ -275,5 +275,9 @@ func (c *catalogComponent) annotationsAndLabelsFromChart(chart ChartVersion) (ma
 	annotations[kore.AnnotationReadOnly] = kore.AnnotationValueTrue
 	labels[kore.LabelPlatform] = "Kubernetes"
 
+	if len(chart.Keywords) > 0 {
+		annotations[kore.AnnotationKeywords] = strings.Join(chart.Keywords, ",")
+	}
+
 	return annotations, labels
 }
