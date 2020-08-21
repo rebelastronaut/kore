@@ -30,7 +30,6 @@ import (
 	"github.com/appvia/kore/pkg/utils/kubernetes"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -65,7 +64,7 @@ func ApplyServicePlanToAppService(ctx kore.Context, service *servicesv1.Service,
 }
 
 // EnsureServices will create or update services and return reconciliation info
-func EnsureServices(ctx kore.Context, services []servicesv1.Service, owner runtime.Object, components *corev1.Components) (reconcile.Result, error) {
+func EnsureServices(ctx kore.Context, services []servicesv1.Service, owner kubernetes.Object, components *corev1.Components) (reconcile.Result, error) {
 	sortedServices := servicesv1.PriorityServiceSlice(make([]servicesv1.Service, 0, len(services)))
 	for _, s := range services {
 		sortedServices = append(sortedServices, s)
@@ -134,7 +133,7 @@ func EnsureServices(ctx kore.Context, services []servicesv1.Service, owner runti
 }
 
 // EnsureService will create or update a service and return reconciliation info
-func EnsureService(ctx kore.Context, original *servicesv1.Service, owner runtime.Object, components *corev1.Components) (reconcile.Result, error) {
+func EnsureService(ctx kore.Context, original *servicesv1.Service, owner kubernetes.Object, components *corev1.Components) (reconcile.Result, error) {
 	resource := corev1.MustGetOwnershipFromObject(original)
 	components.SetCondition(corev1.Component{
 		Name:     "Service/" + original.Name,
@@ -144,10 +143,7 @@ func EnsureService(ctx kore.Context, original *servicesv1.Service, owner runtime
 		Resource: &resource,
 	})
 
-	if original.Annotations == nil {
-		original.Annotations = map[string]string{}
-	}
-	original.Annotations[kore.AnnotationOwner] = kubernetes.MustGetRuntimeSelfLink(owner)
+	kubernetes.EnsureOwnerReference(original, owner, false)
 
 	current := servicesv1.NewService(original.Name, original.Namespace)
 	exists, err := kubernetes.GetIfExists(ctx, ctx.Client(), current)
@@ -173,25 +169,25 @@ func EnsureService(ctx kore.Context, original *servicesv1.Service, owner runtime
 	case corev1.SuccessStatus:
 		return reconcile.Result{}, nil
 	case corev1.ErrorStatus, corev1.FailureStatus:
-		return reconcile.Result{}, fmt.Errorf("%q admin service has an error status", current.Name)
+		return reconcile.Result{}, fmt.Errorf("%q service has an error status", current.Name)
 	default:
 		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 }
 
 // DeleteServices will remove services and return reconcile status
-func DeleteServices(ctx kore.Context, team string, owner runtime.Object, components *corev1.Components) (reconcile.Result, error) {
-	adminServicesList, err := ctx.Kore().Teams().Team(team).Services().List(ctx, func(service servicesv1.Service) bool {
-		return service.Annotations[kore.AnnotationOwner] == kubernetes.MustGetRuntimeSelfLink(owner)
+func DeleteServices(ctx kore.Context, team string, owner kubernetes.Object, components *corev1.Components) (reconcile.Result, error) {
+	servicesList, err := ctx.Kore().Teams().Team(team).Services().List(ctx, func(s servicesv1.Service) bool {
+		return kubernetes.HasOwnerReference(&s, owner)
 	})
 	if err != nil {
 		return reconcile.Result{}, fmt.Errorf("failed to list services: %w", err)
 	}
 
-	adminServices := servicesv1.PriorityServiceSlice(adminServicesList.Items)
-	sort.Sort(sort.Reverse(adminServices))
+	services := servicesv1.PriorityServiceSlice(servicesList.Items)
+	sort.Sort(sort.Reverse(services))
 
-	for _, service := range adminServices {
+	for _, service := range services {
 		components.SetStatus("Service/"+service.Name, corev1.DeletingStatus, "", "")
 
 		result, err := DeleteService(
@@ -213,8 +209,8 @@ func DeleteServices(ctx kore.Context, team string, owner runtime.Object, compone
 }
 
 // DeleteService will remove a service and return reconcile status
-func DeleteService(ctx kore.Context, service *servicesv1.Service, owner runtime.Object, components *corev1.Components) (reconcile.Result, error) {
-	if service.Annotations[kore.AnnotationOwner] != kubernetes.MustGetRuntimeSelfLink(owner) {
+func DeleteService(ctx kore.Context, service *servicesv1.Service, owner kubernetes.Object, components *corev1.Components) (reconcile.Result, error) {
+	if !kubernetes.HasOwnerReference(service, owner) {
 		return reconcile.Result{}, fmt.Errorf("the service can not be deleted as it doesn't belong to %s", kubernetes.MustGetRuntimeSelfLink(owner))
 	}
 
@@ -237,7 +233,7 @@ func DeleteService(ctx kore.Context, service *servicesv1.Service, owner runtime.
 	}
 
 	if err := kubernetes.DeleteIfExists(ctx, ctx.Client(), service); err != nil {
-		return reconcile.Result{}, fmt.Errorf("failed to delete admin service %q: %w", service.Name, err)
+		return reconcile.Result{}, fmt.Errorf("failed to delete service %q: %w", service.Name, err)
 	}
 
 	return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
