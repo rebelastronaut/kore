@@ -173,6 +173,7 @@ func (u *teamHandler) Register(i kore.Interface, builder utils.PathBuilder) (*re
 	// Team services
 	u.addServiceRoutes(ws)
 	u.addServiceCredentialRoutes(ws)
+	u.addServiceDeploymentRoutes(ws)
 
 	// Team Security Reports
 	u.addTeamSecurityRoutes(ws)

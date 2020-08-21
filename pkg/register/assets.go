@@ -45,6 +45,7 @@
 // deploy/crds/security.kore.appvia.io_securityscanresults.yaml
 // deploy/crds/services.kore.appvia.io_servicecatalogs.yaml
 // deploy/crds/services.kore.appvia.io_servicecredentials.yaml
+// deploy/crds/services.kore.appvia.io_servicedeployments.yaml
 // deploy/crds/services.kore.appvia.io_servicekinds.yaml
 // deploy/crds/services.kore.appvia.io_serviceplans.yaml
 // deploy/crds/services.kore.appvia.io_serviceproviders.yaml
@@ -8162,6 +8163,269 @@ func crdsServicesKoreAppviaIo_servicecredentialsYaml() (*asset, error) {
 	return a, nil
 }
 
+var _crdsServicesKoreAppviaIo_servicedeploymentsYaml = []byte(`
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.5
+  creationTimestamp: null
+  name: servicedeployments.services.kore.appvia.io
+spec:
+  group: services.kore.appvia.io
+  names:
+    kind: ServiceDeployment
+    listKind: ServiceDeploymentList
+    plural: servicedeployments
+    singular: servicedeployment
+  preserveUnknownFields: false
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: ServiceDeployment is a template for a service deployment
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ServiceDeploymentSpec defines the desired state of a service
+            satalog
+          properties:
+            clusterNamespace:
+              description: ClusterNamespace is the target namespace in the clusters
+                where there the service will be created
+              type: string
+            clusterSelector:
+              description: ClusterSelector defines in which clusters should we install
+                the given service
+              properties:
+                kinds:
+                  description: Kinds defines the cluster kinds this deployment applies
+                    to If empty, the cluster kind is not filtered
+                  items:
+                    type: string
+                  type: array
+                  x-kubernetes-list-type: set
+                matchExpressions:
+                  description: matchExpressions is a list of label selector requirements.
+                    The requirements are ANDed.
+                  items:
+                    description: A label selector requirement is a selector that contains
+                      values, a key, and an operator that relates the key and values.
+                    properties:
+                      key:
+                        description: key is the label key that the selector applies
+                          to.
+                        type: string
+                      operator:
+                        description: operator represents a key's relationship to a
+                          set of values. Valid operators are In, NotIn, Exists and
+                          DoesNotExist.
+                        type: string
+                      values:
+                        description: values is an array of string values. If the operator
+                          is In or NotIn, the values array must be non-empty. If the
+                          operator is Exists or DoesNotExist, the values array must
+                          be empty. This array is replaced during a strategic merge
+                          patch.
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - key
+                    - operator
+                    type: object
+                  type: array
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: matchLabels is a map of {key,value} pairs. A single
+                    {key,value} in the matchLabels map is equivalent to an element
+                    of matchExpressions, whose key field is "key", the operator is
+                    "In", and the values array contains only "value". The requirements
+                    are ANDed.
+                  type: object
+                teams:
+                  description: Kinds defines the teams this deployment applies to
+                    If empty, the team is not filtered
+                  items:
+                    type: string
+                  type: array
+                  x-kubernetes-list-type: set
+              type: object
+            configuration:
+              description: Configuration are the configuration values for the created
+                service It will contain values from the plan + overrides by the user
+                This will provide a simple interface to calculate diffs between plan
+                and service configuration
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+            configurationFrom:
+              description: ConfigurationFrom is a way to load configuration values
+                from alternative sources, e.g. from secrets The values from these
+                sources will override any existing keys defined in Configuration
+              items:
+                properties:
+                  path:
+                    description: 'Path is the JSON path of the configuration parameter
+                      Examples: "field", "map_field.value", "array_field.0", "array_field.0.value"
+                      To append a value to an existing array: "array_field.-1" To
+                      reference a numeric key on a map: "map_field.:123.value"'
+                    minLength: 1
+                    type: string
+                  secretKeyRef:
+                    description: SecretKeyRef is a reference to a key in a secret
+                    properties:
+                      key:
+                        description: Key is they data key in the secret
+                        minLength: 1
+                        type: string
+                      name:
+                        description: Name is the name of the secret
+                        minLength: 1
+                        type: string
+                      namespace:
+                        description: Name is the namespace of the secret
+                        minLength: 1
+                        type: string
+                      optional:
+                        description: Optional controls whether the secret with the
+                          given key must exist
+                        type: boolean
+                    required:
+                    - name
+                    type: object
+                required:
+                - path
+                - secretKeyRef
+                type: object
+              type: array
+            description:
+              description: Description is a detailed description of the service deployment
+              type: string
+            displayName:
+              description: DisplayName overrides the name to display
+              type: string
+            kind:
+              description: Kind refers to the service type
+              minLength: 1
+              type: string
+            plan:
+              description: Plan is the name of the service plan which is used to create
+                the services
+              minLength: 1
+              type: string
+            serviceName:
+              description: ServiceName is the name of the service in each cluster
+                If empty it defaults to the name of the service deployment
+              type: string
+            summary:
+              description: Summary provides a short title summary for the deployment
+              minLength: 1
+              type: string
+          required:
+          - clusterSelector
+          - kind
+          - plan
+          - summary
+          type: object
+        status:
+          description: ServiceDeploymentStatus defines the observed state of a service
+            deployment
+          properties:
+            components:
+              description: Components is a collection of component statuses
+              items:
+                description: Component the state of a component of the resource
+                properties:
+                  detail:
+                    description: Detail is additional details on the error is any
+                    type: string
+                  message:
+                    description: Message is a human readable message on the status
+                      of the component
+                    type: string
+                  name:
+                    description: Name is the name of the component
+                    type: string
+                  resource:
+                    description: Resource is a reference to the resource
+                    properties:
+                      group:
+                        description: Group is the api group
+                        type: string
+                      kind:
+                        description: Kind is the name of the resource under the group
+                        type: string
+                      name:
+                        description: Name is name of the resource
+                        type: string
+                      namespace:
+                        description: Namespace is the location of the object
+                        type: string
+                      version:
+                        description: Version is the group version
+                        type: string
+                    required:
+                    - group
+                    - kind
+                    - name
+                    - namespace
+                    - version
+                    type: object
+                  status:
+                    description: Status is the status of the component
+                    type: string
+                type: object
+              type: array
+            message:
+              description: Message is the description of the current status
+              type: string
+            status:
+              description: Status is the overall status of the service
+              type: string
+          type: object
+      type: object
+  version: v1
+  versions:
+  - name: v1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+`)
+
+func crdsServicesKoreAppviaIo_servicedeploymentsYamlBytes() ([]byte, error) {
+	return _crdsServicesKoreAppviaIo_servicedeploymentsYaml, nil
+}
+
+func crdsServicesKoreAppviaIo_servicedeploymentsYaml() (*asset, error) {
+	bytes, err := crdsServicesKoreAppviaIo_servicedeploymentsYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "crds/services.kore.appvia.io_servicedeployments.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 var _crdsServicesKoreAppviaIo_servicekindsYaml = []byte(`
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
@@ -8912,6 +9176,7 @@ var _bindata = map[string]func() (*asset, error){
 	"crds/security.kore.appvia.io_securityscanresults.yaml":               crdsSecurityKoreAppviaIo_securityscanresultsYaml,
 	"crds/services.kore.appvia.io_servicecatalogs.yaml":                   crdsServicesKoreAppviaIo_servicecatalogsYaml,
 	"crds/services.kore.appvia.io_servicecredentials.yaml":                crdsServicesKoreAppviaIo_servicecredentialsYaml,
+	"crds/services.kore.appvia.io_servicedeployments.yaml":                crdsServicesKoreAppviaIo_servicedeploymentsYaml,
 	"crds/services.kore.appvia.io_servicekinds.yaml":                      crdsServicesKoreAppviaIo_servicekindsYaml,
 	"crds/services.kore.appvia.io_serviceplans.yaml":                      crdsServicesKoreAppviaIo_serviceplansYaml,
 	"crds/services.kore.appvia.io_serviceproviders.yaml":                  crdsServicesKoreAppviaIo_serviceprovidersYaml,
@@ -9005,6 +9270,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"security.kore.appvia.io_securityscanresults.yaml":               {crdsSecurityKoreAppviaIo_securityscanresultsYaml, map[string]*bintree{}},
 		"services.kore.appvia.io_servicecatalogs.yaml":                   {crdsServicesKoreAppviaIo_servicecatalogsYaml, map[string]*bintree{}},
 		"services.kore.appvia.io_servicecredentials.yaml":                {crdsServicesKoreAppviaIo_servicecredentialsYaml, map[string]*bintree{}},
+		"services.kore.appvia.io_servicedeployments.yaml":                {crdsServicesKoreAppviaIo_servicedeploymentsYaml, map[string]*bintree{}},
 		"services.kore.appvia.io_servicekinds.yaml":                      {crdsServicesKoreAppviaIo_servicekindsYaml, map[string]*bintree{}},
 		"services.kore.appvia.io_serviceplans.yaml":                      {crdsServicesKoreAppviaIo_serviceplansYaml, map[string]*bintree{}},
 		"services.kore.appvia.io_serviceproviders.yaml":                  {crdsServicesKoreAppviaIo_serviceprovidersYaml, map[string]*bintree{}},

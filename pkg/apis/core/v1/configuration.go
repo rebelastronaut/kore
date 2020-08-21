@@ -16,6 +16,8 @@
 
 package v1
 
+type ConfigurationFromSourceList []ConfigurationFromSource
+
 type ConfigurationFromSource struct {
 	// Path is the JSON path of the configuration parameter
 	// Examples: "field", "map_field.value", "array_field.0", "array_field.0.value"

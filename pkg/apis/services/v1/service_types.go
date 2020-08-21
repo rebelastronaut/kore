@@ -29,7 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ServiceGroupVersionKind is the GroupVersionKind for Service
+// ServiceGVK is the GroupVersionKind for Service
 var ServiceGVK = schema.GroupVersionKind{
 	Group:   GroupVersion.Group,
 	Version: GroupVersion.Version,
@@ -62,7 +62,7 @@ type ServiceSpec struct {
 	// ConfigurationFrom is a way to load configuration values from alternative sources, e.g. from secrets
 	// The values from these sources will override any existing keys defined in Configuration
 	// +kubebuilder:validation:Optional
-	ConfigurationFrom []corev1.ConfigurationFromSource `json:"configurationFrom,omitempty"`
+	ConfigurationFrom corev1.ConfigurationFromSourceList `json:"configurationFrom,omitempty"`
 }
 
 func (s *ServiceSpec) SetConfiguration(v interface{}) error {

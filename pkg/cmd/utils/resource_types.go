@@ -441,6 +441,21 @@ var (
 			},
 		},
 		{
+			Name:         "servicedeployment",
+			GroupVersion: servicesv1.GroupVersion.String(),
+			Kind:         "ServiceDeployments",
+			Scope:        TeamScope,
+			FeatureGate:  kore.FeatureGateServices,
+			Printer: []Column{
+				{"Name", "metadata.name", ""},
+				{"Summary", "spec.summary", ""},
+				{"Kind", "spec.service.kind", ""},
+				{"Plan", "spec.service.plan", ""},
+				{"Status", "status.status", ""},
+				{"Age", "metadata.creationTimestamp", "age"},
+			},
+		},
+		{
 			Name:         "serviceprovider",
 			GroupVersion: servicesv1.GroupVersion.String(),
 			Kind:         "ServiceProvider",

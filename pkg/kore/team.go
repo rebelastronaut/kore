@@ -37,6 +37,8 @@ type Team interface {
 	Services() Services
 	// ServiceCredentials returns the service credentials interface
 	ServiceCredentials() ServiceCredentials
+	// ServiceDeployments returns the service deployments interface
+	ServiceDeployments() ServiceDeployments
 	// Assets returns the assets interface
 	Assets() TeamAssets
 }
@@ -114,6 +116,14 @@ func (t *tmImpl) ServiceCredentials() ServiceCredentials {
 	return &serviceCredentialsImpl{
 		hubImpl: t.hubImpl,
 		team:    t.team,
+	}
+}
+
+// ServiceDeployments returns the service deployments implementation
+func (t *tmImpl) ServiceDeployments() ServiceDeployments {
+	return &serviceDeploymentsImpl{
+		Interface: t.hubImpl,
+		team:      t.team,
 	}
 }
 

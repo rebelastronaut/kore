@@ -98,6 +98,16 @@ type FakeTeam struct {
 	serviceCredentialsReturnsOnCall map[int]struct {
 		result1 kore.ServiceCredentials
 	}
+	ServiceDeploymentsStub        func() kore.ServiceDeployments
+	serviceDeploymentsMutex       sync.RWMutex
+	serviceDeploymentsArgsForCall []struct {
+	}
+	serviceDeploymentsReturns struct {
+		result1 kore.ServiceDeployments
+	}
+	serviceDeploymentsReturnsOnCall map[int]struct {
+		result1 kore.ServiceDeployments
+	}
 	ServicesStub        func() kore.Services
 	servicesMutex       sync.RWMutex
 	servicesArgsForCall []struct {
@@ -580,6 +590,58 @@ func (fake *FakeTeam) ServiceCredentialsReturnsOnCall(i int, result1 kore.Servic
 	}{result1}
 }
 
+func (fake *FakeTeam) ServiceDeployments() kore.ServiceDeployments {
+	fake.serviceDeploymentsMutex.Lock()
+	ret, specificReturn := fake.serviceDeploymentsReturnsOnCall[len(fake.serviceDeploymentsArgsForCall)]
+	fake.serviceDeploymentsArgsForCall = append(fake.serviceDeploymentsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ServiceDeployments", []interface{}{})
+	fake.serviceDeploymentsMutex.Unlock()
+	if fake.ServiceDeploymentsStub != nil {
+		return fake.ServiceDeploymentsStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.serviceDeploymentsReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeTeam) ServiceDeploymentsCallCount() int {
+	fake.serviceDeploymentsMutex.RLock()
+	defer fake.serviceDeploymentsMutex.RUnlock()
+	return len(fake.serviceDeploymentsArgsForCall)
+}
+
+func (fake *FakeTeam) ServiceDeploymentsCalls(stub func() kore.ServiceDeployments) {
+	fake.serviceDeploymentsMutex.Lock()
+	defer fake.serviceDeploymentsMutex.Unlock()
+	fake.ServiceDeploymentsStub = stub
+}
+
+func (fake *FakeTeam) ServiceDeploymentsReturns(result1 kore.ServiceDeployments) {
+	fake.serviceDeploymentsMutex.Lock()
+	defer fake.serviceDeploymentsMutex.Unlock()
+	fake.ServiceDeploymentsStub = nil
+	fake.serviceDeploymentsReturns = struct {
+		result1 kore.ServiceDeployments
+	}{result1}
+}
+
+func (fake *FakeTeam) ServiceDeploymentsReturnsOnCall(i int, result1 kore.ServiceDeployments) {
+	fake.serviceDeploymentsMutex.Lock()
+	defer fake.serviceDeploymentsMutex.Unlock()
+	fake.ServiceDeploymentsStub = nil
+	if fake.serviceDeploymentsReturnsOnCall == nil {
+		fake.serviceDeploymentsReturnsOnCall = make(map[int]struct {
+			result1 kore.ServiceDeployments
+		})
+	}
+	fake.serviceDeploymentsReturnsOnCall[i] = struct {
+		result1 kore.ServiceDeployments
+	}{result1}
+}
+
 func (fake *FakeTeam) Services() kore.Services {
 	fake.servicesMutex.Lock()
 	ret, specificReturn := fake.servicesReturnsOnCall[len(fake.servicesArgsForCall)]
@@ -653,6 +715,8 @@ func (fake *FakeTeam) Invocations() map[string][][]interface{} {
 	defer fake.secretsMutex.RUnlock()
 	fake.serviceCredentialsMutex.RLock()
 	defer fake.serviceCredentialsMutex.RUnlock()
+	fake.serviceDeploymentsMutex.RLock()
+	defer fake.serviceDeploymentsMutex.RUnlock()
 	fake.servicesMutex.RLock()
 	defer fake.servicesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
