@@ -286,5 +286,12 @@ func Options() []cli.Flag {
 			Value:   "http://cloudinfo.kore-costs.svc.cluster.local/",
 			EnvVars: []string{"CLOUD_INFO_URL"},
 		},
+
+		&cli.StringFlag{
+			Name:    "service-catalog-url",
+			Usage:   "the url for the main service catalog",
+			Value:   "https://kore-service-catalog.storage.googleapis.com",
+			EnvVars: []string{"KORE_SERVICE_CATALOG_URL"},
+		},
 	}
 }

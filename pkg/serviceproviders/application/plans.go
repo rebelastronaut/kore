@@ -18,6 +18,7 @@ package application
 
 import (
 	servicev1 "github.com/appvia/kore/pkg/apis/services/v1"
+	"github.com/appvia/kore/pkg/kore"
 	"github.com/appvia/kore/pkg/utils/jsonutils"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,8 +43,9 @@ func GetDefaultPlans() []servicev1.ServicePlan {
 				Name:      HelmAppClusterAutoscaler,
 				Namespace: "kore",
 				Annotations: map[string]string{
-					"kore.appvia.io/system":   "true",
-					"kore.appvia.io/readonly": "true",
+					kore.AnnotationSystem:      kore.AnnotationValueTrue,
+					kore.AnnotationInstallOnce: kore.AnnotationValueTrue,
+					kore.AnnotationReadOnly:    kore.AnnotationValueTrue,
 				},
 			},
 			Spec: servicev1.ServicePlanSpec{
@@ -84,8 +86,9 @@ func GetDefaultPlans() []servicev1.ServicePlan {
 				Name:      HelmAppKoreMonitoring,
 				Namespace: "kore",
 				Annotations: map[string]string{
-					"kore.appvia.io/system":   "true",
-					"kore.appvia.io/readonly": "true",
+					kore.AnnotationSystem:      kore.AnnotationValueTrue,
+					kore.AnnotationInstallOnce: kore.AnnotationValueTrue,
+					kore.AnnotationReadOnly:    kore.AnnotationValueTrue,
 				},
 			},
 			Spec: servicev1.ServicePlanSpec{

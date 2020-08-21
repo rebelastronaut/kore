@@ -56,6 +56,7 @@ import (
 	_ "github.com/appvia/kore/pkg/controllers/user/teams"
 
 	// importing the service controllers
+	_ "github.com/appvia/kore/pkg/controllers/servicecatalog"
 	_ "github.com/appvia/kore/pkg/controllers/servicecredentials"
 	_ "github.com/appvia/kore/pkg/controllers/serviceproviders"
 	_ "github.com/appvia/kore/pkg/controllers/services"

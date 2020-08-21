@@ -72,11 +72,6 @@ func (p Provider) Reconcile(
 		return reconcile.Result{}, fmt.Errorf("failed to create namespace: %q: %w", service.Spec.ClusterNamespace, err)
 	}
 
-	var app *applicationv1beta.Application
-	if compiledResources.Application() != nil {
-		app = compiledResources.Application().DeepCopy()
-	}
-
 	providerData := &ProviderData{}
 	if err := service.Status.GetProviderData(providerData); err != nil {
 		return reconcile.Result{}, err
@@ -102,11 +97,12 @@ func (p Provider) Reconcile(
 	updatedProviderData := ProviderData{}
 
 	for _, resource := range compiledResources {
-		if _, ok := resource.(*v1.Namespace); ok {
+		switch resource.(type) {
+		case *v1.Namespace, *applicationv1beta.Application:
 			continue
 		}
 
-		ctx.Logger().WithField("resource", kubernetes.MustGetRuntimeSelfLink(resource)).Trace("creating/updating application resource")
+		ctx.Logger().WithField("resource", kubernetes.MustGetRuntimeSelfLink(resource)).Trace("creating/updating resource")
 		if err := ensureResource(ctx, clusterClient, resource.DeepCopyObject()); err != nil {
 			return reconcile.Result{}, err
 		}
@@ -114,12 +110,32 @@ func (p Provider) Reconcile(
 		updatedProviderData.Resources = append(updatedProviderData.Resources, corev1.MustGetOwnershipFromObject(resource))
 	}
 
+	app := compiledResources.Application()
+
+	if app != nil {
+		ctx.Logger().WithField("application", kubernetes.MustGetRuntimeSelfLink(app)).Trace("creating/updating application object")
+		if err := ensureResource(ctx, clusterClient, app.DeepCopyObject()); err != nil {
+			return reconcile.Result{}, err
+		}
+
+		updatedProviderData.Resources = append(updatedProviderData.Resources, corev1.MustGetOwnershipFromObject(app))
+	}
+
 	if err := service.Status.SetProviderData(updatedProviderData); err != nil {
 		return reconcile.Result{}, err
 	}
 
 	if app == nil {
-		return reconcile.Result{}, nil
+		app = &applicationv1beta.Application{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Application",
+				APIVersion: applicationv1beta.GroupVersion.String(),
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      service.Name,
+				Namespace: service.Spec.ClusterNamespace,
+			},
+		}
 	}
 
 	appExists, err := kubernetes.GetIfExists(ctx, clusterClient, app)
@@ -129,32 +145,32 @@ func (p Provider) Reconcile(
 		}
 	}
 
-	service.Status.Status = corev1.PendingStatus
-	service.Status.Message = ""
+	if !appExists {
+		ctx.Logger().Debug("application object does not exist, waiting")
+		return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
+	}
 
-	if appExists {
-		for _, condition := range app.Status.Conditions {
-			switch condition.Type {
-			case applicationv1beta.Error:
-				if condition.Status == "True" {
-					return reconcile.Result{}, errors.New(condition.Message)
+	for _, condition := range app.Status.Conditions {
+		switch condition.Type {
+		case applicationv1beta.Error:
+			if condition.Status == "True" {
+				return reconcile.Result{}, errors.New(condition.Message)
+			}
+		case applicationv1beta.Ready:
+			if condition.Status == "True" {
+				// The Application status will be healthy even if there are no monitored resources, so we have to
+				// explicitly check ComponentsReady for "0/0"
+				if app.Status.ComponentsReady == "0/0" {
+					return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 				}
-			case applicationv1beta.Ready:
-				if condition.Status == "True" {
-					// The Application status will be healthy even if there are no monitored resources, so we have to
-					// explicitly check ComponentsReady for "0/0"
-					if app.Status.ComponentsReady == "0/0" {
-						return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
-					}
 
-					service.Status.Status = corev1.SuccessStatus
-					service.Status.Message = condition.Message
+				service.Status.Status = corev1.SuccessStatus
+				service.Status.Message = condition.Message
 
-					// We will actively monitor the application status and update the service
-					return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
-				} else {
-					service.Status.Message = condition.Message
-				}
+				// We will actively monitor the application status and update the service
+				return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil
+			} else {
+				service.Status.Message = condition.Message
 			}
 		}
 	}

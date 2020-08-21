@@ -65,6 +65,8 @@ type hubImpl struct {
 	signer certificates.Signer
 	// audit is the audit implementation
 	audit Audit
+	// serviceCatalogs is the service catalog manager implementation
+	serviceCatalogs ServiceCatalogs
 	// serviceplans is the ServicePlans implementation
 	servicePlans ServicePlans
 	// servicekinds is the ServiceKinds implementation
@@ -140,6 +142,7 @@ func New(sc store.Store, persistenceMgr persistence.Interface, config Config) (I
 	h.persistenceMgr = persistenceMgr
 	h.users = &usersImpl{hubImpl: h}
 	h.audit = &auditImpl{auditPersist: persistenceMgr.Audit()}
+	h.serviceCatalogs = &serviceCatalogsImpl{Interface: h}
 	h.servicePlans = &servicePlansImpl{Interface: h}
 	h.serviceKinds = &serviceKindsImpl{Interface: h}
 	h.serviceProviders = &serviceProvidersImpl{Interface: h}
@@ -265,6 +268,11 @@ func (h hubImpl) Config() *Config {
 // Store returns underlying data layer
 func (h hubImpl) Store() store.Store {
 	return h.store
+}
+
+// ServiceCatalogs returns the service catalog manager implementation
+func (h hubImpl) ServiceCatalogs() ServiceCatalogs {
+	return h.serviceCatalogs
 }
 
 // ServicePlans returns the serviceplans interface

@@ -3,4 +3,3 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: kore-costs
-  app.kubernetes.io/name: "kore-costs"

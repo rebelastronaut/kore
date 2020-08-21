@@ -70,9 +70,9 @@ type ServiceProviderStatus struct {
 	// Components is a collection of component statuses
 	// +kubebuilder:validation:Optional
 	Components corev1.Components `json:"components,omitempty"`
-	// SupportedKinds contains all the supported service kinds
+	// SupportedTypes contains all the supported service types
 	// +kubebuilder:validation:Optional
-	SupportedKinds []string `json:"supportedKinds,omitempty"`
+	SupportedTypes []string `json:"supportedTypes,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

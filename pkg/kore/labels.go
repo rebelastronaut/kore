@@ -31,3 +31,9 @@ var LabelClusterIdentifier = Label("clusterid")
 // identifier for the team) or populated with the team's identifier for a resource. No
 // other values permitted, and read-only after a cluster or team is created.
 var LabelTeamIdentifier = Label("teamid")
+
+// LabelPlatform is used to identify the platform for an object, e.g. for a service kind
+var LabelPlatform = Label("platform")
+
+// LabelCategory is used to categorize objects
+var LabelCategory = Label("category")

@@ -63,6 +63,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				},
 			},
 			Spec: servicesv1.ServiceKindSpec{
+				Type:                 "dummy",
 				DisplayName:          platform + " Dummy",
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
@@ -85,6 +86,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				},
 			},
 			Spec: servicesv1.ServiceKindSpec{
+				Type:                 "dummy",
 				DisplayName:          platform + " Dummy (no schema)",
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
@@ -105,6 +107,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				},
 			},
 			Spec: servicesv1.ServiceKindSpec{
+				Type:                 "dummy",
 				DisplayName:          platform + " Dummy (no creds schema)",
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,
@@ -126,6 +129,7 @@ func (d Dummy) kinds() []servicesv1.ServiceKind {
 				},
 			},
 			Spec: servicesv1.ServiceKindSpec{
+				Type:                 "dummy",
 				DisplayName:          platform + " Dummy (no access)",
 				Summary:              platform + " dummy service kind used for testing",
 				Enabled:              true,

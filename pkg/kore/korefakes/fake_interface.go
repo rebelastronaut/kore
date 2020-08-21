@@ -220,6 +220,16 @@ type FakeInterface struct {
 	securityReturnsOnCall map[int]struct {
 		result1 kore.Security
 	}
+	ServiceCatalogsStub        func() kore.ServiceCatalogs
+	serviceCatalogsMutex       sync.RWMutex
+	serviceCatalogsArgsForCall []struct {
+	}
+	serviceCatalogsReturns struct {
+		result1 kore.ServiceCatalogs
+	}
+	serviceCatalogsReturnsOnCall map[int]struct {
+		result1 kore.ServiceCatalogs
+	}
 	ServiceKindsStub        func() kore.ServiceKinds
 	serviceKindsMutex       sync.RWMutex
 	serviceKindsArgsForCall []struct {
@@ -1336,6 +1346,58 @@ func (fake *FakeInterface) SecurityReturnsOnCall(i int, result1 kore.Security) {
 	}{result1}
 }
 
+func (fake *FakeInterface) ServiceCatalogs() kore.ServiceCatalogs {
+	fake.serviceCatalogsMutex.Lock()
+	ret, specificReturn := fake.serviceCatalogsReturnsOnCall[len(fake.serviceCatalogsArgsForCall)]
+	fake.serviceCatalogsArgsForCall = append(fake.serviceCatalogsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ServiceCatalogs", []interface{}{})
+	fake.serviceCatalogsMutex.Unlock()
+	if fake.ServiceCatalogsStub != nil {
+		return fake.ServiceCatalogsStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.serviceCatalogsReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeInterface) ServiceCatalogsCallCount() int {
+	fake.serviceCatalogsMutex.RLock()
+	defer fake.serviceCatalogsMutex.RUnlock()
+	return len(fake.serviceCatalogsArgsForCall)
+}
+
+func (fake *FakeInterface) ServiceCatalogsCalls(stub func() kore.ServiceCatalogs) {
+	fake.serviceCatalogsMutex.Lock()
+	defer fake.serviceCatalogsMutex.Unlock()
+	fake.ServiceCatalogsStub = stub
+}
+
+func (fake *FakeInterface) ServiceCatalogsReturns(result1 kore.ServiceCatalogs) {
+	fake.serviceCatalogsMutex.Lock()
+	defer fake.serviceCatalogsMutex.Unlock()
+	fake.ServiceCatalogsStub = nil
+	fake.serviceCatalogsReturns = struct {
+		result1 kore.ServiceCatalogs
+	}{result1}
+}
+
+func (fake *FakeInterface) ServiceCatalogsReturnsOnCall(i int, result1 kore.ServiceCatalogs) {
+	fake.serviceCatalogsMutex.Lock()
+	defer fake.serviceCatalogsMutex.Unlock()
+	fake.ServiceCatalogsStub = nil
+	if fake.serviceCatalogsReturnsOnCall == nil {
+		fake.serviceCatalogsReturnsOnCall = make(map[int]struct {
+			result1 kore.ServiceCatalogs
+		})
+	}
+	fake.serviceCatalogsReturnsOnCall[i] = struct {
+		result1 kore.ServiceCatalogs
+	}{result1}
+}
+
 func (fake *FakeInterface) ServiceKinds() kore.ServiceKinds {
 	fake.serviceKindsMutex.Lock()
 	ret, specificReturn := fake.serviceKindsReturnsOnCall[len(fake.serviceKindsArgsForCall)]
@@ -1828,6 +1890,8 @@ func (fake *FakeInterface) Invocations() map[string][][]interface{} {
 	defer fake.plansMutex.RUnlock()
 	fake.securityMutex.RLock()
 	defer fake.securityMutex.RUnlock()
+	fake.serviceCatalogsMutex.RLock()
+	defer fake.serviceCatalogsMutex.RUnlock()
 	fake.serviceKindsMutex.RLock()
 	defer fake.serviceKindsMutex.RUnlock()
 	fake.servicePlansMutex.RLock()

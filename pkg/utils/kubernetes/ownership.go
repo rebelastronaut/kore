@@ -48,11 +48,16 @@ func HasOwnerReference(object Object, owner Object) bool {
 }
 
 func HasOwnerReferenceWithKind(object Object, gvk schema.GroupVersionKind) bool {
+	_, found := GetOwnerReferenceWithKind(object, gvk)
+	return found
+}
+
+func GetOwnerReferenceWithKind(object Object, gvk schema.GroupVersionKind) (metav1.OwnerReference, bool) {
 	for _, o := range object.GetOwnerReferences() {
 		if o.APIVersion == gvk.GroupVersion().String() && o.Kind == gvk.Kind {
-			return true
+			return o, true
 		}
 	}
 
-	return false
+	return metav1.OwnerReference{}, false
 }

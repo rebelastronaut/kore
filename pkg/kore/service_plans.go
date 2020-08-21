@@ -69,8 +69,12 @@ type servicePlansImpl struct {
 
 // Update is responsible for updating a service plan
 func (p servicePlansImpl) Update(ctx context.Context, plan *servicesv1.ServicePlan, ignoreReadonly bool) error {
-	if err := IsValidResourceName("plan", plan.Name); err != nil {
-		return err
+	if len(plan.Name) > 63 {
+		return validation.NewError("%s has failed validation", plan.Name).WithFieldError(
+			"name",
+			validation.MaxLength,
+			"length must be less than 64 characters",
+		)
 	}
 
 	if !strings.HasPrefix(plan.Name, plan.Spec.Kind+"-") {

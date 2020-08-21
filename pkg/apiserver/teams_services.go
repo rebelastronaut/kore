@@ -150,7 +150,9 @@ func (u teamHandler) updateService(req *restful.Request, resp *restful.Response)
 			return nil
 		}
 
-		if err := u.Teams().Team(team).Services().Update(req.Request.Context(), service); err != nil {
+		user := authentication.MustGetIdentity(req.Request.Context())
+
+		if err := u.Teams().Team(team).Services().Update(req.Request.Context(), service, user.IsGlobalAdmin()); err != nil {
 			return err
 		}
 

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: kore-costs
+description: Enables cost estimation and cost reporting with component-level breakdowns.
+type: application
+version: 1.0.0
+annotations:
+  kore.appvia.io/displayName: "Kore Costs"
+  kore.appvia.io/system: "true"
+  kore.appvia.io/systemNamespace: kore-costs
+  kore.appvia.io/installOnce: "true"
+  kore.appvia.io/category: costs
+  kore.appvia.io/schema: "{\"type\":\"object\",\"properties\":{\"aws_credentials_secret\":{\"type\":\"string\",\"title\":\"AWS Credentials secret name\",\"description\":\"Must contain the following keys: access_key_id, access_secret_key\"},\"gcp_credentials_secret\":{\"type\":\"string\",\"title\":\"GCP Credentials secret name\",\"description\":\"Must contain the following keys: service_account_key\"},\"azure_credentials_secret\":{\"type\":\"string\",\"title\":\"Azure Credentials secret name\",\"description\":\"Must contain the following keys: subscription_id, client_id, client_secret, tenant_id\"}}}"

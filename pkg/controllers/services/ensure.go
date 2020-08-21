@@ -40,14 +40,9 @@ import (
 // EnsureServicePending ensures the service has a pending status
 func (c *Controller) EnsureServicePending(service *servicesv1.Service) controllers.EnsureFunc {
 	return func(ctx kore.Context) (reconcile.Result, error) {
-		if service.Status.Status == "" {
-			service.Status.Status = corev1.PendingStatus
-			return reconcile.Result{Requeue: true}, nil
-		}
+		service.Status.Status = corev1.PendingStatus
+		service.Status.Message = ""
 
-		if service.Status.Status != corev1.PendingStatus {
-			service.Status.Status = corev1.PendingStatus
-		}
 		return reconcile.Result{}, nil
 	}
 }

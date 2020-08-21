@@ -36,8 +36,8 @@ var _ kore.ServiceProvider = Provider{}
 
 const (
 	Type               = "application"
-	ServiceKindApp     = "app"
-	ServiceKindHelmApp = "helm-app"
+	ServiceTypeApp     = "app"
+	ServiceTypeHelmApp = "helm-app"
 )
 
 type Provider struct {
@@ -58,7 +58,7 @@ func (p Provider) Catalog(ctx kore.Context, provider *servicesv1.ServiceProvider
 					APIVersion: servicesv1.GroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      ServiceKindApp,
+					Name:      ServiceTypeApp,
 					Namespace: kore.HubNamespace,
 					Labels: map[string]string{
 						kore.Label("platform"): "Kubernetes",
@@ -68,6 +68,7 @@ func (p Provider) Catalog(ctx kore.Context, provider *servicesv1.ServiceProvider
 					},
 				},
 				Spec: servicesv1.ServiceKindSpec{
+					Type:                 ServiceTypeApp,
 					DisplayName:          "Kubernetes Application",
 					Summary:              "Kubernetes Application",
 					Enabled:              false,
@@ -81,13 +82,14 @@ func (p Provider) Catalog(ctx kore.Context, provider *servicesv1.ServiceProvider
 					APIVersion: servicesv1.GroupVersion.String(),
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      ServiceKindHelmApp,
+					Name:      ServiceTypeHelmApp,
 					Namespace: kore.HubNamespace,
 					Labels: map[string]string{
 						kore.Label("platform"): "Kubernetes",
 					},
 				},
 				Spec: servicesv1.ServiceKindSpec{
+					Type:                 ServiceTypeHelmApp,
 					DisplayName:          "Kubernetes Helm Application",
 					Summary:              "Kubernetes Helm Application",
 					Enabled:              true,

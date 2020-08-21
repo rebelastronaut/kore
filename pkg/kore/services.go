@@ -51,7 +51,7 @@ type Services interface {
 	// The optional filter functions can be used to include items only for which all functions return true
 	List(context.Context, ...func(servicesv1.Service) bool) (*servicesv1.ServiceList, error)
 	// Update is used to update a service
-	Update(context.Context, *servicesv1.Service) error
+	Update(_ context.Context, _ *servicesv1.Service, allowSystemServices bool) error
 }
 
 type servicesImpl struct {
@@ -168,7 +168,7 @@ func (s *servicesImpl) Get(ctx context.Context, name string) (*servicesv1.Servic
 }
 
 // Update is used to update the service
-func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service) error {
+func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service, allowSystemServices bool) error {
 	if err := IsValidResourceName("service", service.Name); err != nil {
 		return err
 	}
@@ -176,15 +176,6 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service) 
 	if !ResourceNameFilter.MatchString(service.Spec.Kind) {
 		return validation.NewError("service has failed validation").WithFieldErrorf(
 			"kind",
-			validation.InvalidValue,
-			"must match %s",
-			ResourceNameFilter.String(),
-		)
-	}
-
-	if !ResourceNameFilter.MatchString(service.Spec.Plan) {
-		return validation.NewError("service has failed validation").WithFieldErrorf(
-			"plan",
 			validation.InvalidValue,
 			"must match %s",
 			ResourceNameFilter.String(),
@@ -201,16 +192,21 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service) 
 		return err
 	}
 
-	if serviceKind.Labels[Label("platform")] == "Kubernetes" {
+	if serviceKind.Labels[LabelPlatform] == "Kubernetes" {
 		if service.Spec.ClusterNamespace == "" {
 			return validation.NewError("service has failed validation").
-				WithFieldError("clusterNamespace", validation.Required, "must be set")
+				WithFieldError("spec.clusterNamespace", validation.Required, "must be set")
 		}
 	} else {
 		if service.Spec.ClusterNamespace != "" {
 			return validation.NewError("service has failed validation").
-				WithFieldError("clusterNamespace", validation.NotAllowed, "should not be set for this service type")
+				WithFieldError("spec.clusterNamespace", validation.NotAllowed, "should not be set for this service type")
 		}
+	}
+
+	if serviceKind.Annotations[AnnotationSystemNamespace] != "" && service.Spec.ClusterNamespace != serviceKind.Annotations[AnnotationSystemNamespace] {
+		return validation.NewError("service has failed validation").
+			WithFieldErrorf("spec.clusterNamespace", validation.NotAllowed, "must be %q", serviceKind.Annotations[AnnotationSystemNamespace])
 	}
 
 	existing, err := s.Get(ctx, service.Name)
@@ -221,13 +217,30 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service) 
 	if existing != nil {
 		verr := validation.NewError("service has failed validation")
 		if existing.Spec.Kind != service.Spec.Kind {
-			verr.AddFieldErrorf("kind", validation.ReadOnly, "can not be changed after a service was created")
+			verr.AddFieldErrorf("spec.kind", validation.ReadOnly, "can not be changed after a service was created")
 		}
 		if existing.Spec.Plan != service.Spec.Plan {
-			verr.AddFieldErrorf("plan", validation.ReadOnly, "can not be changed after a service was created")
+			verr.AddFieldErrorf("spec.plan", validation.ReadOnly, "can not be changed after a service was created")
 		}
 		if verr.HasErrors() {
 			return verr
+		}
+	}
+
+	if existing == nil && serviceKind.Annotations[AnnotationInstallOnce] == AnnotationValueTrue {
+		services, err := s.List(ctx, func(srv servicesv1.Service) bool {
+			return srv.Spec.Kind == serviceKind.Name && srv.Spec.Cluster.Equals(service.Spec.Cluster)
+		})
+		if err != nil {
+			return fmt.Errorf("failed to list services: %w", err)
+		}
+		if len(services.Items) > 0 {
+			return validation.NewError("service has failed validation").WithFieldErrorf(
+				validation.FieldRoot,
+				validation.NotAllowed,
+				"only one service can be installed of %s kind",
+				service.Spec.Kind,
+			)
 		}
 	}
 
@@ -258,7 +271,7 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service) 
 			WithFieldErrorf("kind", validation.InvalidType, "%q is not enabled", service.Spec.Kind)
 	}
 
-	if err := s.validateConfiguration(ctx, service, existing); err != nil {
+	if err := s.validateConfiguration(ctx, service, existing, allowSystemServices); err != nil {
 		return err
 	}
 
@@ -276,7 +289,7 @@ func (s *servicesImpl) Update(ctx context.Context, service *servicesv1.Service) 
 	)
 }
 
-func (s *servicesImpl) validateConfiguration(ctx context.Context, service, existing *servicesv1.Service) error {
+func (s *servicesImpl) validateConfiguration(ctx context.Context, service, existing *servicesv1.Service, allowSystemServices bool) error {
 	plan, err := s.servicePlans.Get(ctx, service.Spec.Plan)
 	if err != nil {
 		if err == ErrNotFound {
@@ -297,9 +310,11 @@ func (s *servicesImpl) validateConfiguration(ctx context.Context, service, exist
 			WithFieldErrorf("plan", validation.InvalidType, "service has kind %q, but plan has %q", service.Spec.Kind, plan.Spec.Kind)
 	}
 
-	if plan.Annotations[AnnotationSystem] == "true" {
-		return validation.NewError("%q failed validation", service.Name).
-			WithFieldError("plan", validation.InvalidType, "system plans can not be used to create new services")
+	if !allowSystemServices {
+		if plan.Annotations[AnnotationSystem] == "true" {
+			return validation.NewError("%q failed validation", service.Name).
+				WithFieldError("plan", validation.InvalidType, "system plans can not be used to create new services")
+		}
 	}
 
 	planDetails, err := s.ServicePlans().GetDetails(ctx, plan.Name, s.team, service.Spec.Cluster.Name)

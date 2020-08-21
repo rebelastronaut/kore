@@ -25,10 +25,11 @@ class V1ServiceKindSpec {
      * @param enabled {Boolean} 
      * @param serviceAccessEnabled {Boolean} 
      * @param summary {String} 
+     * @param type {String} 
      */
-    constructor(enabled, serviceAccessEnabled, summary) { 
+    constructor(enabled, serviceAccessEnabled, summary, type) { 
         
-        V1ServiceKindSpec.initialize(this, enabled, serviceAccessEnabled, summary);
+        V1ServiceKindSpec.initialize(this, enabled, serviceAccessEnabled, summary, type);
     }
 
     /**
@@ -36,10 +37,11 @@ class V1ServiceKindSpec {
      * This method is used by the constructors of any subclasses, in order to implement multiple inheritance (mix-ins).
      * Only for internal use.
      */
-    static initialize(obj, enabled, serviceAccessEnabled, summary) { 
+    static initialize(obj, enabled, serviceAccessEnabled, summary, type) { 
         obj['enabled'] = enabled;
         obj['serviceAccessEnabled'] = serviceAccessEnabled;
         obj['summary'] = summary;
+        obj['type'] = type;
     }
 
     /**
@@ -82,6 +84,9 @@ class V1ServiceKindSpec {
             }
             if (data.hasOwnProperty('summary')) {
                 obj['summary'] = ApiClient.convertToType(data['summary'], 'String');
+            }
+            if (data.hasOwnProperty('type')) {
+                obj['type'] = ApiClient.convertToType(data['type'], 'String');
             }
         }
         return obj;
@@ -217,6 +222,19 @@ class V1ServiceKindSpec {
     setSummary(summary) {
         this['summary'] = summary;
     }
+/**
+     * @return {String}
+     */
+    getType() {
+        return this.type;
+    }
+
+    /**
+     * @param {String} type
+     */
+    setType(type) {
+        this['type'] = type;
+    }
 
 }
 
@@ -269,6 +287,11 @@ V1ServiceKindSpec.prototype['serviceAccessEnabled'] = undefined;
  * @member {String} summary
  */
 V1ServiceKindSpec.prototype['summary'] = undefined;
+
+/**
+ * @member {String} type
+ */
+V1ServiceKindSpec.prototype['type'] = undefined;
 
 
 

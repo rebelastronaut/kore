@@ -17,6 +17,11 @@
 package application_test
 
 import (
+	"context"
+
+	"github.com/appvia/kore/pkg/controllers/controllerstest"
+
+	servicesv1 "github.com/appvia/kore/pkg/apis/services/v1"
 	"github.com/appvia/kore/pkg/serviceproviders/application"
 	"github.com/appvia/kore/pkg/utils/jsonschema"
 
@@ -26,12 +31,30 @@ import (
 
 var _ = Describe("ServicePlans", func() {
 	It("All plans should be valid", func() {
-		plans := application.GetDefaultPlans()
+		factory := application.Factory{}
+		test := controllerstest.NewTest(context.Background())
 
-		for _, plan := range plans {
+		providerObj := factory.DefaultProviders()[0]
+
+		provider, err := factory.Create(test.Context, &providerObj)
+		Expect(err).ToNot(HaveOccurred())
+
+		catalog, err := provider.Catalog(test.Context, &providerObj)
+		Expect(err).ToNot(HaveOccurred())
+
+		for _, plan := range catalog.Plans {
+			var kind *servicesv1.ServiceKind
+			for _, k := range catalog.Kinds {
+				if k.Name == plan.Spec.Kind {
+					kind = &k
+					break
+				}
+			}
+
+			Expect(kind).ToNot(Equal(""), "service plan %s doesn't have a valid service kind", plan.Name)
+
 			err := jsonschema.Validate(plan.Spec.Schema, plan.Name, plan.Spec.Configuration)
 			Expect(err).ToNot(HaveOccurred(), "%s plan is not valid: %s", plan.Name, err)
-
 		}
 	})
 

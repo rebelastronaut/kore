@@ -36,6 +36,10 @@ var ServiceKindGVK = schema.GroupVersionKind{
 // ServiceKindSpec defines the state of a service kind
 // +k8s:openapi-gen=true
 type ServiceKindSpec struct {
+	// Type is the service type, used by the service providers to decide how to handle the service kind
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:Required
+	Type string `json:"type"`
 	// Enabled is true if the service kind can be used
 	// +kubebuilder:validation:Optional
 	Enabled bool `json:"enabled"`

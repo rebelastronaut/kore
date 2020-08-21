@@ -122,6 +122,7 @@ func (p *Provider) Catalog(ctx kore.Context, serviceProvider *servicesv1.Service
 				},
 			},
 			Spec: servicesv1.ServiceKindSpec{
+				Type:                 catalogService.Name,
 				ServiceAccessEnabled: catalogService.Bindable,
 				DisplayName:          getMetadataStringVal(catalogService.Metadata, MetadataKeyDisplayName, ""),
 				Summary:              summary,

@@ -26,7 +26,7 @@ import (
 
 var (
 	// nameRegex is a regex to validate the naming parameter
-	nameRegex = regexp.MustCompile(`^[a-zA-Z0-9\-_\*]*$`)
+	nameRegex = regexp.MustCompile(`^[a-zA-Z0-9\-_\*\.]*$`)
 )
 
 // queryBuilder is a query builer for the store's index

@@ -49,6 +49,10 @@ type V1ServiceKindSpec struct {
 	// summary
 	// Required: true
 	Summary *string `json:"summary"`
+
+	// type
+	// Required: true
+	Type *string `json:"type"`
 }
 
 // Validate validates this v1 service kind spec
@@ -64,6 +68,10 @@ func (m *V1ServiceKindSpec) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateSummary(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -94,6 +102,15 @@ func (m *V1ServiceKindSpec) validateServiceAccessEnabled(formats strfmt.Registry
 func (m *V1ServiceKindSpec) validateSummary(formats strfmt.Registry) error {
 
 	if err := validate.Required("summary", "body", m.Summary); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *V1ServiceKindSpec) validateType(formats strfmt.Registry) error {
+
+	if err := validate.Required("type", "body", m.Type); err != nil {
 		return err
 	}
 
