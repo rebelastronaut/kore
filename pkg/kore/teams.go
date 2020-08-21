@@ -47,7 +47,7 @@ type Teams interface {
 	// Get returns the team from the kore
 	Get(context.Context, string) (*orgv1.Team, error)
 	// List returns a list of teams
-	List(context.Context) (*orgv1.TeamList, error)
+	List(context.Context, ...func(orgv1.Team) bool) (*orgv1.TeamList, error)
 	// Team returns a team interface
 	Team(string) Team
 	// Update is responsible for creating / updating a team
@@ -160,7 +160,7 @@ func (t *teamsImpl) Get(ctx context.Context, name string) (*orgv1.Team, error) {
 }
 
 // List returns a list of teams
-func (t *teamsImpl) List(ctx context.Context) (*orgv1.TeamList, error) {
+func (t *teamsImpl) List(ctx context.Context, filters ...func(orgv1.Team) bool) (*orgv1.TeamList, error) {
 	model, err := t.persistenceMgr.Teams().List(ctx)
 	if err != nil {
 		log.WithError(err).Error("trying to retrieve list of team in kore")
@@ -168,7 +168,28 @@ func (t *teamsImpl) List(ctx context.Context) (*orgv1.TeamList, error) {
 		return nil, err
 	}
 
-	return DefaultConvertor.FromTeamsModelList(model), nil
+	list := DefaultConvertor.FromTeamsModelList(model)
+
+	if len(filters) == 0 {
+		return list, nil
+	}
+
+	res := []orgv1.Team{}
+	for _, item := range list.Items {
+		if func() bool {
+			for _, filter := range filters {
+				if !filter(item) {
+					return false
+				}
+			}
+			return true
+		}() {
+			res = append(res, item)
+		}
+	}
+	list.Items = res
+
+	return list, nil
 }
 
 // Exists checks if the team exists in kore
