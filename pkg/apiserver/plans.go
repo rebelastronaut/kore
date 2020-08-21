@@ -26,7 +26,6 @@ import (
 
 	restful "github.com/emicklei/go-restful"
 	log "github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func init() {
@@ -107,28 +106,25 @@ func (p plansHandler) findPlan(req *restful.Request, resp *restful.Response) {
 // findPlans returns all plans in the kore
 func (p plansHandler) findPlans(req *restful.Request, resp *restful.Response) {
 	handleErrors(req, resp, func() error {
-		plans, err := p.Plans().List(req.Request.Context())
+		filters := []func(configv1.Plan) bool{
+			func(p configv1.Plan) bool {
+				return p.Annotations[kore.AnnotationSystem] != kore.AnnotationValueTrue
+			},
+		}
+
+		kind := strings.ToLower(req.QueryParameter("kind"))
+		if kind != "" {
+			filters = append(filters, func(p configv1.Plan) bool {
+				return strings.EqualFold(p.Spec.Kind, kind)
+			})
+		}
+
+		plans, err := p.Plans().List(req.Request.Context(), filters...)
 		if err != nil {
 			return err
 		}
 
-		kind := strings.ToLower(req.QueryParameter("kind"))
-
-		filtered := &configv1.PlanList{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "v1",
-				Kind:       "PlanList",
-			},
-			Items: []configv1.Plan{},
-		}
-		for _, x := range plans.Items {
-			if kind != "" && strings.ToLower(x.Spec.Kind) != kind {
-				continue
-			}
-			filtered.Items = append(filtered.Items, x)
-		}
-
-		return resp.WriteHeaderAndEntity(http.StatusOK, filtered)
+		return resp.WriteHeaderAndEntity(http.StatusOK, plans)
 	})
 }
 

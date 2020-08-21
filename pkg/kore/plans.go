@@ -38,7 +38,7 @@ type Plans interface {
 	// Get returns the class from the kore
 	Get(context.Context, string) (*configv1.Plan, error)
 	// List returns a list of plans
-	List(context.Context) (*configv1.PlanList, error)
+	List(context.Context, ...func(configv1.Plan) bool) (*configv1.PlanList, error)
 	// Has checks if a resource exists within an available class in the scope
 	Has(context.Context, string) (bool, error)
 	// Update is responsible for update a plan in kore
@@ -167,27 +167,37 @@ func (p plansImpl) Get(ctx context.Context, name string) (*configv1.Plan, error)
 }
 
 // List returns a list of classes
-func (p plansImpl) List(ctx context.Context) (*configv1.PlanList, error) {
-	planList := &configv1.PlanList{}
+func (p plansImpl) List(ctx context.Context, filters ...func(configv1.Plan) bool) (*configv1.PlanList, error) {
+	list := &configv1.PlanList{}
 
 	err := p.Store().Client().List(ctx,
 		store.ListOptions.InNamespace(HubNamespace),
-		store.ListOptions.InTo(planList),
+		store.ListOptions.InTo(list),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	res := []configv1.Plan{}
-	for _, plan := range planList.Items {
-		if plan.Annotations[AnnotationSystem] == AnnotationValueTrue {
-			continue
-		}
-		res = append(res, plan)
+	if len(filters) == 0 {
+		return list, nil
 	}
-	planList.Items = res
 
-	return planList, nil
+	res := []configv1.Plan{}
+	for _, item := range list.Items {
+		if func() bool {
+			for _, filter := range filters {
+				if !filter(item) {
+					return false
+				}
+			}
+			return true
+		}() {
+			res = append(res, item)
+		}
+	}
+	list.Items = res
+
+	return list, nil
 }
 
 // Has checks if a resource exists within an available class in the scope
