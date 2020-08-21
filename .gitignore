@@ -12,9 +12,9 @@ hack/setup/instances/credentials.yml
 secret.yml
 swagger-ui/
 manifests/local
-charts/my_values.yaml
+/charts/my_values*.yaml
 e2eci/
-values.yaml
+/values.yaml
 token
 /release
 

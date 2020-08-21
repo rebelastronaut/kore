@@ -9,4 +9,250 @@ annotations:
   kore.appvia.io/systemNamespace: kore-costs
   kore.appvia.io/installOnce: "true"
   kore.appvia.io/category: costs
-  kore.appvia.io/schema: "{\"type\":\"object\",\"properties\":{\"aws_credentials_secret\":{\"type\":\"string\",\"title\":\"AWS Credentials secret name\",\"description\":\"Must contain the following keys: access_key_id, access_secret_key\"},\"gcp_credentials_secret\":{\"type\":\"string\",\"title\":\"GCP Credentials secret name\",\"description\":\"Must contain the following keys: service_account_key\"},\"azure_credentials_secret\":{\"type\":\"string\",\"title\":\"Azure Credentials secret name\",\"description\":\"Must contain the following keys: subscription_id, client_id, client_secret, tenant_id\"}}}"
+  kore.appvia.io/schema: |-
+    {
+      "type":"object",
+      "properties": {
+        "licence_key": {
+          "type": "string",
+          "title": "Kore Costs licence key",
+          "description": "Required to enable actual costs integration"
+        },
+        "kore_api_url": {
+          "type": "string",
+          "title": "URL of the kore API to talk to",
+          "description": "Blank defaults to this Kore instance"
+        },
+        "kore_token": {
+          "type": "string",
+          "title": "Access token to talk to kore with",
+          "description": "Blank defaults to a suitable token for this kore instance"
+        },
+        "gcp": {
+          "type": "object",
+          "properties": {
+            "estimates": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enabled",
+                  "description": "Enable estimates for GCP"
+                },
+                "credsSecret": {
+                  "type": "string",
+                  "title": "GCP credentials secret name",
+                  "description": "Secret must contain the following keys: service_account_key"
+                },
+                "credsSecretNamespace": {
+                  "type": "string",
+                  "title": "GCP credentials secret namespace",
+                  "description": "Namespace to find GCP credentials secret. Defaults to kore-admin"
+                }
+              }
+            },
+            "actuals": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enabled",
+                  "description": "Enable actual cost data import for GCP"
+                },
+                "credsSecret": {
+                  "type": "string",
+                  "title": "GCP credentials secret name",
+                  "description": "Secret must contain the following keys: service_account_key."
+                },
+                "credsSecretNamespace": {
+                  "type": "string",
+                  "title": "GCP credentials secret namespace",
+                  "description": "Namespace to find GCP credentials secret. Defaults to kore-admin"
+                },
+                "schedule": {
+                  "type": "string",
+                  "title": "Schedule",
+                  "description": "Schedule in cron format to execute the costs import for GCP",
+                  "examples": "*/10 * * * * (every 10 minutes) 5 * * * * (every hour, on minute 5)"
+                },
+                "chunkSize": {
+                  "type": "number",
+                  "title": "Chunk size",
+                  "description": "Number of lines of cost data to persist to kore per call",
+                  "examples": "1000"
+                },
+                "daysHistory": {
+                  "type": "number",
+                  "title": "Days history",
+                  "description": "How many days of historical data to monitor when importing costs data. Note different services report billing data after different delays, so this should cover at minimum 3 days",
+                  "examples": "28"
+                },
+                "importZeroCostItems": {
+                  "type": "boolean",
+                  "title": "Import Zero-cost Items",
+                  "description": "By default, zero-cost line items are not imported. Set to true to include all zero-rated line items in the import. Note this causes approximately 5x more lines of cost data to be imported."
+                },
+                "costsAdminProject": {
+                  "type": "string",
+                  "title": "GCP costs admin project",
+                  "description": "GCP project ID in which the costs data will be collected"
+                },
+                "costsDataset": {
+                  "type": "string",
+                  "title": "GCP costs dataset",
+                  "description": "Name of a BigQuery dataset in the GCP costs admin project which will receive the billing data"
+                },
+                "costsDatasetLocation": {
+                  "type": "string",
+                  "title": "GCP costs dataset location",
+                  "description": "Location in which the GCP costs BigQuery dataset will be stored",
+                  "examples": "EU (geo-dispersed across multiple EU GCP regions), US (geo-dispersed across multiple US GCP regions), europe-west2 (London)"
+                },
+                "billingAccount": {
+                  "type": "string",
+                  "title": "GCP billing account",
+                  "description": "GCP billing account reference to monitor for costs data",
+                  "examples": "012345-AABBCC-123ABC"
+                },
+              }
+            }
+          }
+        },
+        "aws": {
+          "type": "object",
+          "properties": {
+            "estimates": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enabled",
+                  "description": "Enable estimates for AWS"
+                },
+                "credsSecret": {
+                  "type": "string",
+                  "title": "AWS credentials secret name",
+                  "description": "Secret must contain the following keys: access_key_id, access_secret_key"
+                },
+                "credsSecretNamespace": {
+                  "type": "string",
+                  "title": "AWS credentials secret namespace",
+                  "description": "Namespace to find AWS credentials secret. Defaults to kore-admin"
+                }
+              }
+            },
+            "actuals": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enabled",
+                  "description": "Enable actual cost data import for AWS"
+                },
+                "credsSecret": {
+                  "type": "string",
+                  "title": "AWS credentials secret name",
+                  "description": "Secret must contain the following keys: access_key_id, access_secret_key"
+                },
+                "credsSecretNamespace": {
+                  "type": "string",
+                  "title": "AWS credentials secret namespace",
+                  "description": "Namespace to find AWS credentials secret. Defaults to kore-admin"
+                },
+                "schedule": {
+                  "type": "string",
+                  "title": "Schedule",
+                  "description": "Schedule in cron format to execute the costs import for AWS",
+                  "examples": "*/10 * * * * (every 10 minutes) 5 * * * * (every hour, on minute 5)"
+                },
+                "chunkSize": {
+                  "type": "number",
+                  "title": "Chunk size",
+                  "description": "Number of lines of cost data to persist to kore per call",
+                  "examples": "1000"
+                },
+                "daysHistory": {
+                  "type": "number",
+                  "title": "Days history",
+                  "description": "How many days of historical data to monitor when importing costs data. Note different services report billing data after different delays, so this should cover at minimum 3 days",
+                  "examples": "28"
+                },
+                "importZeroCostItems": {
+                  "type": "boolean",
+                  "title": "Import Zero-cost Items",
+                  "description": "By default, zero-cost line items are not imported. Set to true to include all zero-rated line items in the import. Note this causes approximately 5x more lines of cost data to be imported."
+                }
+              }
+            }
+          }
+        },
+        "azure": {
+          "type": "object",
+          "properties": {
+            "estimates": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enabled",
+                  "description": "Enable estimates for Azure"
+                },
+                "credsSecret": {
+                  "type": "string",
+                  "title": "Azure credentials secret name",
+                  "description": "Secret must contain the following keys: subscription_id, client_id, client_secret, tenant_id"
+                },
+                "credsSecretNamespace": {
+                  "type": "string",
+                  "title": "Azure credentials secret namespace",
+                  "description": "Namespace to find Azure credentials secret. Defaults to kore-admin"
+                }
+              }
+            },
+            "actuals": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "title": "Enabled",
+                  "description": "Enable actual cost data import for Azure"
+                },
+                "credsSecret": {
+                  "type": "string",
+                  "title": "Azure credentials secret name",
+                  "description": "Secret must contain the following keys: subscription_id, client_id, client_secret, tenant_id"
+                },
+                "credsSecretNamespace": {
+                  "type": "string",
+                  "title": "Azure credentials secret namespace",
+                  "description": "Namespace to find Azure credentials secret. Defaults to kore-admin"
+                },
+                "schedule": {
+                  "type": "string",
+                  "title": "Schedule",
+                  "description": "Schedule in cron format to execute the costs import for AWS",
+                  "examples": "*/10 * * * * (every 10 minutes) 5 * * * * (every hour, on minute 5)"
+                },
+                "chunkSize": {
+                  "type": "number",
+                  "title": "Chunk size",
+                  "description": "Number of lines of cost data to persist to kore per call",
+                  "examples": "1000"
+                },
+                "daysHistory": {
+                  "type": "number",
+                  "title": "Days history",
+                  "description": "How many days of historical data to monitor when importing costs data. Note different services report billing data after different delays, so this should cover at minimum 3 days",
+                  "examples": "28"
+                },
+                "importZeroCostItems": {
+                  "type": "boolean",
+                  "title": "Import Zero-cost Items",
+                  "description": "By default, zero-cost line items are not imported. Set to true to include all zero-rated line items in the import. Note this causes approximately 5x more lines of cost data to be imported."
+                }
+              }
+            }
+          }
+        }
+      }
+    }    

@@ -1,0 +1,27 @@
+{{- if or .Values.gcp.actuals.enabled .Values.aws.actuals.enabled .Values.azure.actuals.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: costsengine-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+data:
+  {{- if .Values.gcp.actuals.enabled }}
+  kore-costs-gcp.yaml: |-
+    {{ if .Values.gcp.actuals.credsSecret }}gcpCredentialFile: /etc/kore-costs/secrets/gcp-key.json{{- end}}
+    gcpCostsAdminProject: {{ .Values.gcp.actuals.costsAdminProject }}
+    gcpCostsDataset: {{ .Values.gcp.actuals.costsDataset }}
+    gcpCostsDatasetLocation: {{ .Values.gcp.actuals.costsDatasetLocation }}
+    gcpBillingAccount: {{ .Values.gcp.actuals.billingAccount }}
+    gcpChunkSize: {{ .Values.gcp.actuals.chunkSize }}
+    gcpDaysHistory: {{ .Values.gcp.actuals.daysHistory }}
+    gcpImportZeroCostItems: {{ .Values.gcp.actuals.importZeroCostItems }}
+  {{- end}}
+  {{- if .Values.aws.actuals.enabled }}
+  kore-costs-aws.yaml: ""
+  {{- end}}
+  {{- if .Values.azure.actuals.enabled }}
+  kore-costs-azure.yaml: ""
+  {{- end}}
+{{- end}}

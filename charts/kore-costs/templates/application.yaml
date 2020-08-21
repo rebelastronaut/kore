@@ -9,6 +9,8 @@ spec:
   componentKinds:
     - group: apps
       kind: Deployment
+    - group: batch/v1beta1
+      kind: CronJob
     - group: v1
       kind: Service
   selector:

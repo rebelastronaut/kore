@@ -1,0 +1,129 @@
+{{- if .Values.gcp.actuals.enabled }}
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: costsengine-gcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: costsengine-gcp
+    app.kubernetes.io/name: {{ .Release.Name }}
+spec:
+  schedule: "{{ .Values.gcp.actuals.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            name: costsengine-gcp
+            app.kubernetes.io/name: {{ .Release.Name }}
+        spec:
+          containers:
+            - name: costsengine-gcp
+              image: quay.io/appvia/kore-costs-engine:v0.0.1
+              args: ["pull", "gcp", "--config-file=/etc/kore-costs/config/kore-costs-gcp.yaml"]
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/kore-costs/config
+                  readOnly: true
+                - name: creds
+                  mountPath: /etc/kore-costs/secrets
+                  readOnly: true
+              envFrom:
+                - secretRef:
+                    name: costsengine-kore
+          restartPolicy: OnFailure          
+          volumes:
+            - name: config
+              configMap:
+                name: costsengine-config
+            - name: creds
+              secret:
+                secretName: costsengine-creds
+{{- end}}
+{{- if .Values.aws.actuals.enabled }}
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: costsengine-aws
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: costsengine-aws
+    app.kubernetes.io/name: {{ .Release.Name }}
+spec:
+  schedule: {{ .Values.aws.actuals.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            name: costsengine-aws
+            app.kubernetes.io/name: {{ .Release.Name }}
+            spec:
+          containers:
+            - name: costsengine-aws
+              image: quay.io/appvia/kore-costs-engine:v0.0.1
+              args: ["pull", "aws", "--config-file=/etc/kore-costs/config/kore-costs-aws.yaml"]
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/kore-costs/config
+                  readOnly: true
+                - name: creds
+                  mountPath: /etc/kore-costs/secrets
+                  readOnly: true
+              envFrom:
+                - secretRef:
+                    name: costsengine-kore
+          restartPolicy: OnFailure          
+          volumes:
+            - name: config
+              configMap:
+                name: costsengine-config
+            - name: creds
+              secret:
+                secretName: costsengine-creds
+{{- end}}
+{{- if .Values.azure.actuals.enabled }}
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: costsengine-azure
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: costsengine-azure
+    app.kubernetes.io/name: {{ .Release.Name }}
+spec:
+  schedule: {{ .Values.azure.actuals.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            name: costsengine-azure
+            app.kubernetes.io/name: {{ .Release.Name }}
+            spec:
+          containers:
+            - name: costsengine-azure
+              image: quay.io/appvia/kore-costs-engine:v0.0.1
+              args: ["pull", "azure", "--config-file=/etc/kore-costs/config/kore-costs-azure.yaml"]
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/kore-costs/config
+                  readOnly: true
+                - name: creds
+                  mountPath: /etc/kore-costs/secrets
+                  readOnly: true
+              envFrom:
+                - secretRef:
+                    name: costsengine-kore
+          restartPolicy: OnFailure          
+          volumes:
+            - name: config
+              configMap:
+                name: costsengine-config
+            - name: creds
+              secret:
+                secretName: costsengine-creds
+{{- end}}

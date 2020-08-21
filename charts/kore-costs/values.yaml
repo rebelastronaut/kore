@@ -1,0 +1,49 @@
+---
+# Default values for kore-costs.
+
+# default assumption that we're running in-cluster with kore:
+kore_api_url: http://kore-apiserver.kore.svc.cluster.local:10080
+# blank kore token will pull the default API token:
+kore_token: ""
+# licence key must be provided for actuals to work:
+licence_key: ""
+
+gcp:
+  estimates:
+    enabled: false
+    credsSecretNamespace: kore-admin
+    credsSecret: ""
+  actuals:
+    enabled: false
+    credsSecretNamespace: kore-admin
+    credsSecret: ""
+    schedule: "*/10 * * * *" # every ten minutes
+    costsAdminProject: ""
+    costsDataset: ""
+    costsDatasetLocation: ""
+    billingAccount: ""
+    chunkSize: 1000
+    daysHistory: 28
+    importZeroCostItems: false
+aws:
+  estimates:
+    enabled: false
+    credsSecretNamespace: kore-admin
+    credsSecret: ""
+  actuals:
+    enabled: false
+    schedule: "*/10 * * * *" # every ten minutes
+    chunkSize: 1000
+    daysHistory: 28
+    importZeroCostItems: false
+azure:
+  estimates:
+    enabled: false
+    credsSecretNamespace: kore-admin
+    credsSecret: ""
+  actuals:
+    enabled: false
+    schedule: "*/10 * * * *" # every ten minutes
+    chunkSize: 1000
+    daysHistory: 28
+    importZeroCostItems: false
