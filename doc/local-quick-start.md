@@ -24,6 +24,7 @@ Please ensure you have the following installed on your machine:
 
 - Docker: see [Docker installation instructions](https://docs.docker.com/install/)
 - Kubectl: see [Kubectl installation instructions](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- Helm v3: see [Helm installation instructions](https://helm.sh/docs/intro/install/)
 
 ### Run Kore locally
 
